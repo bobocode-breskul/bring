@@ -1,7 +1,19 @@
 # Bring ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
  Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
 
-## Installation and Getting Started
+## Installation
+
+Add Maven dependency to your project:
+
+```xml
+<dependency>
+    <groupId>io.github.bobocode-breskul</groupId>
+    <artifactId>bring</artifactId>
+    <version>1.1</version>
+</dependency>
+```
+
+## Getting Started
 The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) includes detailed installation instructions as well as a comprehensive getting started guide.
 
 Here is a quick teaser of a complete Bring application in Java:

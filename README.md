@@ -1,4 +1,4 @@
-# Bring [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+# Bring ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
  Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
 
 ## Installation and Getting Started
@@ -42,6 +42,3 @@ public class Example {
 ### Error Handling
 
 Bring gracefully handles errors with appropriate exceptions and clear error messages. Users receive instructions on how to resolve issues. Detailed logging helps diagnose problems.
-
-## License
-Bring is Open Source software released under the Apache 2.0 license.

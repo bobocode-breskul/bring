@@ -4,7 +4,7 @@
 ## Installation and Getting Started
 The reference documentation includes detailed installation instructions as well as a comprehensive getting started guide.
 
-Here is a quick teaser of a complete Spring Boot application in Java:
+Here is a quick teaser of a complete Bring application in Java:
 ```java
 import com.breskul.bring.*;
 

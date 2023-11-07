@@ -2,9 +2,10 @@
  Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
 
 ## Installation and Getting Started
-The reference documentation includes detailed installation instructions as well as a comprehensive getting started guide.
+The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) includes detailed installation instructions as well as a comprehensive getting started guide.
 
 Here is a quick teaser of a complete Bring application in Java:
+
 ```java
 import com.breskul.bring.*;
 
@@ -23,8 +24,6 @@ public class Example {
 
 }
 ```
-
-
 
 ## Features
 

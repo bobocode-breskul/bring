@@ -4,9 +4,38 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>breskul</groupId>
+    <groupId>com.github.breskul</groupId>
     <artifactId>bring</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>Bring</name>
+    <description>
+        Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
+    </description>
+    <url>https://github.com/bobocode-breskul/bring</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Ruslan Hladchenko</name>
+            <email>rugladchenko@gmail.com</email>
+            <organization>Hladchenko.com</organization>
+            <organizationUrl>https://hladchenko.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/bobocode-breskul/bring.git</connection>
+        <developerConnection>scm:git:ssh://github.com:bobocode-breskul/bring.git</developerConnection>
+        <url>https://github.com/bobocode-breskul/bring/tree/master</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

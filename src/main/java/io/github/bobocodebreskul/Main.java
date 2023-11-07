@@ -1,4 +1,4 @@
-package com.github.breskul;
+package io.github.bobocodebreskul;
 
 public class Main {
     public static void main(String[] args) {

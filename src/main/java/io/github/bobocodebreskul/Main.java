@@ -1,4 +1,4 @@
-package com.breskul.bring;
+package io.github.bobocodebreskul;
 
 public class Main {
     public static void main(String[] args) {

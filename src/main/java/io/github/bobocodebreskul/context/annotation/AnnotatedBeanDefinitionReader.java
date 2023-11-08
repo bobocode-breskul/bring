@@ -1,4 +1,4 @@
-package com.breskul.bring.context.annotation;
+package io.github.bobocodebreskul.context.annotation;
 
 public class AnnotatedBeanDefinitionReader {
 

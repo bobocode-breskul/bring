@@ -6,11 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-on:
-  push:
-    branches: [ "master", "develop" ]
-  pull_request:
-    branches: [ "master", "develop" ]
+on: [pull_request]
 
 jobs:
   build:

@@ -44,6 +44,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <logback.version>1.4.11</logback.version>
     <lombok.version>1.18.30</lombok.version>
+    <junit.version>5.10.1</junit.version>
   </properties>
 
   <dependencies>
@@ -58,7 +59,12 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <distributionManagement>

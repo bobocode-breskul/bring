@@ -1,0 +1,11 @@
+<configuration scan="true">
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%highlight(%cyan(%d{HH:mm:ss.SSS})) %green([%thread]) %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="trace">
+    <appender-ref ref="console"/>
+  </root>
+</configuration>

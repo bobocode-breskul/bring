@@ -6,6 +6,7 @@ class MainTest {
 
   @org.junit.jupiter.api.Test
   void main() {
+    Main.main(new String[]{"start"});
     assertTrue(true);
   }
 }

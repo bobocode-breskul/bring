@@ -56,6 +56,9 @@ jobs:
           min-coverage-changed-files: 60
           debug-mode: false
           title: Code Coverage
+          update-comment: true
+          pass-emoji: ':green_circle:'
+          fail-emoji: ':red_circle:'
 
       - name: Get the Coverage info
         run: |

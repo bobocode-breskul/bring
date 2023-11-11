@@ -45,6 +45,7 @@
     <logback.version>1.4.11</logback.version>
     <lombok.version>1.18.30</lombok.version>
     <junit.version>5.10.1</junit.version>
+    <reflection.version>0.10.2</reflection.version>
   </properties>
 
   <dependencies>
@@ -64,6 +65,11 @@
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>${reflection.version}</version>
     </dependency>
   </dependencies>
 

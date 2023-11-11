@@ -19,7 +19,7 @@
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -29,6 +29,12 @@
       <email>rugladchenko@gmail.com</email>
       <organization>Hladchenko.com</organization>
       <organizationUrl>https://hladchenko.com/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Roman Pryshchepa</name>
+      <email>roman.pryshchepa@gmail.com</email>
+      <organization>PE Roman Pryshchepa</organization>
+      <organizationUrl>https://www.linkedin.com/in/roman-pryshchepa/</organizationUrl>
     </developer>
   </developers>
 
@@ -63,6 +69,18 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.6.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.24.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

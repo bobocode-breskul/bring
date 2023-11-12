@@ -30,6 +30,12 @@
       <organization>Hladchenko.com</organization>
       <organizationUrl>https://hladchenko.com/</organizationUrl>
     </developer>
+    <developer>
+      <name>Vitalii Katkov</name>
+      <email>katkovvitaliy@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/vitalii-katkov-09643811a/</organizationUrl>
+    </developer>
   </developers>
 
   <scm>

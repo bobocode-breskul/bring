@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
+import static java.util.function.Predicate.not;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -13,25 +15,34 @@ import org.reflections.scanners.Scanners;
 
 public class ScanUtilsImpl implements ScanUtils {
 
-  public static void main(String[] args) {
-    var a = new ScanUtilsImpl();
-    a.searchAllClassNames("io.github.bobocodebreskul");
-  }
-
-  @Override
-  public Set<String> searchAllClassNames(String packagePathPrefix) {
-    return searchAllClasses(packagePathPrefix)
-      .stream()
-      .map(Class::getName)
-      .collect(Collectors.toSet());
-  }
-
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
     Reflections reflections = new Reflections(packagePathPrefix,
       Scanners.SubTypes.filterResultsBy((s) -> true));
-
     return new HashSet<>(reflections.getSubTypesOf(Object.class));
+  }
+
+  @Override
+  public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
+    Class<? extends Annotation> filterByAnnotation) {
+    Predicate<Class<?>> filter = clazz -> {
+      Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
+      Set<Annotation> processedAnnotations = new HashSet<>(annotations);
+      while (!annotations.isEmpty()) {
+        var annotation = annotations.poll();
+        processedAnnotations.add(annotation);
+        if (annotation.annotationType().equals(filterByAnnotation)) {
+          return true;
+        }
+        Arrays.stream(annotation.annotationType().getAnnotations())
+          .filter(not(processedAnnotations::contains))
+          .forEach(annotations::add);
+      }
+
+      return false;
+    };
+
+    return searchClassesByFilter(packagePath, filter);
   }
 
   @Override
@@ -42,33 +53,4 @@ public class ScanUtilsImpl implements ScanUtils {
       .collect(Collectors.toSet());
   }
 
-  @Override
-  public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
-    Class<? extends Annotation> filterByAnnotation) {
-    Predicate<Class<?>> filter = clazz -> {
-      Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
-      while (!annotations.isEmpty()) {
-        var annotation = annotations.poll();
-        if (annotation.annotationType().equals(filterByAnnotation)) {
-          return true;
-        }
-        annotations.addAll(Arrays.asList(annotation.annotationType().getAnnotations()));
-      }
-
-      return false;
-    };
-
-    return searchClassesByFilter(packagePath, filter);
-  }
-
-  @Override
-  public Set<Class<?>> searchClassesByAnnotation(String packagePath,
-    Class<? extends Annotation> filterByAnnotation) {
-    return searchAllClasses(packagePath).stream()
-      .filter(
-        clazz -> Arrays.stream(clazz.getAnnotations())
-          .map(Annotation::annotationType)
-          .anyMatch(filterByAnnotation::equals))
-      .collect(Collectors.toSet());
-  }
 }

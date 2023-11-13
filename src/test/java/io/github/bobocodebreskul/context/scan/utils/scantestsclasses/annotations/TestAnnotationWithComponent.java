@@ -1,6 +1,13 @@
 package io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 @TestComponentAnnotation
-public class TestAnnotationWithComponent {
+public @interface TestAnnotationWithComponent {
 
 }

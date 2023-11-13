@@ -26,7 +26,7 @@ public @interface BringComponent {
 
   /**
    * Represents component name if the component is installed automatically.
-   * @returns the filled component name if a value has been specified
+   * @return the filled component name if a value has been specified
    */
   String value() default "";
 

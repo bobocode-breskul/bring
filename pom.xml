@@ -30,6 +30,10 @@
       <organization>Hladchenko.com</organization>
       <organizationUrl>https://hladchenko.com/</organizationUrl>
     </developer>
+    <developer>
+      <name>Oleh Yakovenko</name>
+      <email>iakovenkoua@gmail.com</email>
+    </developer>
   </developers>
 
   <scm>

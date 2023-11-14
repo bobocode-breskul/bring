@@ -1,94 +1,116 @@
 package io.github.bobocodebreskul.context.registry;
 
-import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
-import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
+import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
-What is BeanDefinitionRegistry?
-In the Spring Framework, a BeanDefinitionRegistry is an interface that represents a registry of bean definitions.
-It is responsible for managing the bean definitions in a Spring IoC (Inversion of Control) container.
-The IoC container uses the bean definition registry to store and retrieve information about beans.
-
-The BeanDefinitionRegistry interface defines methods for registering and accessing bean definitions.
-A bean definition contains metadata about a bean, such as its class, scope, lifecycle callbacks, dependencies, etc.
-By using the BeanDefinitionRegistry, you can dynamically register, modify, or remove bean definitions during the application context's lifecycle.
-
-The base interfaces has been created according to the description provided here: #2
-
-Base branch: feature/bean-definition
-
-Scope of this task
-
-Implement SimpleBeanDefinitionRegistry
-Cover you solution with tests
-Add logging for your code
-Create a javadoc for public methods and classes you are working with
- */
 public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
   private final Map<String, String> aliasMap = new ConcurrentHashMap<>();
   private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
+  private static final String CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE =
+      "Cannot registered an alias with name %s because an alias with that name is already registered%n";
+  private static final String CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE =
+      "Cannot registered a beanDefinition with name %s because a beanDefinition with that name is already registered%n";
+  private static final String ALIAS_SHOULD_NOT_BE_NULL = "alias should not be null";
+  private static final String BEAN_NAME_SHOULD_NOT_BE_NULL = "beanName should not be null";
+  private static final String BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE = "beanDefinition should not be null";
+
   @Override
   public void registerAlias(String name, String alias) {
-    throw new UnsupportedOperationException();
+    if (isNull(name)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    if (aliasMap.containsKey(alias)) {
+      throw new AliasDuplicateException(
+          CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(alias));
+    }
+    aliasMap.put(alias, name);
   }
 
   @Override
   public void removeAlias(String alias) {
-    throw new UnsupportedOperationException();
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    aliasMap.remove(alias);
   }
 
   @Override
-  public boolean isAlias(String name) {
-    return false;
+  public boolean isAlias(String alias) {
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    return aliasMap.containsKey(alias);
   }
 
   @Override
-  public String[] getAliases(String name) {
-    return new String[0];
+  public Set<String> getAliases(String name) {
+    if (isNull(name)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    Set<String> aliases = new HashSet<>();
+    for (Entry<String, String> entry : aliasMap.entrySet()) {
+      if (name.equals(entry.getValue())) {
+        aliases.add(entry.getKey());
+      }
+    }
+    return aliases;
   }
 
   @Override
   public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    if (isNull(beanDefinition)) {
+      throw new IllegalArgumentException(BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE);
+    }
     if (beanDefinitionMap.containsKey(beanName)) {
       throw new BeanDefinitionDuplicateException(
-          "Cannot registered a beanDefinition with name %s because a beanDefinition with that name is already registered%n".formatted(
-              beanName));
-    } else {
-      beanDefinitionMap.put(beanName, beanDefinition);
+          CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE.formatted(beanName));
     }
+    beanDefinitionMap.put(beanName, beanDefinition);
   }
 
   @Override
-  public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
+  public void removeBeanDefinition(String beanName) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
     beanDefinitionMap.remove(beanName);
   }
 
   @Override
-  public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
+  public BeanDefinition getBeanDefinition(String beanName) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
     return beanDefinitionMap.get(beanName);
   }
 
   @Override
   public boolean containsBeanDefinition(String beanName) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
     return beanDefinitionMap.containsKey(beanName);
   }
 
   @Override
-  public String[] getBeanDefinitionNames() {
-    Set<String> beanDefinitionNamesSet = beanDefinitionMap.keySet();
-    String[] beanDefinitionNames = new String[beanDefinitionNamesSet.size()];
-    int i = 0;
-    for (String beanName : beanDefinitionNamesSet) {
-      beanDefinitionNames[i++] = beanName;
-    }
-    return beanDefinitionNames;
+  public Set<String> getBeanDefinitionNames() {
+    return beanDefinitionMap.keySet();
   }
 
   @Override
@@ -98,6 +120,9 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
   @Override
   public boolean isBeanNameInUse(String beanName) {
-    return false;
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    return isAlias(beanName) || containsBeanDefinition(beanName);
   }
 }

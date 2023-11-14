@@ -30,6 +30,12 @@
       <organization>Hladchenko.com</organization>
       <organizationUrl>https://hladchenko.com/</organizationUrl>
     </developer>
+    <developer>
+      <name>Oleh Yakovenko</name>
+      <email>iakovenkoua@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/oleh-yakovenko-8980289a/</organizationUrl>
+    </developer>
   </developers>
 
   <scm>

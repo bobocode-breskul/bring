@@ -7,8 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation which is used to mark types as BringContext in order to be scanned by
- * {@link BringApplicationContext}
+ * Annotation which is used to mark types as BringComponent in order to be scanned by ApplicationContext
  * <p>Usage:</p>
  * <pre>
  * {@code @BringComponent(name = "componentName")

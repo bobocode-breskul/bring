@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import java.util.Collection;
 
 public interface BeanDefinitionRegistry extends AliasRegistry {
 
@@ -19,4 +20,10 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
 
 
   boolean isBeanNameInUse(String beanName);
+
+  /**
+   *
+   * @return
+   */
+  Collection<BeanDefinition> getBeanDefinitions();
 }

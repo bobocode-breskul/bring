@@ -1,8 +1,8 @@
 package io.github.bobocodebreskul.context.registry;
 
-import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
-
+import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -64,5 +64,10 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
   @Override
   public boolean isBeanNameInUse(String beanName) {
     return false;
+  }
+
+  @Override
+  public Collection<BeanDefinition> getBeanDefinitions() {
+    return beanDefinitionMap.values();
   }
 }

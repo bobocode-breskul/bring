@@ -59,6 +59,8 @@
     <junit.version>5.10.1</junit.version>
     <reflection.version>0.10.2</reflection.version>
     <assertj.version>3.24.2</assertj.version>
+    <apache.version>3.13.0</apache.version>
+    <mockito.version>5.6.0</mockito.version>
   </properties>
 
   <dependencies>
@@ -86,10 +88,22 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
       <version>${reflection.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache.version}</version>
+    </dependency>
+
   </dependencies>
 
   <distributionManagement>

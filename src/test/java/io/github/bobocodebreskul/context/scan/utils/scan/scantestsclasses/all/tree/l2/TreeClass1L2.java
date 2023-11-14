@@ -1,0 +1,5 @@
+package io.github.bobocodebreskul.context.scan.utils.scan.scantestsclasses.all.tree.l2;
+
+public class TreeClass1L2 {
+
+}

@@ -1,22 +1,20 @@
 package io.github.bobocodebreskul.context.scan;
 
-import java.util.Set;
-
 /**
- * Interface to recursively scan packages and search for bean definition classes. Return found bean
- * definitions in all package tree.
+ * Interface to recursively scan packages and register found bean definition classes
+ * in {@link io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry}.
  *
  * @author Vitalii Katkov
+ * @author Oleksandr Karpachov
  */
 public interface ClassPathAnnotatedBeanScanner {
-  // TODO: convert found classes to bean definitions
-  // TODO: change return type from 'String' to bean definition class
+
   /**
    * Recursively scan packages and find all bean definitions located in those packages or in
-   * packages provided by found configurations.
+   * packages provided by found configurations. Then register class as bean definition by
+   * using {@link io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry}
    *
    * @param scanPackages packages to scan
-   * @return found bean definitions
    */
-  Set<String> scan(String... scanPackages);
+  void scan(String... scanPackages);
 }

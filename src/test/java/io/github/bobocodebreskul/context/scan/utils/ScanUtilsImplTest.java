@@ -1,9 +1,7 @@
-package io.github.bobocodebreskul.context.scan;
+package io.github.bobocodebreskul.context.scan.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bobocodebreskul.context.ScanUtils;
-import io.github.bobocodebreskul.context.ScanUtilsImpl;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree.TreeClass1;
@@ -14,12 +12,12 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.Ty
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeInterface;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithComponent;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.cyclic.CyclicCandidate2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.parent.ParentCandidate;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.single.SingleCandidate;
-import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithComponent;
-import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -57,8 +55,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // given
     List<Class<?>> expectedResult = List.of(
-      TreeClass1.class, TreeClass2.class,
-      TreeClass1L2.class, TreeClass2L2.class);
+        TreeClass1.class, TreeClass2.class,
+        TreeClass1L2.class, TreeClass2L2.class);
     // when
     Set<Class<?>> actualResult = scanUtils.searchAllClasses(inputPackage);
     // verify
@@ -73,8 +71,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type";
     // given
     List<Class<?>> expectedResult = List.of(
-      TypeAbstractClass.class, TypeAnnotation.class,
-      TypeClass.class, TypeInterface.class
+        TypeAbstractClass.class, TypeAnnotation.class,
+        TypeClass.class, TypeInterface.class
     );
     // when
     var actualResult = scanUtils.searchAllClasses(inputPackage);
@@ -92,7 +90,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(SingleCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -107,7 +106,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(MultiCandidate1.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -119,7 +119,8 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none";
     // when
-    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, TestComponentAnnotation.class);
+    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        TestComponentAnnotation.class);
     // verify
     assertThat(actualResult).isEmpty();
   }
@@ -134,7 +135,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(ParentCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -149,7 +151,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(CyclicCandidate2.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }

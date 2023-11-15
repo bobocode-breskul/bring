@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context;
+package io.github.bobocodebreskul.context.scan.utils;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;

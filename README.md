@@ -13,6 +13,16 @@ Add Maven dependency to your project:
 </dependency>
 ```
 
+## How to run locally
+
+Requirements: Java 17
+
+In the terminal, navigate to the root directory of the project and execute the following command:
+
+```shell
+sh start.sh
+```
+
 ## Getting Started
 The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) includes detailed installation instructions as well as a comprehensive getting started guide.
 

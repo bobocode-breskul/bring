@@ -1,69 +1,128 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static java.util.Objects.isNull;
+
 import io.github.bobocodebreskul.context.config.BeanDefinition;
-import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
   private final Map<String, String> aliasMap = new ConcurrentHashMap<>();
   private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
+  private static final String CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE =
+      "Cannot registered an alias with name %s because an alias with that name is already registered%n";
+  private static final String CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE =
+      "Cannot registered a beanDefinition with name %s because a beanDefinition with that name is already registered%n";
+  private static final String ALIAS_SHOULD_NOT_BE_NULL = "alias should not be null";
+  private static final String BEAN_NAME_SHOULD_NOT_BE_NULL = "beanName should not be null";
+  private static final String BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE = "beanDefinition should not be null";
+
   @Override
   public void registerAlias(String name, String alias) {
-
+    if (isNull(name)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    if (aliasMap.containsKey(alias)) {
+      throw new AliasDuplicateException(
+          CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(alias));
+    }
+    aliasMap.put(alias, name);
   }
 
   @Override
   public void removeAlias(String alias) {
-
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    aliasMap.remove(alias);
   }
 
   @Override
-  public boolean isAlias(String name) {
-    return false;
+  public boolean isAlias(String alias) {
+    if (isNull(alias)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    return aliasMap.containsKey(alias);
   }
 
   @Override
-  public String[] getAliases(String name) {
-    return new String[0];
+  public Set<String> getAliases(String name) {
+    if (isNull(name)) {
+      throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
+    }
+    return aliasMap.entrySet().stream()
+        .filter(entry -> name.equals(entry.getValue()))
+        .map(Entry::getKey)
+        .collect(Collectors.toSet());
   }
 
   @Override
   public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
-
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    if (isNull(beanDefinition)) {
+      throw new IllegalArgumentException(BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE);
+    }
+    if (beanDefinitionMap.containsKey(beanName)) {
+      throw new BeanDefinitionDuplicateException(
+          CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE.formatted(beanName));
+    }
+    beanDefinitionMap.put(beanName, beanDefinition);
   }
 
   @Override
-  public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
-
+  public void removeBeanDefinition(String beanName) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    beanDefinitionMap.remove(beanName);
   }
 
   @Override
-  public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {
-    return null;
+  public BeanDefinition getBeanDefinition(String beanName) {
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    return beanDefinitionMap.get(beanName);
   }
 
   @Override
   public boolean containsBeanDefinition(String beanName) {
-    return false;
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    return beanDefinitionMap.containsKey(beanName);
   }
 
   @Override
-  public String[] getBeanDefinitionNames() {
-    return new String[0];
+  public Set<String> getBeanDefinitionNames() {
+    return beanDefinitionMap.keySet();
   }
 
   @Override
   public int getBeanDefinitionCount() {
-    return 0;
+    return beanDefinitionMap.size();
   }
 
   @Override
   public boolean isBeanNameInUse(String beanName) {
-    return false;
+    if (isNull(beanName)) {
+      throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
+    }
+    return isAlias(beanName) || containsBeanDefinition(beanName);
   }
 
   @Override

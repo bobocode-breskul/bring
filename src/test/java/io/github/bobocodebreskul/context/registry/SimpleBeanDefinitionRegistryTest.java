@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SimpleBeanDefinitionRegistryTest {
+
   private static final String CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE =
       "Cannot registered an alias with name %s because an alias with that name is already registered%n";
   private static final String CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE =
@@ -53,14 +54,12 @@ class SimpleBeanDefinitionRegistryTest {
   @DisplayName("Register duplicate alias")
   @Order(2)
   void given_BeanNameAndAlias_When_AliasRegisterDuplicate_Then_ThrowAliasDuplicateException() {
-    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1,
-        SimpleBeanDefinitionRegistryTest.TEST_ALIAS);
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS);
 
     Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.registerAlias(
-        TEST_BEAN_NAME_2, SimpleBeanDefinitionRegistryTest.TEST_ALIAS));
+        TEST_BEAN_NAME_2, TEST_ALIAS));
 
-    String expectedMessage = CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(
-        SimpleBeanDefinitionRegistryTest.TEST_ALIAS);
+    String expectedMessage = CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(TEST_ALIAS);
     assertThat(actualException)
         .isInstanceOf(AliasDuplicateException.class)
         .hasMessage(expectedMessage);
@@ -70,7 +69,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Register alias with null name")
   @Order(3)
-  void given_BeanNameAndAlias_When_RegisterAliasWithNullName_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_BeanNameAndAlias_When_RegisterAliasWithNullName_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.registerAlias(null, TEST_BEAN_NAME));
 
@@ -82,7 +81,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Register alias when bean name is null")
   @Order(4)
-  void given_BeanNameAndAlias_When_RegisterNullBeanName_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_BeanNameAndAlias_When_RegisterNullBeanName_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, null));
 
@@ -98,11 +97,11 @@ class SimpleBeanDefinitionRegistryTest {
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS_1);
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_2, TEST_ALIAS_2);
 
-    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1)).as("")
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1))
         .contains(TEST_ALIAS_1);
     simpleBeanDefinitionRegistry.removeAlias(TEST_ALIAS_1);
     assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1)).isEmpty();
-    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_2)).as("")
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_2))
         .contains(TEST_ALIAS_2);
   }
 
@@ -121,7 +120,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Remove alias with null name")
   @Order(7)
-  void given_NullAlias_When_RemoveAlias_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullAlias_When_RemoveAlias_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.removeAlias(null));
 
@@ -155,7 +154,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("isAlias alias with null name")
   @Order(10)
-  void given_NullAlias_When_IsAliasNullAlias_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullAlias_When_IsAliasNullAlias_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.isAlias(null));
 
     assertThat(actualException)
@@ -172,14 +171,14 @@ class SimpleBeanDefinitionRegistryTest {
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, TEST_ALIAS_1);
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, TEST_ALIAS_2);
 
-    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME)).containsExactlyInAnyOrder(
-        TEST_ALIAS_1, TEST_ALIAS_2);
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME))
+        .containsExactlyInAnyOrder(TEST_ALIAS_1, TEST_ALIAS_2);
   }
 
   @Test
   @DisplayName("Get aliases for null bean name")
   @Order(12)
-  void given_NullBeanName_when_GetAliases_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullBeanName_when_GetAliases_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.getAliases(null));
 
     assertThat(actualException)
@@ -214,7 +213,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Register bean definition with null name")
   @Order(15)
-  void given_BeanNameAndBeanDefinition_When_RegisterBeanDefinitionWithNullName_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_BeanNameAndBeanDefinition_When_RegisterBeanDefinitionWithNullName_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.registerBeanDefinition(null, BEAN_DEFINITION_MOCK));
 
@@ -226,7 +225,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Register bean definition when bean definition is null")
   @Order(16)
-  void given_BeanNameAndBeanDefinition_When_RegisterNullBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_BeanNameAndBeanDefinition_When_RegisterNullBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, null));
 
@@ -239,8 +238,6 @@ class SimpleBeanDefinitionRegistryTest {
   @DisplayName("Remove bean definition")
   @Order(17)
   void given_BeanName_When_RemoveBeanDefinition_Then_RegistryNotContainBean() {
-//    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
-//    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
 
@@ -275,7 +272,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Remove bean definition with null name")
   @Order(19)
-  void given_NullBeanName_When_RemoveBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullBeanName_When_RemoveBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.removeBeanDefinition(null));
 
@@ -303,7 +300,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Get bean definition with null name")
   @Order(21)
-  void given_NullBeanName_When_GetBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullBeanName_When_GetBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.getBeanDefinition(null));
 
@@ -342,7 +339,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("Contains bean definition with null name")
   @Order(24)
-  void given_NullBeanName_When_ContainsBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullBeanName_When_ContainsBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.containsBeanDefinition(null));
 
@@ -425,7 +422,7 @@ class SimpleBeanDefinitionRegistryTest {
   @Test
   @DisplayName("isBeanNameInUse with null bean name")
   @Order(30)
-  void given_NullBeanName_When_IsBeanNameInUseNullBeanName_Then_ThrowNoSuchBeanDefinitionException() {
+  void given_NullBeanName_When_IsBeanNameInUseNullBeanName_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.isBeanNameInUse(null));
 

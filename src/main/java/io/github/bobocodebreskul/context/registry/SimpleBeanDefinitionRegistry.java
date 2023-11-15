@@ -5,11 +5,11 @@ import static java.util.Objects.isNull;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
@@ -60,13 +60,10 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
     if (isNull(name)) {
       throw new IllegalArgumentException(ALIAS_SHOULD_NOT_BE_NULL);
     }
-    Set<String> aliases = new HashSet<>();
-    for (Entry<String, String> entry : aliasMap.entrySet()) {
-      if (name.equals(entry.getValue())) {
-        aliases.add(entry.getKey());
-      }
-    }
-    return aliases;
+    return aliasMap.entrySet().stream()
+        .filter(entry -> name.equals(entry.getValue()))
+        .map(Entry::getKey)
+        .collect(Collectors.toSet());
   }
 
   @Override

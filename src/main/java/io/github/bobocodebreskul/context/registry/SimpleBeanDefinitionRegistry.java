@@ -5,6 +5,8 @@ import static java.util.Objects.isNull;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -121,5 +123,10 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
       throw new IllegalArgumentException(BEAN_NAME_SHOULD_NOT_BE_NULL);
     }
     return isAlias(beanName) || containsBeanDefinition(beanName);
+  }
+
+  @Override
+  public Collection<BeanDefinition> getBeanDefinitions() {
+    return beanDefinitionMap.values();
   }
 }

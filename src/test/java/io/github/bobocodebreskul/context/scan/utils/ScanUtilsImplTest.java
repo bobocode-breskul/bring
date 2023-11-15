@@ -55,8 +55,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // given
     List<Class<?>> expectedResult = List.of(
-      TreeClass1.class, TreeClass2.class, 
-      TreeClass1L2.class, TreeClass2L2.class);
+        TreeClass1.class, TreeClass2.class,
+        TreeClass1L2.class, TreeClass2L2.class);
     // when
     Set<Class<?>> actualResult = scanUtils.searchAllClasses(inputPackage);
     // verify
@@ -71,8 +71,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type";
     // given
     List<Class<?>> expectedResult = List.of(
-      TypeAbstractClass.class, TypeAnnotation.class,
-      TypeClass.class, TypeInterface.class
+        TypeAbstractClass.class, TypeAnnotation.class,
+        TypeClass.class, TypeInterface.class
     );
     // when
     var actualResult = scanUtils.searchAllClasses(inputPackage);
@@ -90,7 +90,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(SingleCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -105,7 +106,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(MultiCandidate1.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -117,7 +119,8 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none";
     // when
-    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, TestComponentAnnotation.class);
+    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        TestComponentAnnotation.class);
     // verify
     assertThat(actualResult).isEmpty();
   }
@@ -132,7 +135,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(ParentCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -147,7 +151,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(CyclicCandidate2.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }

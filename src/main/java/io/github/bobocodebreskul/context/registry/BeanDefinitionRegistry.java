@@ -22,8 +22,9 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
   boolean isBeanNameInUse(String beanName);
 
   /**
+   * Retrieves all registered bean definitions from the container.
    *
-   * @return
+   * @return a collection containing all the bean definitions registered in the container
    */
   Collection<BeanDefinition> getBeanDefinitions();
 }

@@ -12,6 +12,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.Arrays;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -98,8 +99,8 @@ public class AnnotatedBeanDefinitionReader {
   }
 
   private <T> void doRegisterBean(Class<T> beanClass, String name) {
-    log.info("Registering the bean definition of class {}", beanClass.getSimpleName());
-
+    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
+    log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as: duplicate bean names,
     //  bean name validity (unallowed characters), check for circular dependency
 
@@ -115,14 +116,19 @@ public class AnnotatedBeanDefinitionReader {
     annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
 
     if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
+      log.trace("Found @Primary annotation on the beanName={}", name);
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    annotatedBeanDefinition.setDependsOn(getBeanDependencies(beanClass));
+    List<Class<?>> beanDependencies = getBeanDependencies(beanClass);
+    log.debug("{} dependencies found for beanClass={} with beanName={}",
+        beanDependencies.size(), beanClass.getName(), name);
+    annotatedBeanDefinition.setDependsOn(beanDependencies);
     annotatedBeanDefinition.setAutowireCandidate(
         isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
+    log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
 
 }

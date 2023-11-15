@@ -46,7 +46,7 @@ public class BeanDefinitionReaderUtils {
       beanName = beanClass.getName();
     }
 
-    beanDefinition.setName(beanName);
+    log.trace("Generated bean name: {} for class {}", beanName, beanClass.getName());
     return beanName;
   }
 
@@ -58,6 +58,7 @@ public class BeanDefinitionReaderUtils {
    * @return a list of bean dependency types
    */
   public static List<Class<?>> getBeanDependencies(Class<?> beanClass) {
+    log.trace("Scanning class {} for @Autowire candidates", beanClass.getName());
     Stream<Class<?>> constructorDependenciesStream = Arrays.stream(
             beanClass.getDeclaredConstructors())
         .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()));
@@ -86,10 +87,15 @@ public class BeanDefinitionReaderUtils {
    */
   public static boolean isBeanAutowireCandidate(Class<?> beanClass,
       BeanDefinitionRegistry registry) {
-    return registry.getBeanDefinitions().stream()
+    log.trace("Check if bean class {} is autowire candidate", beanClass.getName());
+    boolean isAutowiredCandidate = registry.getBeanDefinitions().stream()
         .filter(beanDefinition -> !beanDefinition.getBeanClass().equals(beanClass))
         .flatMap(beanDefinition -> beanDefinition.getDependsOn().stream())
         .anyMatch(beanDefinitionClass -> beanDefinitionClass.equals(beanClass));
+    if (isAutowiredCandidate) {
+      log.trace("Bean class {} is registered as autowired candidate", beanClass.getName());
+    }
+    return isAutowiredCandidate;
   }
 
   private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,

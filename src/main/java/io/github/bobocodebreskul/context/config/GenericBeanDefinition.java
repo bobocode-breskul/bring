@@ -2,6 +2,9 @@ package io.github.bobocodebreskul.context.config;
 
 
 import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Abstract implementation of {@link BeanDefinition} interface with base methods implemented.
@@ -89,5 +92,48 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   @Override
   public Class<?> getBeanClass() {
     return this.beanClass;
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (this == object) {
+      return true;
+    }
+
+    if (object == null || getClass() != object.getClass()) {
+      return false;
+    }
+
+    GenericBeanDefinition that = (GenericBeanDefinition) object;
+
+    return new EqualsBuilder()
+        .append(primary, that.primary)
+        .append(autowireCandidate, that.autowireCandidate)
+        .append(name, that.name)
+        .append(beanClass, that.beanClass)
+        .append(scope, that.scope)
+        .append(dependsOn, that.dependsOn)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(name)
+        .append(beanClass)
+        .append(scope)
+        .append(primary)
+        .append(autowireCandidate).append(dependsOn).toHashCode();
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("name", name)
+        .append("beanClass", beanClass)
+        .append("scope", scope)
+        .append("primary", primary)
+        .append("autowireCandidate", autowireCandidate)
+        .toString();
   }
 }

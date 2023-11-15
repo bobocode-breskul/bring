@@ -1,18 +1,11 @@
 package io.github.bobocodebreskul.context.registry;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.catchException;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -20,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SimpleBeanDefinitionRegistryTest {
-
   private static final String CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE =
       "Cannot registered an alias with name %s because an alias with that name is already registered%n";
   private static final String CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE =
@@ -28,7 +20,16 @@ class SimpleBeanDefinitionRegistryTest {
   private static final String ALIAS_SHOULD_NOT_BE_NULL = "alias should not be null";
   private static final String BEAN_NAME_SHOULD_NOT_BE_NULL = "beanName should not be null";
   private static final String BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE = "beanDefinition should not be null";
+  private static final String TEST_BEAN_NAME = "testBeanName";
+  private static final String TEST_BEAN_NAME_1 = "testBeanName1";
+  private static final String TEST_BEAN_NAME_2 = "testBeanName2";
+  private static final String TEST_ALIAS = "testAlias";
+  private static final String TEST_ALIAS_1 = "testAlias1";
+  private static final String TEST_ALIAS_2 = "testAlias2";
+  private static final String TEST_BEAN_NAME_FOR_ALIAS = "testBeanNameForAlias";
 
+  private static final BeanDefinition BEAN_DEFINITION_MOCK = Mockito.mock(BeanDefinition.class);
+  private static final BeanDefinition BEAN_DEFINITION_MOCK_2 = Mockito.mock(BeanDefinition.class);
 
   private SimpleBeanDefinitionRegistry simpleBeanDefinitionRegistry;
 
@@ -41,24 +42,19 @@ class SimpleBeanDefinitionRegistryTest {
   @DisplayName("Register bean alias")
   @Order(1)
   void given_BeanNameAndAlias_When_AliasNotRegister_Then_RegisterAlias() {
-    String testBeanName = "testBeanName";
-    String testAlias = "testAlias";
-    assertFalse(simpleBeanDefinitionRegistry.getAliases(testBeanName).contains(testAlias));
-    simpleBeanDefinitionRegistry.registerAlias(testBeanName, testAlias);
-    assertTrue(simpleBeanDefinitionRegistry.getAliases(testBeanName).contains(testAlias));
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME))
+        .doesNotContain(TEST_ALIAS);
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, TEST_ALIAS);
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME))
+        .contains(TEST_ALIAS);
   }
 
   @Test
   @DisplayName("Register duplicate alias")
   @Order(2)
   void given_BeanNameAndAlias_When_AliasRegisterDuplicate_Then_ThrowAliasDuplicateException() {
-    String testAlias = "testAlias";
-    String testBeanName1 = "testBeanName1";
-    String testBeanName2 = "testBeanName2";
-    simpleBeanDefinitionRegistry.registerAlias(testBeanName1, testAlias);
-    Exception exception = assertThrows(
-        AliasDuplicateException.class,
-        () -> simpleBeanDefinitionRegistry.registerAlias(testBeanName2, testAlias));
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1,
+        SimpleBeanDefinitionRegistryTest.TEST_ALIAS);
 
     Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.registerAlias(
         TEST_BEAN_NAME_2, SimpleBeanDefinitionRegistryTest.TEST_ALIAS));
@@ -75,69 +71,70 @@ class SimpleBeanDefinitionRegistryTest {
   @DisplayName("Register alias with null name")
   @Order(3)
   void given_BeanNameAndAlias_When_RegisterAliasWithNullName_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.registerAlias(null, "testBeanName"));
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.registerAlias(null, TEST_BEAN_NAME));
 
-    String actualMessage = exception.getMessage();
-
-    assertEquals(ALIAS_SHOULD_NOT_BE_NULL, actualMessage);
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ALIAS_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Register alias when bean name is null")
   @Order(4)
   void given_BeanNameAndAlias_When_RegisterNullBeanName_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.registerAlias("testName", null));
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, null));
 
-    String actualMessage = exception.getMessage();
-
-    assertEquals(ALIAS_SHOULD_NOT_BE_NULL, actualMessage);
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ALIAS_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Remove alias")
   @Order(5)
   void given_Alias_When_RemoveAlias_Then_RegistryNotContainAlias() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName1", "testAlias1");
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName2", "testAlias2");
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS_1);
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_2, TEST_ALIAS_2);
 
-    assertTrue(simpleBeanDefinitionRegistry.getAliases("testBeanName1").contains("testAlias1"));
-    simpleBeanDefinitionRegistry.removeAlias("testAlias1");
-    assertTrue(simpleBeanDefinitionRegistry.getAliases("testBeanName1").isEmpty());
-    assertTrue(simpleBeanDefinitionRegistry.getAliases("testBeanName2").contains("testAlias2"));
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1)).as("")
+        .contains(TEST_ALIAS_1);
+    simpleBeanDefinitionRegistry.removeAlias(TEST_ALIAS_1);
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1)).isEmpty();
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_2)).as("")
+        .contains(TEST_ALIAS_2);
   }
 
   @Test
   @DisplayName("Remove non-existing alias")
   @Order(6)
   void given_Alias_When_RemoveNonExistentAlias_Then_RegistryNotChange() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName1", "testAlias1");
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName2", "testAlias2");
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS_1);
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_2, TEST_ALIAS_2);
 
-    simpleBeanDefinitionRegistry.removeAlias("testAlias");
-    assertTrue(simpleBeanDefinitionRegistry.getAliases("testBeanName1").contains("testAlias1"));
-    assertTrue(simpleBeanDefinitionRegistry.getAliases("testBeanName2").contains("testAlias2"));
+    simpleBeanDefinitionRegistry.removeAlias(TEST_ALIAS);
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_1)).contains(TEST_ALIAS_1);
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME_2)).contains(TEST_ALIAS_2);
   }
 
   @Test
   @DisplayName("Remove alias with null name")
   @Order(7)
   void given_NullAlias_When_RemoveAlias_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
+    Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.removeAlias(null));
 
-    assertEquals(ALIAS_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ALIAS_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("isAlias existing alias")
   @Order(8)
   void given_Alias_When_IsAliasExistingAlias_Then_CheckIsAliasReturnsTrue() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName1", "testAlias1");
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS_1);
 
     assertThat(simpleBeanDefinitionRegistry.isAlias(TEST_ALIAS_1))
         .as("Alias TEST_ALIAS_1 should exist")
@@ -148,274 +145,292 @@ class SimpleBeanDefinitionRegistryTest {
   @DisplayName("isAlias non-existing alias")
   @Order(9)
   void given_Alias_When_IsAliasNonExistingAlias_Then_CheckIsAliasReturnsFalse() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName1", "testAlias1");
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_1, TEST_ALIAS_1);
 
-    assertFalse(simpleBeanDefinitionRegistry.isAlias("testAlias"));
+    assertThat(simpleBeanDefinitionRegistry.isAlias(TEST_ALIAS))
+        .as("Alias TEST_ALIAS should not exist")
+        .isFalse();
   }
 
   @Test
   @DisplayName("isAlias alias with null name")
   @Order(10)
   void given_NullAlias_When_IsAliasNullAlias_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.isAlias(null));
+    Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.isAlias(null));
 
-    assertEquals(ALIAS_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ALIAS_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Get aliases for bean name")
   @Order(11)
   void given_BeanName_when_GetAliases_Then_GetAllAliasesForBeanName() {
-    assertEquals(0, simpleBeanDefinitionRegistry.getAliases("testBeanName").size());
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME)).isEmpty();
 
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName", "testAlias1");
-    simpleBeanDefinitionRegistry.registerAlias("testBeanName", "testAlias2");
-    Set<String> aliases = simpleBeanDefinitionRegistry.getAliases("testBeanName");
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, TEST_ALIAS_1);
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME, TEST_ALIAS_2);
 
-    assertThat(aliases).containsExactlyInAnyOrder("testAlias1", "testAlias2");
+    assertThat(simpleBeanDefinitionRegistry.getAliases(TEST_BEAN_NAME)).containsExactlyInAnyOrder(
+        TEST_ALIAS_1, TEST_ALIAS_2);
   }
 
   @Test
   @DisplayName("Get aliases for null bean name")
   @Order(12)
   void given_NullBeanName_when_GetAliases_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.getAliases(null));
+    Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.getAliases(null));
 
-    assertEquals(ALIAS_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ALIAS_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Register bean definition")
   @Order(13)
   void given_BeanNameAndBeanDefinition_When_BeanDefinitionNotRegister_Then_RegisterBeanDefinition() {
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName", beanDefinitionMock);
-    assertSame(beanDefinitionMock,
-        simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName"));
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, BEAN_DEFINITION_MOCK);
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME))
+        .isEqualTo(BEAN_DEFINITION_MOCK);
   }
 
   @Test
   @DisplayName("Register duplicate bean definition")
   @Order(14)
   void given_BeanNameAndBeanDefinition_When_BeanDefinitionRegisterDuplicate_Then_ThrowBeanDefinitionDuplicateException() {
-    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
-    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
-    String testBeanName = "testBeanName";
-    simpleBeanDefinitionRegistry.registerBeanDefinition(testBeanName, beanDefinitionMock1);
-    Exception exception = assertThrows(
-        BeanDefinitionDuplicateException.class,
-        () -> simpleBeanDefinitionRegistry.registerBeanDefinition(testBeanName,
-            beanDefinitionMock2));
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, BEAN_DEFINITION_MOCK);
 
-    String expectedMessage = CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE.formatted(
-        testBeanName);
-    String actualMessage = exception.getMessage();
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME,
+            BEAN_DEFINITION_MOCK_2));
 
-    assertEquals(expectedMessage, actualMessage);
+    assertThat(actualException)
+        .isInstanceOf(BeanDefinitionDuplicateException.class)
+        .hasMessage(CANNOT_REGISTER_DUPLICATE_BEAN_DEFINITION_MESSAGE.formatted(TEST_BEAN_NAME));
   }
 
   @Test
   @DisplayName("Register bean definition with null name")
   @Order(15)
   void given_BeanNameAndBeanDefinition_When_RegisterBeanDefinitionWithNullName_Then_ThrowNoSuchBeanDefinitionException() {
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.registerBeanDefinition(null, beanDefinitionMock));
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.registerBeanDefinition(null, BEAN_DEFINITION_MOCK));
 
-    String actualMessage = exception.getMessage();
-
-    assertEquals(BEAN_NAME_SHOULD_NOT_BE_NULL, actualMessage);
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Register bean definition when bean definition is null")
   @Order(16)
   void given_BeanNameAndBeanDefinition_When_RegisterNullBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> simpleBeanDefinitionRegistry.registerBeanDefinition("testName", null));
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, null));
 
-    String actualMessage = exception.getMessage();
-
-    assertEquals(BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE, actualMessage);
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE);
   }
 
   @Test
   @DisplayName("Remove bean definition")
   @Order(17)
   void given_BeanName_When_RemoveBeanDefinition_Then_RegistryNotContainBean() {
-    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
-    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock1);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock2);
+//    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
+//    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
 
-    assertNotNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName1"));
-    simpleBeanDefinitionRegistry.removeBeanDefinition("testBeanName1");
-    assertNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName1"));
-    assertNotNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName2"));
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
+        .as("Bean definition with name TEST_BEAN_NAME_1 should not be null")
+        .isNotNull();
+    simpleBeanDefinitionRegistry.removeBeanDefinition(TEST_BEAN_NAME_1);
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
+        .as("Bean definition with name TEST_BEAN_NAME_1 should be null after removing")
+        .isNull();
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2))
+        .as("Bean definition with name TEST_BEAN_NAME_2 should not be null")
+        .isNotNull();
   }
 
   @Test
   @DisplayName("Remove non-existing bean definition")
   @Order(18)
   void given_BeanName_When_RemoveNonExistentBeanDefinition_Then_RegistryNotChange() {
-    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
-    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock1);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock2);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
 
-    simpleBeanDefinitionRegistry.removeBeanDefinition("testBeanName");
-    assertNotNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName1"));
-    assertNotNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName2"));
+    simpleBeanDefinitionRegistry.removeBeanDefinition(TEST_BEAN_NAME);
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
+        .as("Bean definition with name TEST_BEAN_NAME_1 should not be null")
+        .isNotNull();
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2))
+        .as("Bean definition with name TEST_BEAN_NAME_2 should not be null")
+        .isNotNull();
   }
 
   @Test
   @DisplayName("Remove bean definition with null name")
   @Order(19)
   void given_NullBeanName_When_RemoveBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
+    Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.removeBeanDefinition(null));
 
-    assertEquals(BEAN_NAME_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Get bean definition")
   @Order(20)
   void given_BeanName_When_GetBeanDefinition_Then_GetBeanDefinition() {
-    BeanDefinition beanDefinitionMock1 = Mockito.mock(BeanDefinition.class);
-    BeanDefinition beanDefinitionMock2 = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock1);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock2);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
 
-    assertNull(simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName"));
-    assertSame(beanDefinitionMock1,
-        simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName1"));
-    assertSame(beanDefinitionMock2,
-        simpleBeanDefinitionRegistry.getBeanDefinition("testBeanName2"));
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME))
+        .as("Bean definition with name TEST_BEAN_NAME should be null")
+        .isNull();
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
+        .isEqualTo(BEAN_DEFINITION_MOCK);
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2))
+        .isEqualTo(BEAN_DEFINITION_MOCK_2);
   }
 
   @Test
   @DisplayName("Get bean definition with null name")
   @Order(21)
   void given_NullBeanName_When_GetBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
+    Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.getBeanDefinition(null));
 
-    assertEquals(BEAN_NAME_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Contains existing bean definition")
   @Order(22)
   void given_BeanName_When_ContainsExistingBeanDefinition_Then_CheckContainsBeanDefinitionReturnsTrue() {
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
 
-    assertTrue(simpleBeanDefinitionRegistry.containsBeanDefinition("testBeanName1"));
-    assertTrue(simpleBeanDefinitionRegistry.containsBeanDefinition("testBeanName2"));
+    assertThat(simpleBeanDefinitionRegistry.containsBeanDefinition(TEST_BEAN_NAME_1))
+        .as("BeanDefinitionRegistry should contains bean with name TEST_BEAN_NAME_1")
+        .isTrue();
+    assertThat(simpleBeanDefinitionRegistry.containsBeanDefinition(TEST_BEAN_NAME_2))
+        .as("BeanDefinitionRegistry should contains bean with name TEST_BEAN_NAME_2")
+        .isTrue();
   }
 
   @Test
   @DisplayName("Contains non-existing bean definition")
   @Order(23)
   void given_BeanName_When_ContainsNonExistingBeanDefinition_Then_CheckContainsBeanDefinitionReturnsFalse() {
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
 
-    assertFalse(simpleBeanDefinitionRegistry.containsBeanDefinition("testBeanName"));
+    assertThat(simpleBeanDefinitionRegistry.containsBeanDefinition(TEST_BEAN_NAME))
+        .as("BeanDefinitionRegistry should not contains bean with name TEST_BEAN_NAME")
+        .isFalse();
   }
 
   @Test
   @DisplayName("Contains bean definition with null name")
   @Order(24)
   void given_NullBeanName_When_ContainsBeanDefinition_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
+    Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.containsBeanDefinition(null));
 
-    assertEquals(BEAN_NAME_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 
   @Test
   @DisplayName("Get registered bean definition names")
   @Order(25)
   void when_RegisterBeanDefinitions_Then_GetRegisteredBeanDefinitionNames() {
-    assertEquals(0, simpleBeanDefinitionRegistry.getBeanDefinitionNames().size());
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionNames()).isEmpty();
 
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock);
-    Set<String> beanDefinitionNames = simpleBeanDefinitionRegistry.getBeanDefinitionNames();
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
 
-    assertThat(beanDefinitionNames).containsExactlyInAnyOrder("testBeanName1", "testBeanName2");
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionNames())
+        .containsExactlyInAnyOrder(TEST_BEAN_NAME_1, TEST_BEAN_NAME_2);
   }
 
   @Test
   @DisplayName("Get registered bean definition count after register bean definition")
   @Order(26)
   void when_RegisterBeanDefinitions_Then_GetRegisteredBeanDefinitionCount() {
-    assertEquals(0, simpleBeanDefinitionRegistry.getBeanDefinitionCount());
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isZero();
 
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName", beanDefinitionMock);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, BEAN_DEFINITION_MOCK);
 
-    assertEquals(1, simpleBeanDefinitionRegistry.getBeanDefinitionCount());
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isEqualTo(1);
   }
 
   @Test
   @DisplayName("Get registered bean definition count after remove bean definition")
   @Order(27)
   void when_RemoveBeanDefinitions_Then_GetRegisteredBeanDefinitionCount() {
-    assertEquals(0, simpleBeanDefinitionRegistry.getBeanDefinitionCount());
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isZero();
 
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName1", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName2", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanName3", beanDefinitionMock);
-    simpleBeanDefinitionRegistry.removeBeanDefinition("testBeanName2");
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.removeBeanDefinition(TEST_BEAN_NAME);
 
-    assertEquals(2, simpleBeanDefinitionRegistry.getBeanDefinitionCount());
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isEqualTo(2);
   }
 
   @Test
   @DisplayName("isBeanNameInUse with used bean name")
   @Order(28)
   void given_BeanName_When_UsedBeanName_Then_IsBeanNameInUseReturnsTrue() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanNameForAlias", "testAlias");
-    assertTrue(simpleBeanDefinitionRegistry.isBeanNameInUse("testAlias"));
-    BeanDefinition beanDefinitionMock = Mockito.mock(BeanDefinition.class);
-    simpleBeanDefinitionRegistry.registerBeanDefinition("testBeanNameForBeanDefinition",
-        beanDefinitionMock);
-    assertTrue(simpleBeanDefinitionRegistry.isBeanNameInUse("testBeanNameForBeanDefinition"));
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_FOR_ALIAS, TEST_ALIAS);
+
+    assertThat(simpleBeanDefinitionRegistry.isBeanNameInUse(TEST_ALIAS))
+        .as("Alias TEST_ALIAS should be used as bean name")
+        .isTrue();
+
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME,
+        BEAN_DEFINITION_MOCK);
+
+    assertThat(simpleBeanDefinitionRegistry.isBeanNameInUse(TEST_BEAN_NAME))
+        .as("Bean TEST_BEAN_NAME should be used as bean name")
+        .isTrue();
   }
 
   @Test
   @DisplayName("isBeanNameInUse with non-used bean name")
   @Order(29)
   void given_BeanName_When_NonUsedBeanName_Then_IsBeanNameInUseReturnsFalse() {
-    simpleBeanDefinitionRegistry.registerAlias("testBeanNameForAlias", "testAlias");
-    assertFalse(simpleBeanDefinitionRegistry.isBeanNameInUse("testBeanNameForAlias"));
-    assertFalse(simpleBeanDefinitionRegistry.isBeanNameInUse("testBeanName"));
+    simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_FOR_ALIAS, TEST_ALIAS);
+
+    assertThat(simpleBeanDefinitionRegistry.isBeanNameInUse(TEST_BEAN_NAME_FOR_ALIAS))
+        .as("Bean TEST_BEAN_NAME_FOR_ALIAS should not be used as bean name")
+        .isFalse();
+
+    assertThat(simpleBeanDefinitionRegistry.isBeanNameInUse(TEST_BEAN_NAME))
+        .as("Bean TEST_BEAN_NAME should not be used as bean name")
+        .isFalse();
   }
 
   @Test
   @DisplayName("isBeanNameInUse with null bean name")
   @Order(30)
   void given_NullBeanName_When_IsBeanNameInUseNullBeanName_Then_ThrowNoSuchBeanDefinitionException() {
-    Exception exception = assertThrows(
-        IllegalArgumentException.class,
+    Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.isBeanNameInUse(null));
 
-    assertEquals(BEAN_NAME_SHOULD_NOT_BE_NULL, exception.getMessage());
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 }

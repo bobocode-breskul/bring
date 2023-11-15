@@ -2,6 +2,8 @@ package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -70,4 +72,11 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    * @throws IllegalArgumentException if the specified bean name is null
    */
   boolean isBeanNameInUse(String beanName);
+
+  /**
+   * Retrieves all registered bean definitions from the container.
+   *
+   * @return a collection containing all the bean definitions registered in the container
+   */
+  Collection<BeanDefinition> getBeanDefinitions();
 }

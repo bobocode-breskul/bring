@@ -36,6 +36,18 @@
       <organization>PE Roman Pryshchepa</organization>
       <organizationUrl>https://www.linkedin.com/in/roman-pryshchepa/</organizationUrl>
     </developer>
+    <developer>
+      <name>Oleh Yakovenko</name>
+      <email>iakovenkoua@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/oleh-yakovenko-8980289a/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Vitalii Katkov</name>
+      <email>katkovvitaliy@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/vitalii-katkov-09643811a/</organizationUrl>
+    </developer>
   </developers>
 
   <scm>
@@ -51,6 +63,9 @@
     <logback.version>1.4.11</logback.version>
     <lombok.version>1.18.30</lombok.version>
     <junit.version>5.10.1</junit.version>
+    <reflection.version>0.10.2</reflection.version>
+    <assertj.version>3.24.2</assertj.version>
+    <mockito.version>5.6.0</mockito.version>
   </properties>
 
   <dependencies>
@@ -72,16 +87,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>5.6.0</version>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.24.2</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>${reflection.version}</version>
     </dependency>
   </dependencies>
 
@@ -185,7 +205,7 @@
           <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.0.3</version>
+            <version>${junit.version}</version>
           </dependency>
         </dependencies>
       </plugin>

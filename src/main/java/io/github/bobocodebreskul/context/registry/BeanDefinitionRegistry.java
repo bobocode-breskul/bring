@@ -1,22 +1,73 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
-import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+import java.util.Set;
 
+/**
+ * Interface that extends {@link AliasRegistry} and defines methods for managing bean definitions in
+ * a registry. A bean definition represents the configuration metadata that defines how to create a
+ * specific bean.
+ */
 public interface BeanDefinitionRegistry extends AliasRegistry {
 
+  /**
+   * Register a new bean definition with the specified name and definition.
+   *
+   * @param beanName       the name of the bean definition
+   * @param beanDefinition the definition of the bean
+   * @throws IllegalArgumentException           if the specified name or bean definition is null
+   * @throws BeanDefinitionDuplicateException if the specified bean definition already exists in
+   *                                          registry
+   */
   void registerBeanDefinition(String beanName, BeanDefinition beanDefinition);
 
-  void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+  /**
+   * Remove the bean definition with the specified name.
+   *
+   * @param beanName the name of the bean definition to be removed
+   * @throws IllegalArgumentException if the specified bean name is null
+   */
+  void removeBeanDefinition(String beanName);
 
-  BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+  /**
+   * Retrieve the bean definition with the specified name.
+   *
+   * @param beanName the name of the bean definition to be retrieved
+   * @return the bean definition associated with the specified name
+   * @throws IllegalArgumentException if the specified bean name is null
+   */
+  BeanDefinition getBeanDefinition(String beanName);
 
+  /**
+   * Check if a bean definition with the specified name exists.
+   *
+   * @param beanName the name of the bean definition to be checked
+   * @return true if a bean definition with the specified name exists in registry, false otherwise
+   * @throws IllegalArgumentException if the specified bean name is null
+   */
   boolean containsBeanDefinition(String beanName);
 
-  String[] getBeanDefinitionNames();
+  /**
+   * Retrieve the names of all registered bean definitions.
+   *
+   * @return a set of bean definition names
+   */
+  Set<String> getBeanDefinitionNames();
 
+  /**
+   * Retrieve the count of registered bean definitions.
+   *
+   * @return the number of registered bean definitions
+   */
   int getBeanDefinitionCount();
 
-
+  /**
+   * Check if a bean name is already in use.
+   *
+   * @param beanName the name to be checked
+   * @return true if the bean name is already in use, false otherwise
+   * @throws IllegalArgumentException if the specified bean name is null
+   */
   boolean isBeanNameInUse(String beanName);
 }

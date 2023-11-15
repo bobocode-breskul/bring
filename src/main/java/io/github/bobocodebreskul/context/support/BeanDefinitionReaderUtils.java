@@ -47,7 +47,6 @@ public class BeanDefinitionReaderUtils {
     }
 
     log.trace("Generated bean name: {} for class {}", beanName, beanClass.getName());
-    beanDefinition.setName(beanName);
     return beanName;
   }
 

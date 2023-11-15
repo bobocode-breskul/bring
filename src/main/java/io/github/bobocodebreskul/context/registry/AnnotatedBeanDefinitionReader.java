@@ -106,6 +106,7 @@ public class AnnotatedBeanDefinitionReader {
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     name = name != null ? name : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    annotatedBeanDefinition.setName(name);
 
     if (beanDefinitionRegistry.isBeanNameInUse(name)) {
       log.error("The specified bean name is already in use");

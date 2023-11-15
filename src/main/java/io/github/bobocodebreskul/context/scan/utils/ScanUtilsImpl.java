@@ -2,7 +2,6 @@ package io.github.bobocodebreskul.context.scan.utils;
 
 import static java.util.function.Predicate.not;
 
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Arrays;

@@ -60,10 +60,15 @@ class SimpleBeanDefinitionRegistryTest {
         AliasDuplicateException.class,
         () -> simpleBeanDefinitionRegistry.registerAlias(testBeanName2, testAlias));
 
-    String expectedMessage = CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(testAlias);
-    String actualMessage = exception.getMessage();
+    Exception actualException = catchException(() -> simpleBeanDefinitionRegistry.registerAlias(
+        TEST_BEAN_NAME_2, SimpleBeanDefinitionRegistryTest.TEST_ALIAS));
 
-    assertEquals(expectedMessage, actualMessage);
+    String expectedMessage = CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE.formatted(
+        SimpleBeanDefinitionRegistryTest.TEST_ALIAS);
+    assertThat(actualException)
+        .isInstanceOf(AliasDuplicateException.class)
+        .hasMessage(expectedMessage);
+
   }
 
   @Test
@@ -134,7 +139,9 @@ class SimpleBeanDefinitionRegistryTest {
   void given_Alias_When_IsAliasExistingAlias_Then_CheckIsAliasReturnsTrue() {
     simpleBeanDefinitionRegistry.registerAlias("testBeanName1", "testAlias1");
 
-    assertTrue(simpleBeanDefinitionRegistry.isAlias("testAlias1"));
+    assertThat(simpleBeanDefinitionRegistry.isAlias(TEST_ALIAS_1))
+        .as("Alias TEST_ALIAS_1 should exist")
+        .isTrue();
   }
 
   @Test

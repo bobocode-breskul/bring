@@ -231,7 +231,7 @@ class ScanUtilsImplTest {
 
   @Test
   @Order(15)
-  @DisplayName("Nothing throw when valid packages with multiple elements")
+  @DisplayName("Nothing throw when valid packages with numbers")
   void given_NoExceptions_When_ValidPackageWithNumbers() {
     String inputPackage = "io.github.bobocodebreskul1";
     assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));

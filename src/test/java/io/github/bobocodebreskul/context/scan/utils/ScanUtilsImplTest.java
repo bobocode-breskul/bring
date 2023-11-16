@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.scan.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
@@ -161,7 +162,6 @@ class ScanUtilsImplTest {
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
 
-
   @Test
   @DisplayName("Find classes located in multilevel package tree by given filter")
   @Order(9)
@@ -176,7 +176,6 @@ class ScanUtilsImplTest {
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
-
 
   @Order(10)
   @ParameterizedTest(name = "Throws exception when null or empty package name was provided")
@@ -207,5 +206,34 @@ class ScanUtilsImplTest {
     assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Package name must contain only letters, numbers and symbol [.]");
+  }
+
+  @Test
+  @Order(13)
+  @DisplayName("Nothing throw when package name is valid")
+  void given_Nothing_When_PackageNameIsValid() {
+    // data
+    String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
+    // verify
+    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
+  }
+
+  @Test
+  @Order(14)
+  @DisplayName("Nothing throw when valid packages with multiple elements")
+  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
+    String firstInputPackage = "com.example";
+    String secondInputPackage = "org.sample";
+    String thirdInputPackage = "io.github.bobocodebreskul";
+    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
+        thirdInputPackage));
+  }
+
+  @Test
+  @Order(15)
+  @DisplayName("Nothing throw when valid packages with multiple elements")
+  void given_NoExceptions_When_ValidPackageWithNumbers() {
+    String inputPackage = "io.github.bobocodebreskul1";
+    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
   }
 }

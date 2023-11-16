@@ -19,6 +19,8 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   private boolean primary;
   private boolean autowireCandidate;
   private List<Class<?>> dependsOn;
+  // TODO: test implementation
+  private List<String> dependsOnNames;
 
   public GenericBeanDefinition(Class<?> beanClass) {
     setBeanClass(beanClass);
@@ -42,6 +44,14 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   @Override
   public List<Class<?>> getDependsOn() {
     return dependsOn;
+  }
+
+  public List<String> getDependsOnNames() {
+    return dependsOnNames;
+  }
+
+  public void setDependsOnNames(List<String> dependsOnNames) {
+    this.dependsOnNames = dependsOnNames;
   }
 
   @Override

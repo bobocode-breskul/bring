@@ -64,7 +64,7 @@ public class BringContainer implements ObjectFactory {
         return storageByName.get(name);
       }
       Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
-      List<Class<?>> dependsOnList = beanDefinition.getDependsOn();
+      List<String> dependsOnList = beanDefinition.getDependsOnNames();
       Object[] dependentBeans = dependsOnList.stream()
           .map(this::getBean)
           .toArray();

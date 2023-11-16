@@ -2,12 +2,13 @@ package io.github.bobocodebreskul.context.support;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -40,14 +41,23 @@ public class BeanDefinitionReaderUtils {
       return "Bean class has not been specified";
     });
 
-    Class<?> beanClass = beanDefinition.getBeanClass();
+    return generateClassBeanName(beanDefinition.getBeanClass(), registry);
+  }
+
+  public static String generateClassBeanName(Class<?> beanClass, BeanDefinitionRegistry registry) {
     String beanName = StringUtils.uncapitalize(beanClass.getSimpleName());
-    if (isSameBeanNameFromAnotherPackage(registry, beanDefinition, beanName)) {
+    if (isSameBeanNameFromAnotherPackage(registry, beanClass, beanName)) {
       beanName = beanClass.getName();
     }
 
     log.trace("Generated bean name: {} for class {}", beanName, beanClass.getName());
     return beanName;
+  }
+
+  public static List<String> getBeanNameDependencies(Class<?> beanClass, BeanDefinitionRegistry registry) {
+    return getBeanDependencies(beanClass).stream()
+        .map(clazz -> generateClassBeanName(clazz, registry))
+        .toList();
   }
 
   /**
@@ -105,10 +115,10 @@ public class BeanDefinitionReaderUtils {
   }
 
   private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,
-      BeanDefinition beanDefinition,
+      Class<?> beanClass,
       String beanName) {
     return registry.isBeanNameInUse(beanName)
-        && !Objects.equals(beanDefinition.getBeanClass().getPackageName(),
+        && !Objects.equals(beanClass.getPackageName(),
         registry.getBeanDefinition(beanName).getBeanClass().getPackageName());
 
   }

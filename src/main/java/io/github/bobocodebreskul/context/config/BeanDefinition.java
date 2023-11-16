@@ -46,6 +46,10 @@ public interface BeanDefinition {
    */
   List<Class<?>> getDependsOn();
 
+  List<String> getDependsOnNames();
+
+  void setDependsOnNames(List<String> dependsOnNames);
+
   /**
    * Override the target scope of this bean, specifying a new scope name.
    *

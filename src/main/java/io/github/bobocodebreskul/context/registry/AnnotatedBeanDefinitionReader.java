@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.registry;
 
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanDependencies;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanNameDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
@@ -122,9 +123,11 @@ public class AnnotatedBeanDefinitionReader {
     }
 
     List<Class<?>> beanDependencies = getBeanDependencies(beanClass);
+    List<String> beanNameDependencies = getBeanNameDependencies(beanClass, beanDefinitionRegistry);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         beanDependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependsOn(beanDependencies);
+    annotatedBeanDefinition.setDependsOnNames(beanNameDependencies);
     annotatedBeanDefinition.setAutowireCandidate(
         isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 

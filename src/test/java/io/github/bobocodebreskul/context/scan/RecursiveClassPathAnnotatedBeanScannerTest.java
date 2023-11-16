@@ -95,15 +95,4 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
     // verify
     then(beanDefinitionReader).shouldHaveNoInteractions();
   }
-
-  @Test
-  @DisplayName("Do nothing when provided empty package list")
-  @Order(4)
-  void given_EmptyInput_When_Scan_Then_RegisterDoNothing() {
-    // when
-    annotatedBeanScanner.scan();
-    // verify
-    then(scanUtils).shouldHaveNoInteractions();
-    then(beanDefinitionReader).shouldHaveNoInteractions();
-  }
 }

@@ -25,8 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class BringContainer implements ObjectFactory {
 
-  private final Map<Class<?>, Object> storageByClass = new ConcurrentHashMap<>(16);
-  private final Map<String, Object> storageByName = new ConcurrentHashMap<>(16);
+  private final Map<Class<?>, Object> storageByClass = new ConcurrentHashMap<>();
+  private final Map<String, Object> storageByName = new ConcurrentHashMap<>();
   private final BeanDefinitionRegistry definitionRegistry;
 
   public BringContainer(BeanDefinitionRegistry definitionRegistry) {

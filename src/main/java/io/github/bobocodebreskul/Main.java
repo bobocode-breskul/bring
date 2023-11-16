@@ -16,7 +16,4 @@ public class Main {
     public String hello() {
         return "Hello Breskul";
     }
-
-    public Main(Integer i) {
-    }
 }

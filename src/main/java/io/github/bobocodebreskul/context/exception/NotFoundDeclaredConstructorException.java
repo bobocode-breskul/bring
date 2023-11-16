@@ -5,9 +5,9 @@ package io.github.bobocodebreskul.context.exception;
  * could not be found during runtime. This typically occurs when attempting
  * to instantiate a class without the presence of a declared constructor.
  */
-public class NoSuchMethodRuntimeException extends RuntimeException {
+public class NotFoundDeclaredConstructorException extends RuntimeException {
 
-  public NoSuchMethodRuntimeException(String message, Throwable cause) {
+  public NotFoundDeclaredConstructorException(String message, Throwable cause) {
     super(message, cause);
   }
 }

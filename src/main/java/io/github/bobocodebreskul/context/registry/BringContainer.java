@@ -3,7 +3,7 @@ package io.github.bobocodebreskul.context.registry;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.exception.NoSuchMethodRuntimeException;
+import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +69,7 @@ public class BringContainer implements ObjectFactory {
     } catch (NoSuchMethodException e) {
       // TODO: add additional logging with some input parameters
       // TODO: cover with tests
-      throw new NoSuchMethodRuntimeException(
+      throw new NotFoundDeclaredConstructorException(
           "No default constructor for class \"%s\"!".formatted(name), e);
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
       // TODO: add additional logging with some input parameters

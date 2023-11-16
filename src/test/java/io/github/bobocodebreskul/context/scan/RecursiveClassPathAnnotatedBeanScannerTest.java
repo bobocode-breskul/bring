@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.scan;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doNothing;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
@@ -92,6 +93,17 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
         .willReturn(Collections.emptySet());
     // when
     annotatedBeanScanner.scan(packageName);
+    // verify
+    then(beanDefinitionReader).shouldHaveNoInteractions();
+  }
+
+  @Test
+  @DisplayName("Do nothing when provided empty package list")
+  @Order(4)
+  void given_EmptyInput_When_Scan_Then_RegisterDoNothing() {
+    // when
+    doNothing().when(scanUtils).validatePackagesToScan();
+    annotatedBeanScanner.scan();
     // verify
     then(beanDefinitionReader).shouldHaveNoInteractions();
   }

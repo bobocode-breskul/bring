@@ -34,4 +34,6 @@ public interface ScanUtils {
      * @return Set of all classes which pass the filter.
      */
     Set<Class<?>> searchClassesByFilter(String packagePathPrefix, Predicate<Class<?>> filter);
+
+    void validatePackagesToScan(String... packagesToScan);
 }

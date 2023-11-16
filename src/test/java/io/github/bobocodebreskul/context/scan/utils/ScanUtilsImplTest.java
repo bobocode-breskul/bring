@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
@@ -27,6 +28,9 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ScanUtilsImplTest {
@@ -55,8 +59,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // given
     List<Class<?>> expectedResult = List.of(
-      TreeClass1.class, TreeClass2.class, 
-      TreeClass1L2.class, TreeClass2L2.class);
+        TreeClass1.class, TreeClass2.class,
+        TreeClass1L2.class, TreeClass2L2.class);
     // when
     Set<Class<?>> actualResult = scanUtils.searchAllClasses(inputPackage);
     // verify
@@ -71,8 +75,8 @@ class ScanUtilsImplTest {
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type";
     // given
     List<Class<?>> expectedResult = List.of(
-      TypeAbstractClass.class, TypeAnnotation.class,
-      TypeClass.class, TypeInterface.class
+        TypeAbstractClass.class, TypeAnnotation.class,
+        TypeClass.class, TypeInterface.class
     );
     // when
     var actualResult = scanUtils.searchAllClasses(inputPackage);
@@ -90,7 +94,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(SingleCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -105,7 +110,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(MultiCandidate1.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -117,7 +123,8 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none";
     // when
-    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, TestComponentAnnotation.class);
+    var actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        TestComponentAnnotation.class);
     // verify
     assertThat(actualResult).isEmpty();
   }
@@ -132,7 +139,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(ParentCandidate.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -147,7 +155,8 @@ class ScanUtilsImplTest {
     // given
     List<Class<?>> expectedResult = List.of(CyclicCandidate2.class);
     // when
-    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage, inputFilterAnnotation);
+    Set<Class<?>> actualResult = scanUtils.searchClassesByAnnotationRecursively(inputPackage,
+        inputFilterAnnotation);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
@@ -166,5 +175,37 @@ class ScanUtilsImplTest {
     var actualResult = scanUtils.searchClassesByFilter(inputPackage, filter);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
+  }
+
+
+  @Order(10)
+  @ParameterizedTest(name = "Throws exception when null or empty package name was provided")
+  @NullAndEmptySource
+  @DisplayName("Throws exception when null or empty package name was provided")
+  void given_ThrowsException_When_Packages_NullOrEmpty(String packageName) {
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Argument [packagesToScan] must not contain null or empty element");
+  }
+
+  @Order(11)
+  @Test
+  @DisplayName("Throws exception when no package was provided")
+  void given_ThrowsException_When_NoPackages() {
+    assertThatThrownBy(scanUtils::validatePackagesToScan)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Argument [packagesToScan] must contain at least one not null and not empty element");
+  }
+
+  @Order(12)
+  @ParameterizedTest(name = "Throws exception when package names contain [{0}]")
+  @ValueSource(strings = {"^", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "?", "~", "+", "-",
+      "<", ">", "/", ","})
+  @DisplayName("Throws exception when package names contain")
+  void given_ThrowsException_When_InvalidPackageName(String packageName) {
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Package name must contain only letters, numbers and symbol [.]");
   }
 }

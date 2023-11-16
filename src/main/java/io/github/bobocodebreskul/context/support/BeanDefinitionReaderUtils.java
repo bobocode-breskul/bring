@@ -59,8 +59,14 @@ public class BeanDefinitionReaderUtils {
    */
   public static List<Class<?>> getBeanDependencies(Class<?> beanClass) {
     log.trace("Scanning class {} for @Autowire candidates", beanClass.getName());
-    Stream<Class<?>> constructorDependenciesStream = Arrays.stream(
-            beanClass.getDeclaredConstructors())
+
+    Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
+    // TODO: possible move to separate general validation class
+    if (declaredConstructors.length != 1) {
+      log.error("Bean candidate [{}] has more then 1 candidate: [{}]", beanClass.getName(), declaredConstructors.length);
+      throw new BeanDefinitionCreationException("Bean candidate should have only one constructor declared");
+    }
+    Stream<Class<?>> constructorDependenciesStream = Arrays.stream(declaredConstructors)
         .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()));
 
     Stream<Class<?>> fieldDependenciesStream = Arrays.stream(beanClass.getDeclaredFields())
@@ -73,7 +79,7 @@ public class BeanDefinitionReaderUtils {
 
     return Stream.concat(Stream.concat(constructorDependenciesStream, fieldDependenciesStream),
             methodDependenciesStream)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   /**

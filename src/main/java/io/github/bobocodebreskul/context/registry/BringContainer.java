@@ -6,6 +6,8 @@ import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException
 import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
+import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
@@ -61,16 +63,22 @@ public class BringContainer implements ObjectFactory {
       if (storageByName.containsKey(name)) {
         return storageByName.get(name);
       }
-      Constructor<?> declaredConstructor = beanClass.getDeclaredConstructor();
-      Object newInstance = declaredConstructor.newInstance();
+      Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
+      List<Class<?>> dependsOnList = beanDefinition.getDependsOn();
+      Object[] dependentBeans = dependsOnList.stream()
+          .map(this::getBean)
+          .toArray();
+      // TODO: 1. call constructor found by types
+      // TODO: 2. recursively create all dependent beans
+      Object newInstance = declaredConstructor.newInstance(dependentBeans);
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
-    } catch (NoSuchMethodException e) {
-      // TODO: add additional logging with some input parameters
-      // TODO: cover with tests
-      throw new NotFoundDeclaredConstructorException(
-          "No default constructor for class \"%s\"!".formatted(name), e);
+//    } catch (NoSuchMethodException e) {
+//      // TODO: add additional logging with some input parameters
+//      // TODO: cover with tests
+//      throw new NotFoundDeclaredConstructorException(
+//          "No default constructor for class \"%s\"!".formatted(name), e);
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
       // TODO: add additional logging with some input parameters
       // TODO: cover with tests

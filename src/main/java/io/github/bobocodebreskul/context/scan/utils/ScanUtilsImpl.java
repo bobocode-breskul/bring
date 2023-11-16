@@ -10,9 +10,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+@Slf4j
 public class ScanUtilsImpl implements ScanUtils {
 
   private final CharSequence[] ILLEGAL_SYMBOLS = {")", "(", "?", "~", "+", "-", "<", ">", "/", ",",
@@ -20,6 +22,7 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
+    log.trace("Search all classes for @{} package", packagePathPrefix);
     Reflections reflections = new Reflections(packagePathPrefix,
         Scanners.SubTypes.filterResultsBy((s) -> true));
     return new HashSet<>(reflections.getSubTypesOf(Object.class));
@@ -28,6 +31,8 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
       Class<? extends Annotation> filterByAnnotation) {
+    log.trace("Search all classes for {} package which has @{} annotation",
+        packagePath, filterByAnnotation);
     Predicate<Class<?>> filter = clazz -> {
       Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
       Set<Annotation> processedAnnotations = new HashSet<>(annotations);
@@ -50,6 +55,8 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchClassesByFilter(String packagePath, Predicate<Class<?>> filter) {
+    log.trace("Search classes by {} filter in given package including nested {} packages",
+        filter, packagePath);
     return searchAllClasses(packagePath)
         .stream()
         .filter(filter)
@@ -59,23 +66,28 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
     if (packagesToScan == null || packagesToScan.length == 0) {
+      log.error(
+          "Argument packages to scan must contain at least one not null and not empty element");
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must contain at least one not null and not empty element");
     }
 
     if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isEmpty())) {
+      log.error("Argument packages to scan must not contain null or empty element");
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must not contain null or empty element");
     }
 
     if (Arrays.stream(packagesToScan)
         .anyMatch(p -> !p.matches("^[a-zA-Z0-9.]+$"))) {
+      log.error("Package name must contain only letters, numbers and symbol");
       throw new IllegalArgumentException(
           "Package name must contain only letters, numbers and symbol [.]");
     }
 
     if (Arrays.stream(packagesToScan)
         .anyMatch(p -> containsAny(p, ILLEGAL_SYMBOLS))) {
+      log.error("Package name must not contain illegal symbols");
       throw new IllegalArgumentException(
           "Package name must not contain illegal symbols");
     }
@@ -90,3 +102,4 @@ public class ScanUtilsImpl implements ScanUtils {
     return false;
   }
 }
+

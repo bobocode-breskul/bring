@@ -17,9 +17,6 @@ import org.reflections.scanners.Scanners;
 @Slf4j
 public class ScanUtilsImpl implements ScanUtils {
 
-  private final CharSequence[] ILLEGAL_SYMBOLS = {")", "(", "?", "~", "+", "-", "<", ">", "/", ",",
-      "^", "!", "@", "#", "$", "%", "^", "&", "*"};
-
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
     log.trace("Search all classes for @{} package", packagePathPrefix);
@@ -55,8 +52,6 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchClassesByFilter(String packagePath, Predicate<Class<?>> filter) {
-    log.trace("Search classes by {} filter in given package including nested {} packages",
-        filter, packagePath);
     return searchAllClasses(packagePath)
         .stream()
         .filter(filter)
@@ -80,26 +75,10 @@ public class ScanUtilsImpl implements ScanUtils {
 
     if (Arrays.stream(packagesToScan)
         .anyMatch(p -> !p.matches("^[a-zA-Z0-9.]+$"))) {
-      log.error("Package name must contain only letters, numbers and symbol");
+      log.error("Package name must contain only letters, numbers and symbols");
       throw new IllegalArgumentException(
           "Package name must contain only letters, numbers and symbol [.]");
     }
-
-    if (Arrays.stream(packagesToScan)
-        .anyMatch(p -> containsAny(p, ILLEGAL_SYMBOLS))) {
-      log.error("Package name must not contain illegal symbols");
-      throw new IllegalArgumentException(
-          "Package name must not contain illegal symbols");
-    }
-  }
-
-  private boolean containsAny(String str, CharSequence[] searchChars) {
-    for (CharSequence searchChar : searchChars) {
-      if (str.contains(searchChar)) {
-        return true;
-      }
-    }
-    return false;
   }
 }
 

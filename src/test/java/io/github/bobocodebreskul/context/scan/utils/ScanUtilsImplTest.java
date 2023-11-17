@@ -205,7 +205,9 @@ class ScanUtilsImplTest {
   void given_ThrowsException_When_InvalidPackageName(String packageName) {
     assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Argument [packagesToScan] must contain only letters, numbers and symbol [.]");
+        .hasMessage(
+            "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+                .formatted(packageName));
   }
 
   @Test

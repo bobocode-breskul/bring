@@ -70,10 +70,13 @@ public class ScanUtilsImpl implements ScanUtils {
           "Argument [packagesToScan] must not contain null or empty element");
     }
 
-    if (Arrays.stream(packagesToScan)
-        .anyMatch(p -> !p.matches("^[a-zA-Z0-9.]+$"))) {
+    var optBrokenName = Arrays.stream(packagesToScan)
+        .filter(p -> !p.matches("^[a-zA-Z0-9.]+$"))
+        .findFirst();
+    if (optBrokenName.isPresent()) {
       throw new IllegalArgumentException(
-          "Argument [packagesToScan] must contain only letters, numbers and symbol [.]");
+          "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+              .formatted(optBrokenName.get()));
     }
   }
 }

@@ -1,6 +1,8 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
@@ -27,11 +29,14 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ScanUtilsImplTest {
 
-  private final ScanUtils scanUtils = new ScanUtilsImpl();
+  private final ScanUtilsImpl scanUtils = new ScanUtilsImpl();
 
   @Test
   @DisplayName("Find all classes located in flat package tree")
@@ -157,7 +162,6 @@ class ScanUtilsImplTest {
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
   }
 
-
   @Test
   @DisplayName("Find classes located in multilevel package tree by given filter")
   @Order(9)
@@ -171,5 +175,59 @@ class ScanUtilsImplTest {
     var actualResult = scanUtils.searchClassesByFilter(inputPackage, filter);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
+  }
+
+  @Order(10)
+  @ParameterizedTest(name = "Throws exception when null or empty package name was provided")
+  @NullAndEmptySource
+  @DisplayName("Throws exception when null or empty package name was provided")
+  void given_ThrowsException_When_Packages_NullOrEmpty(String packageName) {
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Argument [packagesToScan] must not contain null or empty element");
+  }
+
+  @Order(11)
+  @Test
+  @DisplayName("Throws exception when no package was provided")
+  void given_ThrowsException_When_NoPackages() {
+    assertThatThrownBy(scanUtils::validatePackagesToScan)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Argument [packagesToScan] must contain at least one not null and not empty element");
+  }
+
+  @Order(12)
+  @ParameterizedTest(name = "Throws exception when package names contain [{0}]")
+  @ValueSource(strings = {"^", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "?", "~", "+", "-",
+      "<", ">", "/", ","})
+  @DisplayName("Throws exception when package names contain")
+  void given_ThrowsException_When_InvalidPackageName(String packageName) {
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+                .formatted(packageName));
+  }
+
+  @Test
+  @Order(13)
+  @DisplayName("Nothing throw when package name is valid")
+  void given_Nothing_When_PackageNameIsValid() {
+    // data
+    String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
+    // verify
+    assertDoesNotThrow(() -> scanUtils.searchAllClasses(inputPackage));
+  }
+
+  @Test
+  @Order(14)
+  @DisplayName("Nothing throw when valid packages with multiple elements")
+  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
+    String firstInputPackage = "com.example";
+    String secondInputPackage = "org.sample";
+    String thirdInputPackage = "io.github.bobocodebreskul";
+    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
+        thirdInputPackage));
   }
 }

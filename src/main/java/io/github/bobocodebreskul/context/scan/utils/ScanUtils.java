@@ -6,6 +6,9 @@ import java.util.function.Predicate;
 
 /**
  * Util class for searching classes in packages.
+ *
+ * @author Oleksandr Karpachov
+ * @author Oleh Yakovenko
  */
 public interface ScanUtils {
     /**

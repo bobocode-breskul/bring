@@ -26,7 +26,6 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
       Class<? extends Annotation> filterByAnnotation) {
-    validatePackagesToScan(packagePath);
     Predicate<Class<?>> filter = clazz -> {
       Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
       Set<Annotation> processedAnnotations = new HashSet<>(annotations);

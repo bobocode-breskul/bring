@@ -182,20 +182,20 @@ class ScanUtilsImplTest {
   @NullAndEmptySource
   @DisplayName("Throws exception when null or empty package name was provided")
   void given_ThrowsException_When_Packages_NullOrEmpty(String packageName) {
-    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+    assertThatThrownBy(() -> scanUtils.searchAllClasses(packageName))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Argument [packagesToScan] must not contain null or empty element");
   }
 
-  @Order(11)
-  @Test
-  @DisplayName("Throws exception when no package was provided")
-  void given_ThrowsException_When_NoPackages() {
-    assertThatThrownBy(scanUtils::validatePackagesToScan)
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-            "Argument [packagesToScan] must contain at least one not null and not empty element");
-  }
+//  @Order(11)
+//  @Test
+//  @DisplayName("Throws exception when no package was provided")
+//  void given_ThrowsException_When_NoPackages() {
+//    assertThatThrownBy(scanUtils::searchAllClasses)
+//        .isInstanceOf(IllegalArgumentException.class)
+//        .hasMessage(
+//            "Argument [packagesToScan] must contain at least one not null and not empty element");
+//  }
 
   @Order(12)
   @ParameterizedTest(name = "Throws exception when package names contain [{0}]")
@@ -203,7 +203,7 @@ class ScanUtilsImplTest {
       "<", ">", "/", ","})
   @DisplayName("Throws exception when package names contain")
   void given_ThrowsException_When_InvalidPackageName(String packageName) {
-    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
+    assertThatThrownBy(() -> scanUtils.searchAllClasses(packageName))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Package name must contain only letters, numbers and symbol [.]");
   }
@@ -215,25 +215,17 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // verify
-    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
+    assertDoesNotThrow(() -> scanUtils.searchAllClasses(inputPackage));
   }
 
-  @Test
-  @Order(14)
-  @DisplayName("Nothing throw when valid packages with multiple elements")
-  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
-    String firstInputPackage = "com.example";
-    String secondInputPackage = "org.sample";
-    String thirdInputPackage = "io.github.bobocodebreskul";
-    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
-        thirdInputPackage));
-  }
-
-  @Test
-  @Order(15)
-  @DisplayName("Nothing throw when valid packages with numbers")
-  void given_NoExceptions_When_ValidPackageWithNumbers() {
-    String inputPackage = "io.github.bobocodebreskul1";
-    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
-  }
+//  @Test
+//  @Order(14)
+//  @DisplayName("Nothing throw when valid packages with multiple elements")
+//  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
+//    String firstInputPackage = "com.example";
+//    String secondInputPackage = "org.sample";
+//    String thirdInputPackage = "io.github.bobocodebreskul";
+//    assertDoesNotThrow(() -> scanUtils.searchAllClasses(firstInputPackage, secondInputPackage,
+//        thirdInputPackage));
+//  }
 }

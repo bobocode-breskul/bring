@@ -102,9 +102,9 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
   @Order(4)
   void given_EmptyInput_When_Scan_Then_RegisterDoNothing() {
     // when
-    doNothing().when(scanUtils).validatePackagesToScan();
     annotatedBeanScanner.scan();
     // verify
+    then(scanUtils).shouldHaveNoInteractions();
     then(beanDefinitionReader).shouldHaveNoInteractions();
   }
 }

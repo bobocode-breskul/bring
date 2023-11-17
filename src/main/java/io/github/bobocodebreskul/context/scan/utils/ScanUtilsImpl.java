@@ -15,11 +15,9 @@ import org.reflections.scanners.Scanners;
 
 public class ScanUtilsImpl implements ScanUtils {
 
-  private final CharSequence[] ILLEGAL_SYMBOLS = {")", "(", "?", "~", "+", "-", "<", ">", "/", ",",
-      "^", "!", "@", "#", "$", "%", "^", "&", "*"};
-
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
+    validatePackagesToScan(packagePathPrefix);
     Reflections reflections = new Reflections(packagePathPrefix,
         Scanners.SubTypes.filterResultsBy((s) -> true));
     return new HashSet<>(reflections.getSubTypesOf(Object.class));
@@ -28,6 +26,7 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
       Class<? extends Annotation> filterByAnnotation) {
+    validatePackagesToScan(packagePath);
     Predicate<Class<?>> filter = clazz -> {
       Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
       Set<Annotation> processedAnnotations = new HashSet<>(annotations);
@@ -58,6 +57,7 @@ public class ScanUtilsImpl implements ScanUtils {
 
   /**
    * Valid incoming packages for not existing package, null input, not valid symbols
+   *
    * @param packagesToScan packages to scan
    */
   void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
@@ -76,20 +76,5 @@ public class ScanUtilsImpl implements ScanUtils {
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must contain only letters, numbers and symbol [.]");
     }
-
-    if (Arrays.stream(packagesToScan)
-        .anyMatch(p -> containsAny(p, ILLEGAL_SYMBOLS))) {
-      throw new IllegalArgumentException(
-          "Argument [packagesToScan] must not contain illegal symbols");
-    }
-  }
-
-  private boolean containsAny(String str, CharSequence[] searchChars) {
-    for (CharSequence searchChar : searchChars) {
-      if (str.contains(searchChar)) {
-        return true;
-      }
-    }
-    return false;
   }
 }

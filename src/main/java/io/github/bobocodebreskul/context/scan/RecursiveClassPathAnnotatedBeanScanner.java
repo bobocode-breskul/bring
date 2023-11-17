@@ -37,7 +37,6 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
 
   @Override
   public void scan(String... scanPackages) {
-    new ScanUtilsImpl().validatePackagesToScan(scanPackages);
     Queue<String> remainingScanPackages = new ArrayDeque<>(asList(scanPackages));
     Set<String> processedScanPackages = new HashSet<>();
     while (!remainingScanPackages.isEmpty()) {
@@ -53,7 +52,8 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
     }
   }
 
-  private List<String> findConfigurationScanPackages(Set<Class<?>> foundClasses, Set<String> processedScanPackages) {
+  private List<String> findConfigurationScanPackages(Set<Class<?>> foundClasses,
+      Set<String> processedScanPackages) {
     return foundClasses.stream()
         .filter(this::isConfigurationClass)
         .map(this::findConfigurationScanPackages)

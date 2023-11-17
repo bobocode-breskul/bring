@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ScanUtilsImplTest {
 
-  private final ScanUtils scanUtils = new ScanUtilsImpl();
+  private final ScanUtilsImpl scanUtils = new ScanUtilsImpl();
 
   @Test
   @DisplayName("Find all classes located in flat package tree")
@@ -182,20 +182,20 @@ class ScanUtilsImplTest {
   @NullAndEmptySource
   @DisplayName("Throws exception when null or empty package name was provided")
   void given_ThrowsException_When_Packages_NullOrEmpty(String packageName) {
-    assertThatThrownBy(() -> scanUtils.searchAllClasses(packageName))
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Argument [packagesToScan] must not contain null or empty element");
   }
 
-//  @Order(11)
-//  @Test
-//  @DisplayName("Throws exception when no package was provided")
-//  void given_ThrowsException_When_NoPackages() {
-//    assertThatThrownBy(scanUtils::searchAllClasses)
-//        .isInstanceOf(IllegalArgumentException.class)
-//        .hasMessage(
-//            "Argument [packagesToScan] must contain at least one not null and not empty element");
-//  }
+  @Order(11)
+  @Test
+  @DisplayName("Throws exception when no package was provided")
+  void given_ThrowsException_When_NoPackages() {
+    assertThatThrownBy(scanUtils::validatePackagesToScan)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "Argument [packagesToScan] must contain at least one not null and not empty element");
+  }
 
   @Order(12)
   @ParameterizedTest(name = "Throws exception when package names contain [{0}]")
@@ -203,9 +203,9 @@ class ScanUtilsImplTest {
       "<", ">", "/", ","})
   @DisplayName("Throws exception when package names contain")
   void given_ThrowsException_When_InvalidPackageName(String packageName) {
-    assertThatThrownBy(() -> scanUtils.searchAllClasses(packageName))
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Package name must contain only letters, numbers and symbol [.]");
+        .hasMessage("Argument [packagesToScan] must contain only letters, numbers and symbol [.]");
   }
 
   @Test
@@ -218,14 +218,14 @@ class ScanUtilsImplTest {
     assertDoesNotThrow(() -> scanUtils.searchAllClasses(inputPackage));
   }
 
-//  @Test
-//  @Order(14)
-//  @DisplayName("Nothing throw when valid packages with multiple elements")
-//  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
-//    String firstInputPackage = "com.example";
-//    String secondInputPackage = "org.sample";
-//    String thirdInputPackage = "io.github.bobocodebreskul";
-//    assertDoesNotThrow(() -> scanUtils.searchAllClasses(firstInputPackage, secondInputPackage,
-//        thirdInputPackage));
-//  }
+  @Test
+  @Order(14)
+  @DisplayName("Nothing throw when valid packages with multiple elements")
+  void given_NoExceptions_When_ValidPackagesWithMultipleElements() {
+    String firstInputPackage = "com.example";
+    String secondInputPackage = "org.sample";
+    String thirdInputPackage = "io.github.bobocodebreskul";
+    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
+        thirdInputPackage));
+  }
 }

@@ -83,7 +83,7 @@ public class ScanUtilsImpl implements ScanUtils {
         .filter(p -> !p.matches("^[a-zA-Z0-9.]+$"))
         .findFirst();
     if (optBrokenName.isPresent()) {
-      log.error("Package name must contain only letters, numbers and symbols");
+      log.error("Package name must contain only letters, numbers and symbol [.]");
       throw new IllegalArgumentException(
           "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
               .formatted(optBrokenName.get()));

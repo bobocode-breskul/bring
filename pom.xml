@@ -19,7 +19,7 @@
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -29,6 +29,12 @@
       <email>rugladchenko@gmail.com</email>
       <organization>Hladchenko.com</organization>
       <organizationUrl>https://hladchenko.com/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Roman Pryshchepa</name>
+      <email>roman.pryshchepa@gmail.com</email>
+      <organization>PE Roman Pryshchepa</organization>
+      <organizationUrl>https://www.linkedin.com/in/roman-pryshchepa/</organizationUrl>
     </developer>
     <developer>
       <name>Oleh Yakovenko</name>
@@ -59,6 +65,7 @@
     <junit.version>5.10.1</junit.version>
     <reflection.version>0.10.2</reflection.version>
     <assertj.version>3.24.2</assertj.version>
+    <apache.version>3.13.0</apache.version>
     <mockito.version>5.6.0</mockito.version>
   </properties>
 
@@ -94,13 +101,13 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-junit-jupiter</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
+      <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
@@ -109,6 +116,12 @@
       <artifactId>reflections</artifactId>
       <version>${reflection.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache.version}</version>
+    </dependency>
+
   </dependencies>
 
   <distributionManagement>

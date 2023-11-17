@@ -20,6 +20,7 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
     log.trace("Search all classes for @{} package", packagePathPrefix);
+    validatePackagesToScan(packagePathPrefix);
     Reflections reflections = new Reflections(packagePathPrefix,
         Scanners.SubTypes.filterResultsBy((s) -> true));
     return new HashSet<>(reflections.getSubTypesOf(Object.class));
@@ -80,5 +81,29 @@ public class ScanUtilsImpl implements ScanUtils {
           "Package name must contain only letters, numbers and symbol [.]");
     }
   }
-}
+  /**
+   * Valid incoming packages for not existing package, null input, not valid symbols
+   *
+   * @param packagesToScan packages to scan
+   */
+  void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
+    if (packagesToScan == null || packagesToScan.length == 0) {
+      throw new IllegalArgumentException(
+          "Argument [packagesToScan] must contain at least one not null and not empty element");
+    }
 
+    if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isBlank())) {
+      throw new IllegalArgumentException(
+          "Argument [packagesToScan] must not contain null or empty element");
+    }
+
+    var optBrokenName = Arrays.stream(packagesToScan)
+        .filter(p -> !p.matches("^[a-zA-Z0-9.]+$"))
+        .findFirst();
+    if (optBrokenName.isPresent()) {
+      throw new IllegalArgumentException(
+          "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+              .formatted(optBrokenName.get()));
+    }
+  }
+}

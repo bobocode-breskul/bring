@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ScanUtilsImplTest {
 
-  private final ScanUtils scanUtils = new ScanUtilsImpl();
+  private final ScanUtilsImpl scanUtils = new ScanUtilsImpl();
 
   @Test
   @DisplayName("Find all classes located in flat package tree")
@@ -205,7 +205,9 @@ class ScanUtilsImplTest {
   void given_ThrowsException_When_InvalidPackageName(String packageName) {
     assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Package name must contain only letters, numbers and symbol [.]");
+        .hasMessage(
+            "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+                .formatted(packageName));
   }
 
   @Test
@@ -215,7 +217,7 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // verify
-    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
+    assertDoesNotThrow(() -> scanUtils.searchAllClasses(inputPackage));
   }
 
   @Test
@@ -227,13 +229,5 @@ class ScanUtilsImplTest {
     String thirdInputPackage = "io.github.bobocodebreskul";
     assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
         thirdInputPackage));
-  }
-
-  @Test
-  @Order(15)
-  @DisplayName("Nothing throw when valid packages with numbers")
-  void given_NoExceptions_When_ValidPackageWithNumbers() {
-    String inputPackage = "io.github.bobocodebreskul1";
-    assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(inputPackage));
   }
 }

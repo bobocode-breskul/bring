@@ -56,14 +56,17 @@ public class ScanUtilsImpl implements ScanUtils {
         .collect(Collectors.toSet());
   }
 
-  @Override
-  public void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
+  /**
+   * Valid incoming packages for not existing package, null input, not valid symbols
+   * @param packagesToScan packages to scan
+   */
+  void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
     if (packagesToScan == null || packagesToScan.length == 0) {
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must contain at least one not null and not empty element");
     }
 
-    if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isEmpty())) {
+    if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isBlank())) {
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must not contain null or empty element");
     }
@@ -71,13 +74,13 @@ public class ScanUtilsImpl implements ScanUtils {
     if (Arrays.stream(packagesToScan)
         .anyMatch(p -> !p.matches("^[a-zA-Z0-9.]+$"))) {
       throw new IllegalArgumentException(
-          "Package name must contain only letters, numbers and symbol [.]");
+          "Argument [packagesToScan] must contain only letters, numbers and symbol [.]");
     }
 
     if (Arrays.stream(packagesToScan)
         .anyMatch(p -> containsAny(p, ILLEGAL_SYMBOLS))) {
       throw new IllegalArgumentException(
-          "Package name must not contain illegal symbols");
+          "Argument [packagesToScan] must not contain illegal symbols");
     }
   }
 

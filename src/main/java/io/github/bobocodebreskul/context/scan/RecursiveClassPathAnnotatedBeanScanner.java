@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.toSet;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
+import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,7 +26,6 @@ import java.util.Set;
 public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotatedBeanScanner {
 
   private static final String PACKAGE_DELIMITER = ".";
-
   private final ScanUtils scanUtils;
   private final AnnotatedBeanDefinitionReader beanDefinitionReader;
 
@@ -37,7 +37,7 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
 
   @Override
   public void scan(String... scanPackages) {
-    scanUtils.validatePackagesToScan(scanPackages);
+    new ScanUtilsImpl().validatePackagesToScan(scanPackages);
     Queue<String> remainingScanPackages = new ArrayDeque<>(asList(scanPackages));
     Set<String> processedScanPackages = new HashSet<>();
     while (!remainingScanPackages.isEmpty()) {

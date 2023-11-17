@@ -19,7 +19,7 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
-    log.trace("Search all classes for @{} package", packagePathPrefix);
+    log.trace("Search all classes for {} package", packagePathPrefix);
     validatePackagesToScan(packagePathPrefix);
     Reflections reflections = new Reflections(packagePathPrefix,
         Scanners.SubTypes.filterResultsBy((s) -> true));
@@ -83,7 +83,8 @@ public class ScanUtilsImpl implements ScanUtils {
         .filter(p -> !p.matches("^[a-zA-Z0-9.]+$"))
         .findFirst();
     if (optBrokenName.isPresent()) {
-      log.error("Package name must contain only letters, numbers and symbol [.]");
+      log.error("Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
+          .formatted(optBrokenName.get()));
       throw new IllegalArgumentException(
           "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
               .formatted(optBrokenName.get()));

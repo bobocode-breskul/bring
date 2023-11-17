@@ -8,7 +8,6 @@ import static java.util.stream.Collectors.toSet;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,7 +36,6 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
 
   @Override
   public void scan(String... scanPackages) {
-    scanUtils.validatePackagesToScan(scanPackages);
     Queue<String> remainingScanPackages = new ArrayDeque<>(asList(scanPackages));
     Set<String> processedScanPackages = new HashSet<>();
     while (!remainingScanPackages.isEmpty()) {

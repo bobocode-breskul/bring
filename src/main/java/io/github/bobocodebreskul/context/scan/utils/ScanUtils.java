@@ -38,9 +38,4 @@ public interface ScanUtils {
      */
     Set<Class<?>> searchClassesByFilter(String packagePathPrefix, Predicate<Class<?>> filter);
 
-    /**
-     * Valid incoming packages for not existing package, null input, not valid symbols
-     * @param packagesToScan packages to scan
-     */
-    void validatePackagesToScan(String... packagesToScan);
 }

@@ -59,28 +59,7 @@ public class ScanUtilsImpl implements ScanUtils {
         .collect(Collectors.toSet());
   }
 
-  @Override
-  public void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
-    if (packagesToScan == null || packagesToScan.length == 0) {
-      log.error(
-          "Argument packages to scan must contain at least one not null and not empty element");
-      throw new IllegalArgumentException(
-          "Argument [packagesToScan] must contain at least one not null and not empty element");
-    }
 
-    if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isEmpty())) {
-      log.error("Argument packages to scan must not contain null or empty element");
-      throw new IllegalArgumentException(
-          "Argument [packagesToScan] must not contain null or empty element");
-    }
-
-    if (Arrays.stream(packagesToScan)
-        .anyMatch(p -> !p.matches("^[a-zA-Z0-9.]+$"))) {
-      log.error("Package name must contain only letters, numbers and symbols");
-      throw new IllegalArgumentException(
-          "Package name must contain only letters, numbers and symbol [.]");
-    }
-  }
   /**
    * Valid incoming packages for not existing package, null input, not valid symbols
    *
@@ -88,11 +67,14 @@ public class ScanUtilsImpl implements ScanUtils {
    */
   void validatePackagesToScan(String... packagesToScan) throws IllegalArgumentException {
     if (packagesToScan == null || packagesToScan.length == 0) {
+      log.error(
+          "Argument packages to scan must contain at least one not null and not empty element");
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must contain at least one not null and not empty element");
     }
 
     if (Arrays.stream(packagesToScan).anyMatch(s -> s == null || s.isBlank())) {
+      log.error("Argument packages to scan must not contain null or empty element");
       throw new IllegalArgumentException(
           "Argument [packagesToScan] must not contain null or empty element");
     }
@@ -101,6 +83,7 @@ public class ScanUtilsImpl implements ScanUtils {
         .filter(p -> !p.matches("^[a-zA-Z0-9.]+$"))
         .findFirst();
     if (optBrokenName.isPresent()) {
+      log.error("Package name must contain only letters, numbers and symbols");
       throw new IllegalArgumentException(
           "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
               .formatted(optBrokenName.get()));

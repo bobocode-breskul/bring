@@ -25,7 +25,6 @@ import java.util.Set;
 public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotatedBeanScanner {
 
   private static final String PACKAGE_DELIMITER = ".";
-
   private final ScanUtils scanUtils;
   private final AnnotatedBeanDefinitionReader beanDefinitionReader;
 
@@ -52,7 +51,8 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
     }
   }
 
-  private List<String> findConfigurationScanPackages(Set<Class<?>> foundClasses, Set<String> processedScanPackages) {
+  private List<String> findConfigurationScanPackages(Set<Class<?>> foundClasses,
+      Set<String> processedScanPackages) {
     return foundClasses.stream()
         .filter(this::isConfigurationClass)
         .map(this::findConfigurationScanPackages)

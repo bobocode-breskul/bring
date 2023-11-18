@@ -8,7 +8,6 @@ import static java.util.stream.Collectors.toSet;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;

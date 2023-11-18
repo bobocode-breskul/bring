@@ -6,10 +6,12 @@ import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException
 import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
+import io.github.bobocodebreskul.server.TomcatServer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,7 +47,12 @@ public class BringContainer implements ObjectFactory {
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(scanPackages);
 
-    return new BringContainer(definitionRegistry);
+    BringContainer container = new BringContainer(definitionRegistry);
+
+    definitionRegistry.getBeanDefinitions().forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
+
+    new Thread(()->TomcatServer.run(container)).start();
+    return container;
   }
 
   // TODO: 1. add dependency Injection by one constructor with parameters
@@ -82,5 +89,9 @@ public class BringContainer implements ObjectFactory {
   @Override
   public Object getBean(Class<?> clazz) {
     throw new UnsupportedOperationException();
+  }
+
+  public List<Object> getAllBeans() {
+    return storageByName.values().stream().toList();
   }
 }

@@ -3,6 +3,7 @@ package io.github.bobocodebreskul.context;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 
 @BringComponent
+// TODO: remove
 public class TestClass1 {
 
   public void doWork() {

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -112,6 +113,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Generate bean name based on specified bean class")
+  @Order(6)
   void givenBeanClass_WhenGenerateClassBeanName_ThenReturnValidBeanName(){
     //given
     var beanClass = MyComponent.class;
@@ -126,6 +128,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Throw NullPointerException when provided class type is null")
+  @Order(7)
   void givenNullClassType_WhenGenerateClassBeanName_ThenThrowNullPointerException() {
     // when
     // then
@@ -135,8 +138,104 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @Test
+  @DisplayName("Get all dependencies of component class: constructor parameters, autowired fields, autowired method arguments")
+  @Order(8)
+  void givenBeanClassWithDependencies_WhenGetBeanDependencies_ThenReturnAllDependencyClasses() {
+    //given
+    Class<DependentComponent> componentClass = DependentComponent.class;
+    //when
+    List<Class<?>> beanDependencies = BeanDefinitionReaderUtils.getBeanDependencies(componentClass)
+        .stream()
+        .map(BeanDependency::type)
+        .collect(Collectors.toList());
+
+    //then
+    assertThat(beanDependencies).containsExactlyInAnyOrder(
+        MyComponent.class,
+        AnotherComponent.class,
+        OneMoreComponent.class);
+
+  }
+
+  @Test
+  @DisplayName("Get bean dependencies from the single class constructor")
+  @Order(9)
+  void givenBeanClassWithOneConstructor_WhenGetBeanDependencies_ThenReturnValidDependency(){
+    //given
+    var beanClass = ConstructorDependentComponent.class;
+    var expectedDependencyClass = MyComponent.class;
+
+    //when
+    var dependencies = BeanDefinitionReaderUtils.getBeanDependencies(beanClass);
+
+    //then
+    assertThat(dependencies.stream().map(BeanDependency::type).toArray())
+        .containsExactly(expectedDependencyClass);
+  }
+
+  @Test
+  @DisplayName("Throw BeanDefinitionCreationException when bean has more then 1 constructor")
+  @Order(10)
+  void givenBeanClassWithSeveralConstructors_WhenGetBeanDependencies_ThenShouldThrowException() {
+    //given
+    //when
+    //then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanDependencies(ComponentWith2Constructors.class))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessageContaining("Bean candidate should have only one constructor declared");
+  }
+
+  @Test
+  @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
+  @Disabled
+  @Order(11)
+  void givenBeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_WhenGetBeanDependencies_ThenThrowException() {
+    // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
+  }
+
+  @Test
+  @DisplayName("Get bean dependencies when bean class has more than one constructor and one of them is default constructor")
+  @Disabled
+  @Order(12)
+  void givenBeanClassWithMultiConstructorIncludingDefault_WhenGetBeanDependencies_ThenReturnValidDependency() {
+    // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
+  }
+
+  @Test
+  @DisplayName("Get bean dependencies when bean class has more than one constructor and on of them is auto wired")
+  @Disabled
+  @Order(13)
+  void givenBeanClassWithMultiConstructorAndOneOfThemAutowired_WhenGetBeanDependencies_ThenReturnValidDependency() {
+    // TODO: IMPLEMENT find single autowired constructor if more than 1 constructor present and one on of them marked as @Autowired
+  }
+
+  @Test
+  @DisplayName("Throw exception when bean class has more than one constructor annotated with @Autowired")
+  @Disabled
+  @Order(14)
+  void givenBeanClassWithMultipleConstructorsAnnotatedWithAutowired_WhenGetBeanDependencies_ThenThrowException(){
+    // TODO: IMPLEMENT throw exception when more than one constructor present and more than one @Autowired present
+  }
+
+  @Test
+  @DisplayName("Get bean dependencies when bean class has only field autowired dependencies")
+  @Disabled
+  @Order(15)
+  void givenBeanClassWithOnlyAutowiredFieldDependencies_WhenGetBeanDependencies_ThenReturnValidDependencies() {
+  // TODO: IMPLEMENT only field dependencies found
+  }
+
+  @Test
+  @DisplayName("Get bean dependencies when bean class has only method autowired dependencies")
+  @Disabled
+  @Order(16)
+  void givenBeanClassWithOnlyMethodDependencies_WhenGetBeanDependencies_ThenReturnValidMethodDependencies() {
+    // TODO: IMPLEMENT only method dependencies found
+  }
+
+  @Test
   @DisplayName("Verify autowired bean class defined as autowire candidate")
-  @Order(6)
+  @Order(17)
   void givenBeanClassAutowireCandidate_WhenIsBeanAutowireCandidate_ThenReturnTrue() {
     //given
     var autowiredBeanClass = MyComponent.class;
@@ -155,7 +254,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Verify bean class without dependencies is not defined as autowire candidate")
-  @Order(7)
+  @Order(18)
   void givenBeanClass_WhenIsBeanAutowireCandidate_ThenReturnFalse() {
     //given
     var autowiredBeanClass = MyComponent.class;
@@ -169,25 +268,6 @@ class BeanDefinitionReaderUtilsTest {
 
     //then
     assertThat(result).isFalse();
-  }
-
-  @Test
-  @DisplayName("Get all dependencies of component class: constructor parameters, autowired fields, autowired method arguments")
-  @Order(8)
-  void givenBeanClassWithDependencies_WhenGetBeanDependencies_ThenReturnAllDependencyClasses() {
-    //given
-    Class<DependentComponent> componentClass = DependentComponent.class;
-    //when
-    List<Class<?>> beanDependencies = BeanDefinitionReaderUtils.getBeanDependencies(componentClass).stream()
-        .map(BeanDependency::type)
-        .collect(Collectors.toList());
-
-    //then
-    assertThat(beanDependencies).containsExactlyInAnyOrder(
-        MyComponent.class,
-        AnotherComponent.class,
-        OneMoreComponent.class);
-
   }
 
   @BringComponent

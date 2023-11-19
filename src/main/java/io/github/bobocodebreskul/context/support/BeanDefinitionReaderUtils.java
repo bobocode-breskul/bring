@@ -61,7 +61,6 @@ public class BeanDefinitionReaderUtils {
 
   // TODO: CONTAINER (OPTIONAL) generate bean name (only for 'dependsOn') by bean class name or by qualifier annotation if present
 
-  // TODO: CONTAINER tests
   /**
    * Returns a list of bean dependencies (as {@link BeanDependency}) this bean depends on,
    * including constructor argument types, fields, and methods annotated with the
@@ -70,13 +69,6 @@ public class BeanDefinitionReaderUtils {
    * @param beanClass the class of the bean to scan for dependencies
    * @return a list of bean dependency types
    */
-  // TODO: CASE1: re-check normal behavior
-  // TODO: CASE2: throw exception when more than 1 constructor
-  // TODO: CASE3: (dummy) find single autowired constructor if more than 1 constructor present and one on of them marked as @Autowired
-  // TODO: CASE4: (dummy) throw exception when more than one constructor present and more than one @Autowired present
-  // TODO: CASE3: only constructor dependencies found
-  // TODO: CASE4: (dummy) only field dependencies found
-  // TODO: CASE5: (dummy) only method dependencies found
   public static List<BeanDependency> getBeanDependencies(Class<?> beanClass) {
     log.trace("Scanning class {} for @Autowire candidates", beanClass.getName());
 

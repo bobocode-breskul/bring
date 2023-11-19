@@ -5,6 +5,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 
 public class TomcatServer {
+
   private static final String DEFAULT_HOST = "localhost";
   private static final int DEFAULT_PORT = 8080;
   private static final String DEFAULT_CONTEXT_PATH = "/";

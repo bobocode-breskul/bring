@@ -5,7 +5,6 @@ import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ public class WebContainerInitializer implements ServletContainerInitializer {
     this.container = container;
   }
 
-  public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+  public void onStartup(Set<Class<?>> c, ServletContext ctx) {
     Map<String, ControllerMethod> pathToController = getAllPaths();
     // Register your super servlet
     ServletRegistration.Dynamic servlet = ctx.addServlet("dispatcherServlet",

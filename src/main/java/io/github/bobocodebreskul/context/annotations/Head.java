@@ -6,13 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Post annotation marks our method as a Post handler of a corresponding Controller
+ * Head annotation marks our method as a Head handler of a corresponding Controller
  *  @see Controller
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Post {
-
+public @interface Head {
   String value() default "";
-
 }

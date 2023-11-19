@@ -10,6 +10,7 @@ import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.util.Collections;
@@ -292,6 +293,23 @@ class BeanDefinitionReaderUtilsTest {
   @BringComponent
   static class IgnoreComponent {
 
+  }
+
+  @BringComponent
+  static class ComponentWith2Constructors {
+    private MyComponent myComponent;
+
+    public ComponentWith2Constructors() {}
+
+    public ComponentWith2Constructors(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
+  }
+
+  @BringComponent
+  @RequiredArgsConstructor
+  static  class ConstructorDependentComponent {
+    private final MyComponent component;
   }
 
   @BringComponent

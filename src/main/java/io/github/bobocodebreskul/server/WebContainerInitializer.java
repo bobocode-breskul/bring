@@ -1,16 +1,18 @@
 package io.github.bobocodebreskul.server;
 
 import io.github.bobocodebreskul.context.annotations.Controller;
+import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
-
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class WebContainerInitializer implements ServletContainerInitializer {
 
@@ -21,15 +23,31 @@ public class WebContainerInitializer implements ServletContainerInitializer {
   }
 
   public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
-    Map<String, Object> pathToController = getAllPaths();
+    Map<String, ControllerMethod> pathToController = getAllPaths();
     // Register your super servlet
-    ServletRegistration.Dynamic servlet = ctx.addServlet("dispatcherServlet", new DispatcherServlet(this.container, pathToController));
+    ServletRegistration.Dynamic servlet = ctx.addServlet("dispatcherServlet",
+        new DispatcherServlet(this.container, pathToController));
     servlet.addMapping("/*");
   }
 
-  private Map<String, Object> getAllPaths() {
-    return container.getAllBeans().stream()
-            .filter(obj -> obj.getClass().isAnnotationPresent(Controller.class))
-            .collect(Collectors.toMap(obj -> obj.getClass().getAnnotation(Controller.class).value(), Function.identity()));
+  private Map<String, ControllerMethod> getAllPaths() {
+    Map<String, ControllerMethod> map = new HashMap<>();
+
+    List<Object> controllers = container.getAllBeans().stream()
+        .filter(obj -> obj.getClass().isAnnotationPresent(Controller.class)).toList();
+
+    for (Object controller : controllers) {
+      Method[] declaredMethods = controller.getClass().getDeclaredMethods();
+
+      List<Method> list = Arrays.stream(declaredMethods)
+          .filter(method -> method.isAnnotationPresent(Get.class)).toList();
+
+      for (Method method : list) {
+        String value = method.getAnnotation(Get.class).value();
+        String path = controller.getClass().getAnnotation(Controller.class).value().concat(value);
+        map.put(path, new ControllerMethod(controller, method));
+      }
+    }
+    return map;
   }
 }

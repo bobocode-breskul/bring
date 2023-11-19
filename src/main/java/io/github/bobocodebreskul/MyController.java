@@ -4,13 +4,18 @@ import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Controller;
 import io.github.bobocodebreskul.context.annotations.Get;
 
-@Controller("/hello")
+@Controller("/pictures")
 @BringComponent
 public class MyController {
 
-    @Get
-    public Greet getHello() {
-        return new Greet("Hello, value");
+    @Get("/first")
+    public Greet getFirst() {
+        return new Greet("Hello, first");
+    }
+
+    @Get("/second")
+    public Greet getSecond() {
+        return new Greet("Hello, second");
     }
 
     public class Greet {

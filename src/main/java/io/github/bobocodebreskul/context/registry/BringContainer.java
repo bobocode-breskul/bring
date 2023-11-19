@@ -1,12 +1,11 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
-import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,12 +63,12 @@ public class BringContainer implements ObjectFactory {
         return storageByName.get(name);
       }
       Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
-      List<String> dependsOnList = beanDefinition.getDependsOnNames();
+      List<BeanDependency> dependsOnList = beanDefinition.getDependencies();
+      // TODO: CONTAINER test
       Object[] dependentBeans = dependsOnList.stream()
+          .map(BeanDependency::name)
           .map(this::getBean)
           .toArray();
-      // TODO: 1. call constructor found by types
-      // TODO: 2. recursively create all dependent beans
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);

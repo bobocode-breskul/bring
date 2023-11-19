@@ -37,18 +37,16 @@ public interface BeanDefinition {
   void setName(String name);
 
   /**
-   * Set the list of bean types that this bean depends on being initialized.
+   * Set all bean dependencies.
+   * @param dependencies bean dependencies
    */
-  void setDependsOn(List<Class<?>> dependsOn);
+  void setDependencies(List<BeanDependency> dependencies);
 
   /**
-   * Return the bean types that this bean depends on.
+   * Return all bean dependencies.
+   * @return bean dependencies
    */
-  List<Class<?>> getDependsOn();
-
-  List<String> getDependsOnNames();
-
-  void setDependsOnNames(List<String> dependsOnNames);
+  List<BeanDependency> getDependencies();
 
   /**
    * Override the target scope of this bean, specifying a new scope name.

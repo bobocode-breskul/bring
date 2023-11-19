@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.context.config;
 
 
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -18,9 +19,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   private String scope;
   private boolean primary;
   private boolean autowireCandidate;
-  private List<Class<?>> dependsOn;
-  // TODO: test implementation
-  private List<String> dependsOnNames;
+  private List<BeanDependency> dependencies;
 
   public GenericBeanDefinition(Class<?> beanClass) {
     setBeanClass(beanClass);
@@ -37,21 +36,15 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   }
 
   @Override
-  public void setDependsOn(List<Class<?>> dependsOn) {
-    this.dependsOn = dependsOn;
+  public void setDependencies(List<BeanDependency> dependencies) {
+    this.dependencies = dependencies;
   }
 
   @Override
-  public List<Class<?>> getDependsOn() {
-    return dependsOn;
-  }
-
-  public List<String> getDependsOnNames() {
-    return dependsOnNames;
-  }
-
-  public void setDependsOnNames(List<String> dependsOnNames) {
-    this.dependsOnNames = dependsOnNames;
+  public List<BeanDependency> getDependencies() {
+    return dependencies != null
+        ? dependencies
+        : Collections.emptyList();
   }
 
   @Override
@@ -122,7 +115,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append(name, that.name)
         .append(beanClass, that.beanClass)
         .append(scope, that.scope)
-        .append(dependsOn, that.dependsOn)
+        .append(dependencies, that.dependencies)
         .isEquals();
   }
 
@@ -133,7 +126,9 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append(beanClass)
         .append(scope)
         .append(primary)
-        .append(autowireCandidate).append(dependsOn).toHashCode();
+        .append(autowireCandidate)
+        .append(dependencies)
+        .toHashCode();
   }
 
   @Override

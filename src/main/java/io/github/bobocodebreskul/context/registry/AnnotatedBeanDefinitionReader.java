@@ -2,7 +2,6 @@ package io.github.bobocodebreskul.context.registry;
 
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanDependencies;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanNameDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
@@ -10,6 +9,7 @@ import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.Arrays;
@@ -103,7 +103,7 @@ public class AnnotatedBeanDefinitionReader {
     log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
     log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as: duplicate bean names,
-    //  bean name validity (unallowed characters), check for circular dependency
+    //  bean name validity (not allowed characters), check for circular dependency
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     name = name != null ? name : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
@@ -122,12 +122,10 @@ public class AnnotatedBeanDefinitionReader {
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    List<Class<?>> beanDependencies = getBeanDependencies(beanClass);
-    List<String> beanNameDependencies = getBeanNameDependencies(beanClass, beanDefinitionRegistry);
+    List<BeanDependency> dependencies = getBeanDependencies(beanClass);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
-        beanDependencies.size(), beanClass.getName(), name);
-    annotatedBeanDefinition.setDependsOn(beanDependencies);
-    annotatedBeanDefinition.setDependsOnNames(beanNameDependencies);
+        dependencies.size(), beanClass.getName(), name);
+    annotatedBeanDefinition.setDependencies(dependencies);
     annotatedBeanDefinition.setAutowireCandidate(
         isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 

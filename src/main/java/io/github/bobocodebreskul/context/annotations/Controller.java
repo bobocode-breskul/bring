@@ -20,10 +20,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Controller {
 
-    /**
-     * Represents component name if the component is installed automatically.
-     * @return the filled component name if a value has been specified
-     */
-    String value();
+  /**
+   * Represents component name if the component is installed automatically.
+   *
+   * @return the filled component name if a value has been specified
+   */
+  String value();
 }
 

@@ -9,20 +9,7 @@ import io.github.bobocodebreskul.context.annotations.Get;
 public class MyController {
 
   @Get
-  public Greet getHello() {
-    return new Greet("Hello, value");
-  }
-
-  public class Greet {
-
-    private String value;
-
-    public Greet(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+  public String getHello() {
+    return "Hello, world!";
   }
 }

@@ -8,16 +8,16 @@ import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
 
-@Controller("/pictures")
+@Controller("/pictures/yours")
 @BringComponent
-public class MyController {
+public class YourController {
 
   @Get("/first")
   public Greet getFirst() {
-    return new Greet("My controller, first");
+    return new Greet("Your controller, first");
   }
 
-  @Get("/second2")
+  @Get("/second")
   public Greet getSecond() {
     return new Greet("Hello, second");
   }

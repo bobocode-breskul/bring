@@ -6,11 +6,12 @@ import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
+import io.github.bobocodebreskul.context.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,38 +29,23 @@ public class WebContainerInitializer implements ServletContainerInitializer {
 
   private static String getAnnotationValue(Class<? extends Annotation> annotation, Method method) {
     String value = "";
-
     Annotation methodAnnotation = method.getAnnotation(annotation);
-
-    if (methodAnnotation instanceof Get) {
-      value = ((Get) methodAnnotation).value();
+    if (methodAnnotation != null) {
+      try {
+        Method valueMethod = annotation.getMethod("value");
+        value = (String) valueMethod.invoke(methodAnnotation);
+      } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        e.printStackTrace();
+      }
     }
-
-    if (methodAnnotation instanceof Post) {
-      value = ((Post) methodAnnotation).value();
-    }
-
-    if (methodAnnotation instanceof Put) {
-      value = ((Put) methodAnnotation).value();
-    }
-
-    if (methodAnnotation instanceof Delete) {
-      value = ((Delete) methodAnnotation).value();
-    }
-
-    if (methodAnnotation instanceof Head) {
-      value = ((Head) methodAnnotation).value();
-    }
-
     return value;
   }
 
   public void onStartup(Set<Class<?>> c, ServletContext ctx) {
     Map<String, Map<Class<?>, ControllerMethod>> pathToController = getAllPaths();
     // Register your super servlet
-    ServletRegistration.Dynamic servlet = ctx.addServlet("dispatcherServlet",
-        new DispatcherServlet(this.container, pathToController));
-    servlet.addMapping("/*");
+    ctx.addServlet("dispatcherServlet", new DispatcherServlet(this.container, pathToController))
+        .addMapping("/*");
   }
 
   private Map<String, Map<Class<?>, ControllerMethod>> getAllPaths() {
@@ -69,17 +55,13 @@ public class WebContainerInitializer implements ServletContainerInitializer {
       if (bean.getClass().isAnnotationPresent(Controller.class)) {
         Method[] declaredMethods = bean.getClass().getDeclaredMethods();
 
-        List<Method> getMethodList = getMethodList(declaredMethods, Get.class);
-        List<Method> postMethodList = getMethodList(declaredMethods, Post.class);
-        List<Method> putMethodList = getMethodList(declaredMethods, Put.class);
-        List<Method> deleteMethodList = getMethodList(declaredMethods, Delete.class);
-        List<Method> headMethodList = getMethodList(declaredMethods, Head.class);
+        List<Class<? extends Annotation>> annotationList = List.of(Get.class, Post.class, Put.class,
+            Delete.class, Head.class);
 
-        addMethodsToMap(bean, getMethodList, map, Get.class);
-        addMethodsToMap(bean, postMethodList, map, Post.class);
-        addMethodsToMap(bean, putMethodList, map, Put.class);
-        addMethodsToMap(bean, deleteMethodList, map, Delete.class);
-        addMethodsToMap(bean, headMethodList, map, Head.class);
+        for (var annotation : annotationList) {
+          List<Method> methodList = getMethodList(declaredMethods, annotation);
+          addMethodsToMap(bean, methodList, map, annotation);
+        }
       }
     }
     return map;
@@ -93,6 +75,16 @@ public class WebContainerInitializer implements ServletContainerInitializer {
       String path = controller.getClass().getAnnotation(Controller.class).value().concat(value);
       if (map.containsKey(path)) {
         controllerMethodMap = map.get(path);
+        if (controllerMethodMap.containsKey(annotation)) {
+          String controller1Name = controllerMethodMap.get(annotation).controller().getClass()
+              .getName();
+          String method1Name = controllerMethodMap.get(annotation).method().getName();
+          String controller2Name = controller.getClass().getName();
+          String method2Name = method.getName();
+          throw new DuplicatePathException(
+              "%n%n\t\tDuplicate path!%n\t\t%s#%s%n\t\t%s#%s%n".formatted(controller1Name,
+                  method1Name, controller2Name, method2Name));
+        }
       } else {
         controllerMethodMap = new HashMap<>();
       }
@@ -103,7 +95,7 @@ public class WebContainerInitializer implements ServletContainerInitializer {
 
   private List<Method> getMethodList(Method[] declaredMethods,
       Class<? extends Annotation> annotation) {
-    return Arrays.stream(declaredMethods)
-        .filter(method -> method.isAnnotationPresent(annotation)).toList();
+    return Arrays.stream(declaredMethods).filter(method -> method.isAnnotationPresent(annotation))
+        .toList();
   }
 }

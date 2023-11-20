@@ -1,11 +1,14 @@
 package io.github.bobocodebreskul.server;
 
+import static java.util.Objects.isNull;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.Delete;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
+import io.github.bobocodebreskul.context.exception.MethodInvocationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -13,9 +16,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,54 +34,72 @@ public class DispatcherServlet extends HttpServlet {
     this.pathToControllerMethod = pathToControllerMethod;
   }
 
-  @SneakyThrows
   private void processRequest(HttpServletRequest req, HttpServletResponse resp,
       Class<?> methodType) {
-    ObjectMapper mapper = new ObjectMapper();
-    String pathInfo = req.getPathInfo();
-    Map<Class<?>, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
-    ControllerMethod controllerMethod = controllerMethodMap.get(methodType);
-    Method method = controllerMethod.method();
-    Object result;
-    if (method != null) {
-      result = method.invoke(controllerMethod.controller());
-      resp.setStatus(200);
-      PrintWriter writer = resp.getWriter();
+    PrintWriter writer;
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String pathInfo = req.getPathInfo();
+      Map<Class<?>, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
+      if (isNull(controllerMethodMap)) {
+        return404(resp, mapper);
+        return;
+      }
+      ControllerMethod controllerMethod = controllerMethodMap.get(methodType);
+      if (isNull(controllerMethod)) {
+        return404(resp, mapper);
+        return;
+      }
+      Method method = controllerMethod.method();
+      if (isNull(method)) {
+        return404(resp, mapper);
+        return;
+      }
+      writer = resp.getWriter();
+      Object result = method.invoke(controllerMethod.controller());
       writer.println(mapper.writeValueAsString(result));
       writer.flush();
-    } else {
-      PrintWriter writer = resp.getWriter();
-      writer.println(mapper.writeValueAsString("Page not found!"));
-      writer.flush();
-      resp.setStatus(404);
+      resp.setStatus(HttpServletResponse.SC_OK);
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    } catch (InvocationTargetException ex) {
+      throw new MethodInvocationException("Method ", ex);
+    } catch (IllegalAccessException ex) {
+      throw new RuntimeException(ex);
     }
   }
 
-  @SneakyThrows
+  private void return404(HttpServletResponse resp, ObjectMapper mapper) {
+    try {
+      PrintWriter writer = resp.getWriter();
+      writer.println(mapper.writeValueAsString("Page not found!"));
+      writer.flush();
+      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Get.class);
   }
 
-  @SneakyThrows
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Post.class);
   }
 
-  @SneakyThrows
   @Override
   protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Put.class);
   }
 
-  @SneakyThrows
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Delete.class);
   }
 
-  @SneakyThrows
   @Override
   protected void doHead(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Head.class);

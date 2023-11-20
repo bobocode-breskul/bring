@@ -1,6 +1,9 @@
 package io.github.bobocodebreskul.context.exception;
 
-// TODO: docs
+/**
+ * Thrown to indicate about not implemented functionality. Designed to be thrown only
+ * during development phase.
+ */
 public class FeatureNotImplementedException extends RuntimeException {
   public FeatureNotImplementedException(String message) {
     super(message);

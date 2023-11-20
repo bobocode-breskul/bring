@@ -81,7 +81,6 @@ public class BringContainer implements ObjectFactory {
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException
              | IllegalArgumentException e) {
       // TODO: add additional logging with some input parameters
-      // TODO: cover with tests
       throw new InstanceCreationException(
           "Could not create an instance of \"%s\" class!".formatted(name), e);
     }

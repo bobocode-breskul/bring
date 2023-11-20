@@ -59,8 +59,6 @@ public class BeanDefinitionReaderUtils {
     return uncapitalize(beanClass);
   }
 
-  // TODO: CONTAINER (OPTIONAL) generate bean name (only for 'dependsOn') by bean class name or by qualifier annotation if present
-
   /**
    * Returns a list of bean dependencies (as {@link BeanDependency}) this bean depends on,
    * including constructor argument types, fields, and methods annotated with the
@@ -115,7 +113,7 @@ public class BeanDefinitionReaderUtils {
     return isAutowiredCandidate;
   }
 
-  // TODO: CONTAINER possible move to separate general validation class
+  // TODO: possible move to separate general validation class
   private static void validateBeanClassNonNull(Class<?> beanClass) {
     Objects.requireNonNull(beanClass, () -> {
       log.error("Failed to generate bean name for nullable bean class");

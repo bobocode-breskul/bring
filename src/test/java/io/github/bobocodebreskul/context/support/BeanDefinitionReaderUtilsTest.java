@@ -40,7 +40,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Generate bean name for bean definition based on bean class")
   @Order(1)
-  void givenValidBeanDefinition_WhenGenerateBeanName_ThenReturnValidBeanName() {
+  void given_ValidBeanDefinition_When_GenerateBeanName_Then_ReturnValidBeanName() {
     //given
     var abd = new AnnotatedGenericBeanDefinition(MyComponent.class);
     String expectedBeanName = "myComponent";
@@ -57,7 +57,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Generate bean names for bean classes with equal name")
   @Order(2)
-  void givenClassNameInRegistry_WhenGenerateBeanNames_ThenNoDuplicateExceptionIsThrown() {
+  void given_ClassNameInRegistry_When_GenerateBeanNames_Then_NoDuplicateExceptionIsThrown() {
     //given
     var abd1 = new AnnotatedGenericBeanDefinition(MyComponent.class);
     when(registry.isBeanNameInUse(any())).thenReturn(true);
@@ -72,7 +72,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Generate bean names for bean classes with equal name")
   @Order(3)
-  void givenEqualClassNames_WhenGenerateBeanNames_ThenThrowBeanDefinitionDuplicateException() {
+  void given_EqualClassNames_When_GenerateBeanNames_Then_ThrowBeanDefinitionDuplicateException() {
     //given
     var abd1 = new AnnotatedGenericBeanDefinition(MyComponent.class);
     var abd2 = new AnnotatedGenericBeanDefinition(
@@ -91,7 +91,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Throw exception when nullable bean definition specified")
   @Order(4)
-  void givenNullBeanDefinition_WhenGenerateBeanName_ThenThrowException() {
+  void given_NullBeanDefinition_When_GenerateBeanName_Then_ThrowException() {
     //given
     //when
     //then
@@ -116,7 +116,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Generate bean name based on specified bean class")
   @Order(6)
-  void givenBeanClass_WhenGenerateClassBeanName_ThenReturnValidBeanName(){
+  void given_BeanClass_When_GenerateClassBeanName_Then_ReturnValidBeanName(){
     //given
     var beanClass = MyComponent.class;
     var expectedBeanName = StringUtils.uncapitalize(beanClass.getSimpleName());
@@ -131,7 +131,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Throw NullPointerException when provided class type is null")
   @Order(7)
-  void givenNullClassType_WhenGenerateClassBeanName_ThenThrowNullPointerException() {
+  void given_NullClassType_When_GenerateClassBeanName_Then_ThrowNullPointerException() {
     // when
     // then
     assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateClassBeanName(null))
@@ -142,7 +142,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Get all dependencies of component class: constructor parameters, autowired fields, autowired method arguments")
   @Order(8)
-  void givenBeanClassWithDependencies_WhenGetBeanDependencies_ThenReturnAllDependencyClasses() {
+  void given_BeanClassWithDependencies_When_GetBeanDependencies_Then_ReturnAllDependencyClasses() {
     //given
     Class<DependentComponent> componentClass = DependentComponent.class;
     //when
@@ -162,7 +162,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Get bean dependencies from the single class constructor")
   @Order(9)
-  void givenBeanClassWithOneConstructor_WhenGetBeanDependencies_ThenReturnValidDependency(){
+  void given_BeanClassWithOneConstructor_When_GetBeanDependencies_Then_ReturnValidDependency(){
     //given
     var beanClass = ConstructorDependentComponent.class;
     var expectedDependencyClass = MyComponent.class;
@@ -178,7 +178,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Throw BeanDefinitionCreationException when bean has more then 1 constructor")
   @Order(10)
-  void givenBeanClassWithSeveralConstructors_WhenGetBeanDependencies_ThenShouldThrowException() {
+  void given_BeanClassWithSeveralConstructors_When_GetBeanDependencies_Then_ShouldThrowException() {
     //given
     //when
     //then
@@ -191,7 +191,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
   @Disabled
   @Order(11)
-  void givenBeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_WhenGetBeanDependencies_ThenThrowException() {
+  void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_GetBeanDependencies_Then_ThrowException() {
     // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
   }
 
@@ -199,7 +199,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Get bean dependencies when bean class has more than one constructor and one of them is default constructor")
   @Disabled
   @Order(12)
-  void givenBeanClassWithMultiConstructorIncludingDefault_WhenGetBeanDependencies_ThenReturnValidDependency() {
+  void given_BeanClassWithMultiConstructorIncludingDefault_When_GetBeanDependencies_Then_ReturnValidDependency() {
     // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
   }
 
@@ -207,7 +207,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Get bean dependencies when bean class has more than one constructor and on of them is auto wired")
   @Disabled
   @Order(13)
-  void givenBeanClassWithMultiConstructorAndOneOfThemAutowired_WhenGetBeanDependencies_ThenReturnValidDependency() {
+  void given_BeanClassWithMultiConstructorAndOneOfThemAutowired_When_GetBeanDependencies_Then_ReturnValidDependency() {
     // TODO: IMPLEMENT find single autowired constructor if more than 1 constructor present and one on of them marked as @Autowired
   }
 
@@ -215,7 +215,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Throw exception when bean class has more than one constructor annotated with @Autowired")
   @Disabled
   @Order(14)
-  void givenBeanClassWithMultipleConstructorsAnnotatedWithAutowired_WhenGetBeanDependencies_ThenThrowException(){
+  void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_GetBeanDependencies_Then_ThrowException(){
     // TODO: IMPLEMENT throw exception when more than one constructor present and more than one @Autowired present
   }
 
@@ -223,7 +223,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Get bean dependencies when bean class has only field autowired dependencies")
   @Disabled
   @Order(15)
-  void givenBeanClassWithOnlyAutowiredFieldDependencies_WhenGetBeanDependencies_ThenReturnValidDependencies() {
+  void given_BeanClassWithOnlyAutowiredFieldDependencies_When_GetBeanDependencies_Then_ReturnValidDependencies() {
   // TODO: IMPLEMENT only field dependencies found
   }
 
@@ -231,14 +231,14 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Get bean dependencies when bean class has only method autowired dependencies")
   @Disabled
   @Order(16)
-  void givenBeanClassWithOnlyMethodDependencies_WhenGetBeanDependencies_ThenReturnValidMethodDependencies() {
+  void given_BeanClassWithOnlyMethodDependencies_When_GetBeanDependencies_Then_ReturnValidMethodDependencies() {
     // TODO: IMPLEMENT only method dependencies found
   }
 
   @Test
   @DisplayName("Verify autowired bean class defined as autowire candidate")
   @Order(17)
-  void givenBeanClassAutowireCandidate_WhenIsBeanAutowireCandidate_ThenReturnTrue() {
+  void given_BeanClassAutowireCandidate_When_IsBeanAutowireCandidate_Then_ReturnTrue() {
     //given
     var autowiredBeanClass = MyComponent.class;
     var componentClass = AnotherComponent.class;
@@ -257,7 +257,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Verify bean class without dependencies is not defined as autowire candidate")
   @Order(18)
-  void givenBeanClass_WhenIsBeanAutowireCandidate_ThenReturnFalse() {
+  void given_BeanClass_When_IsBeanAutowireCandidate_Then_ReturnFalse() {
     //given
     var autowiredBeanClass = MyComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(autowiredBeanClass);

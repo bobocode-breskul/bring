@@ -1,6 +1,5 @@
 package io.github.bobocodebreskul;
 
-import io.github.bobocodebreskul.context.TestClass1;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.lang.reflect.Constructor;
@@ -8,14 +7,13 @@ import java.lang.reflect.Constructor;
 @BringComponent
 public class Main {
 
-    private final TestClass1 testClass1;
+    private final TestClass testClass1;
 
-    public Main(TestClass1 testClass1) {
+    public Main(TestClass testClass1) {
         this.testClass1 = testClass1;
     }
 
     public static void main(String[] args) {
-
         Constructor<?>[] constructors = Main.class.getConstructors();
         System.out.println("constructors.length = " + constructors.length);
 

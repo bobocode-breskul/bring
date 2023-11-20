@@ -44,7 +44,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Test simple bean definition is created and passed to registry")
   @Order(1)
-  void givenBeanClass_WhenRegisterBean_ThenBeanDefinitionCreatedAndPassedToRegistry() {
+  void given_BeanClass_When_RegisterBean_Then_BeanDefinitionCreatedAndPassedToRegistry() {
     //given
     var beanClass = MyComponent.class;
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
@@ -71,7 +71,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Test bean definition with dependencies is created and passed to registry")
   @Order(2)
-  void givenBeanClassWithDependencies_WhenRegisterBean_ThenBeanDefinitionCreatedAndPassedToRegistry() {
+  void given_BeanClassWithDependencies_When_RegisterBean_Then_BeanDefinitionCreatedAndPassedToRegistry() {
     //given
     var beanClass = MyComponent.class;
     var beanClassWithDependency = AnotherComponent.class;
@@ -101,7 +101,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Test bean definition autowired candidate property marked as true")
   @Order(3)
-  void givenBeanClassInjected_WhenRegisterBean_ThenBeanDefinitionAutowiredCandidateTrue() {
+  void given_BeanClassInjected_When_RegisterBean_Then_BeanDefinitionAutowiredCandidateTrue() {
     //given
     var beanClass = MyComponent.class;
     var beanClassWithDependency = AnotherComponent.class;
@@ -132,7 +132,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Test bean definition registered by specified bean name")
   @Order(4)
-  void givenBeanClassAndName_WhenRegisterBean_ThenBeanDefinitionRegisteredBySpecifiedName() {
+  void given_BeanClassAndName_When_RegisterBean_Then_BeanDefinitionRegisteredBySpecifiedName() {
     //given
     var beanClass = MyComponent.class;
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
@@ -160,7 +160,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Throw DuplicateBeanDefinitionException when duplicate bean name specified")
   @Order(5)
-  void givenBeanClassWithDuplicateName_WhenRegisterBean_ThenThrowDuplicateBeanDefinitionException() {
+  void given_BeanClassWithDuplicateName_When_RegisterBean_Then_ThrowDuplicateBeanDefinitionException() {
     //given
     var firstBeanClass = MyComponent.class;
     var secondBeanClass = AnotherComponent.class;
@@ -180,7 +180,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Test
   @DisplayName("Test bean definition isPrimary property marked as true")
   @Order(6)
-  void givenPrimaryBeanClass_WhenRegisterBean_ThenBeanDefinitionPrimaryPropertyTrue() {
+  void given_PrimaryBeanClass_When_RegisterBean_Then_BeanDefinitionPrimaryPropertyTrue() {
     //given
     var primaryBeanClass = PrimaryComponent.class;
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);

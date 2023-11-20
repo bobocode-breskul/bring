@@ -4,24 +4,16 @@ package io.github.bobocodebreskul.context.registry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
-import io.github.bobocodebreskul.context.support.ReflectionUtils;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -30,8 +22,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 
@@ -53,7 +43,7 @@ class BringContainerTest {
   @Test
   @Description("Create single bean by bean name")
   @Order(1)
-  void givenBeanName_WhenBeanIsRegistered_ThenReturnBean() {
+  void given_BeanName_When_BeanIsRegistered_Then_ReturnBean() {
     // data
     String inputBeanName = TEST_BEAN_NAME_1;
     // given
@@ -75,7 +65,7 @@ class BringContainerTest {
   @Test
   @Description("Create and return same bean when called twice by same bean name")
   @Order(2)
-  void givenBeanName_WhenBeanIsRegistered_ThenOnSecondTimeReturnSameBeanAgain() {
+  void given_BeanName_When_BeanIsRegistered_Then_OnSecondTimeReturnSameBeanAgain() {
     // data
     String inputBeanName = TEST_BEAN_NAME_1;
     // given
@@ -103,18 +93,10 @@ class BringContainerTest {
             TEST_BEAN_NAME_1);
   }
 
-  // TODO: DONE case: test valid scenario when bean has single no args constructor
-  // TODO: DONE - case: test valid scenario when bean has single multi args constructor, dependencies are simple (without it's own dependencies)
-  // TODO: DONE case: test valid scenario when bean has one or more args constructor and one of it's dependencies has it's dependency
-  // TODO: DONE case: test error scenario when bean has dependency that doesn't have it's bean definition in registry
-  // TODO: IN PROGRESS case: test error when bean constructor throws InvocationTargetException
-  // TODO: IN PROGRESS case: test error when bean constructor throws InstantiationException
-  // TODO: IN PROGRESS case: test error when bean constructor throws IllegalAccessException
-  // TODO: case: test error when bean constructor throws IllegalArgumentException
-
   @Test
   @DisplayName("Create bean by bean name with 2 level depth dependency")
-  void givenBeanNameForClassWithDependencyThatHasDependency_WhenGetBeanByName_ThenReturnBean() {
+  @Order(4)
+  void given_BeanNameForClassWithDependencyThatHasDependency_When_GetBeanByName_Then_ReturnBean() {
     // data
     String inputBeanName = TEST_BEAN_NAME_3;
     // given
@@ -137,7 +119,7 @@ class BringContainerTest {
     beanDefinition1.setName(TEST_BEAN_NAME_1);
     AnnotatedGenericBeanDefinition beanDefinition4 = new AnnotatedGenericBeanDefinition(
         BeanClass4.class);
-    beanDefinition1.setName(TEST_BEAN_NAME_4);
+    beanDefinition4.setName(TEST_BEAN_NAME_4);
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition3);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2)).willReturn(beanDefinition2);
@@ -156,7 +138,8 @@ class BringContainerTest {
 
   @Test
   @DisplayName("Return bean by name with multi arguments constructor and simple dependencies")
-  void givenBeanClassWithSingleMultiArgsConstructorAndSimpleDependencies_WhenGetBeanByName_ThenReturnBeanBySpecifiedName() {
+  @Order(5)
+  void given_BeanClassWithSingleMultiArgsConstructorAndSimpleDependencies_When_GetBeanByName_Then_ReturnBeanBySpecifiedName() {
     // data
     var inputBeanName = TEST_BEAN_NAME_2;
     //given
@@ -196,7 +179,8 @@ class BringContainerTest {
 
   @Test
   @DisplayName("Throw NoSuchBeanDefinitionException when bean has dependency without bean definition")
-  void givenBeanWithDependencyWithoutBeanDefinition_WhenGetBeanByName_ThenShouldTrowNoSuchBeanDefinitionException() {
+  @Order(6)
+  void given_BeanWithDependencyWithoutBeanDefinition_When_GetBeanByName_Then_ShouldTrowNoSuchBeanDefinitionException() {
     //given
     var beanDependency = new BeanDependency(TEST_BEAN_NAME_1, BeanClass2.class);
 
@@ -216,16 +200,20 @@ class BringContainerTest {
   }
 
   @Test
-  @Disabled
-  void test1() {
-    // TODO: IN PROGRESS case: test error when bean constructor throws InstantiationException
+  @DisplayName("Throw InstanceCreationException when bean instance could not be created")
+  @Order(7)
+  void given_BeanAbstractClass_When_GetBeanByName_Then_ShouldThrowInstanceCreationException() {
+    // data
     String inputBeanName = TEST_BEAN_NAME_1;
 
+    // given
     var beanDefinition = new AnnotatedGenericBeanDefinition(AbstractBeanClass.class);
     beanDefinition.setName(TEST_BEAN_NAME_1);
     
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1)).willReturn(beanDefinition);
 
+    // when
+    // then
     assertThatThrownBy(() -> objectFactory.getBean(inputBeanName))
         .isInstanceOf(InstanceCreationException.class)
         .hasMessage("Could not create an instance of \"%s\" class!".formatted(inputBeanName));
@@ -233,8 +221,8 @@ class BringContainerTest {
 
   @Test
   @DisplayName("Throw UnsupportedOperationException when take bean without bean definition by class")
-  @Order(4)
-  void givenBeanClass_WhenBeanIsRegistered_ThenThrowUnsupportedOperationException() {
+  @Order(8)
+  void given_BeanClass_When_BeanIsRegistered_Then_ThrowUnsupportedOperationException() {
     // when
     assertThatThrownBy(() -> objectFactory.getBean(Object.class))
         .isInstanceOf(UnsupportedOperationException.class);

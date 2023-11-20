@@ -1,6 +1,8 @@
 package io.github.bobocodebreskul.context.exception;
 
-// TODO: docs
+/**
+ * Thrown to indicate bean could not be instantiated
+ */
 public class BeanDefinitionCreationException extends RuntimeException {
 
   public BeanDefinitionCreationException(String message) {

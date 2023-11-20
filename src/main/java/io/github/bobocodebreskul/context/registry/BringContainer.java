@@ -2,17 +2,18 @@ package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.FeatureNotImplementedException;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds
@@ -49,23 +50,27 @@ public class BringContainer implements ObjectFactory {
     return new BringContainer(definitionRegistry);
   }
 
-  // TODO: 1. add dependency Injection by one constructor with parameters
-  // TODO: 2. add dependency injection by @Autowired field
+  // TODO: 1. add dependency injection by @Autowired field
+
   @Override
   public Object getBean(String name) {
+    if (storageByName.containsKey(name)) {
+      return storageByName.get(name);
+    }
+
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(name);
     if (beanDefinition == null) {
       throw new NoSuchBeanDefinitionException("BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(name));
     }
     Class<?> beanClass = beanDefinition.getBeanClass();
     try {
-      if (storageByName.containsKey(name)) {
-        return storageByName.get(name);
-      }
       Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
-      List<BeanDependency> dependsOnList = beanDefinition.getDependencies();
-      // TODO: CONTAINER test
-      Object[] dependentBeans = dependsOnList.stream()
+      if (beanClass.getDeclaredConstructors().length > 1) {
+        // TODO: multiple constructor logic not implemented
+        throw new FeatureNotImplementedException(
+            "Bean instantiation with multiple constructors is not implemented");
+      }
+      Object[] dependentBeans = beanDefinition.getDependencies().stream()
           .map(BeanDependency::name)
           .map(this::getBean)
           .toArray();
@@ -73,12 +78,8 @@ public class BringContainer implements ObjectFactory {
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
-//    } catch (NoSuchMethodException e) {
-//      // TODO: add additional logging with some input parameters
-//      // TODO: cover with tests
-//      throw new NotFoundDeclaredConstructorException(
-//          "No default constructor for class \"%s\"!".formatted(name), e);
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+    } catch (InvocationTargetException | InstantiationException | IllegalAccessException
+             | IllegalArgumentException e) {
       // TODO: add additional logging with some input parameters
       // TODO: cover with tests
       throw new InstanceCreationException(

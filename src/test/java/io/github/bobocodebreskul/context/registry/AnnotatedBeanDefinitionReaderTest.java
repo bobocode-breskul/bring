@@ -20,7 +20,6 @@ import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -42,13 +41,11 @@ public class AnnotatedBeanDefinitionReaderTest {
 
   private BeanDefinitionRegistry registry;
   private AnnotatedBeanDefinitionReader annotatedBeanDefinitionReader;
-  private ScanUtils scanUtils;
 
   @BeforeEach
   void init() {
     registry = Mockito.spy(BeanDefinitionRegistry.class);
-    scanUtils = Mockito.mock(ScanUtils.class);
-    annotatedBeanDefinitionReader = new AnnotatedBeanDefinitionReader(registry, scanUtils);
+    annotatedBeanDefinitionReader = new AnnotatedBeanDefinitionReader(registry);
   }
 
   @Test
@@ -75,7 +72,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
   @Test
@@ -105,7 +101,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
   @Test
@@ -136,7 +131,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isTrue();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
   @Test
@@ -164,7 +158,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
 
@@ -184,7 +177,6 @@ public class AnnotatedBeanDefinitionReaderTest {
       .isInstanceOf(DuplicateBeanDefinitionException.class)
       .hasMessageContaining("The bean definition with specified name %s already exists"
         .formatted(expectedBeanName));
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
 
@@ -196,8 +188,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     var primaryBeanClass = PrimaryComponent.class;
     // given
     ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
-    given(scanUtils.checkIfClassHasAnnotationRecursively(Primary.class,
-      BringComponent.class)).willReturn(false);
 
     //when
     annotatedBeanDefinitionReader.register(primaryBeanClass);
@@ -206,8 +196,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(),
       definitionCaptor.capture());
-    verify(scanUtils, atMostOnce()).checkIfClassHasAnnotationRecursively(Primary.class,
-      BringComponent.class);
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(primaryBeanClass);
@@ -215,7 +203,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isTrue();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-    then(scanUtils).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -246,8 +233,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-
-    then(scanUtils).shouldHaveNoInteractions();
   }
 
   @Test
@@ -262,8 +247,6 @@ public class AnnotatedBeanDefinitionReaderTest {
 
     // given
     given(registry.isBeanNameInUse(beanName)).willReturn(false);
-    given(scanUtils.checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class)).willReturn(true);
 
     //when
     annotatedBeanDefinitionReader.registerBean(beanClass);
@@ -272,8 +255,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
-    verify(scanUtils, times(1)).checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class);
     assertThat(nameCaptor.getValue()).isEqualTo(StringUtils.uncapitalize(beanName));
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
@@ -282,8 +263,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-
-    then(scanUtils).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -296,20 +275,15 @@ public class AnnotatedBeanDefinitionReaderTest {
       .formatted(beanClass.getName(), "firstName, secondName");
 
     // given
-    given(scanUtils.checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class)).willReturn(true);
 
     //when
     Exception actualException = catchException(
       () -> annotatedBeanDefinitionReader.registerBean(beanClass));
 
     //then
-    verify(scanUtils, times(1)).checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class);
     assertThat(actualException)
       .isInstanceOf(IllegalStateException.class)
       .hasMessage(expectedMessage);
-    then(scanUtils).shouldHaveNoMoreInteractions();
     then(registry).shouldHaveNoInteractions();
   }
 
@@ -325,8 +299,6 @@ public class AnnotatedBeanDefinitionReaderTest {
 
     // given
     given(registry.isBeanNameInUse(beanName)).willReturn(false);
-    given(scanUtils.checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class)).willReturn(true);
 
     //when
     annotatedBeanDefinitionReader.registerBean(beanClass);
@@ -335,8 +307,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
-    verify(scanUtils, times(1)).checkIfClassHasAnnotationRecursively(AnnotationWithComponent.class,
-      BringComponent.class);
     assertThat(nameCaptor.getValue()).isEqualTo(StringUtils.uncapitalize(beanName));
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
@@ -345,8 +315,6 @@ public class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
-
-    then(scanUtils).shouldHaveNoMoreInteractions();
   }
 
   @Target(ElementType.TYPE)

@@ -11,9 +11,7 @@ import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +54,6 @@ public class AnnotatedBeanDefinitionReader {
   private final static String COMPONENT_NAME_FIELD = "value";
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
-  private final ScanUtils scanUtils;
 
   /**
    * Create a new AnnotatedBeanDefinitionReader for the given registry.
@@ -64,9 +61,8 @@ public class AnnotatedBeanDefinitionReader {
    * @param registry the storage to load bean definitions into, in the form of a
    *                 BeanDefinitionRegistry
    */
-  public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, ScanUtils scanUtils) {
+  public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
     this.beanDefinitionRegistry = registry;
-    this.scanUtils = scanUtils;
   }
 
   /**
@@ -114,8 +110,9 @@ public class AnnotatedBeanDefinitionReader {
 
   private Optional<String> extractBeanName(Class<?> beanClass) {
     Set<String> componentAnnotations = Arrays.stream(beanClass.getAnnotations())
-      .filter(this::isItComponentAnnotation)
-      .map(annotation -> getClassAnnotationValue(beanClass, annotation.annotationType()))
+      .filter(ReflectionUtils::isComponentAnnotation)
+      .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
+        annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
       .filter(beanName -> nonNull(beanName) && !beanName.isEmpty())
       .collect(Collectors.toSet());
     if (componentAnnotations.isEmpty()) {
@@ -130,27 +127,6 @@ public class AnnotatedBeanDefinitionReader {
       throw new IllegalStateException(
         UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
     }
-  }
-
-
-  private String getClassAnnotationValue(Class<?> classType,
-    Class<? extends Annotation> annotationType) {
-    String value = null;
-    Annotation annotation = classType.getAnnotation(annotationType);
-    if (annotation != null) {
-      try {
-        value = (String) annotation.annotationType().getMethod(COMPONENT_NAME_FIELD)
-          .invoke(annotation);
-      } catch (Exception ignore) {
-      }
-    }
-    return value;
-  }
-
-  private boolean isItComponentAnnotation(Annotation annotation) {
-    return annotation.annotationType().equals(BringComponent.class)
-      || scanUtils.checkIfClassHasAnnotationRecursively(annotation.annotationType(),
-      BringComponent.class);
   }
 
   private <T> void doRegisterBean(Class<T> beanClass, String name) {

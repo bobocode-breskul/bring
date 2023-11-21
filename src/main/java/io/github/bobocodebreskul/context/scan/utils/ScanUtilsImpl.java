@@ -1,12 +1,9 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
-import static java.util.function.Predicate.not;
-
+import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,7 +28,7 @@ public class ScanUtilsImpl implements ScanUtils {
     Class<? extends Annotation> filterByAnnotation) {
     log.trace("Search all classes for {} package which has @{} annotation",
       packagePath, filterByAnnotation);
-    Predicate<Class<?>> filter = clazz -> this.checkIfClassHasAnnotationRecursively(clazz,
+    Predicate<Class<?>> filter = clazz -> ReflectionUtils.checkIfClassHasAnnotationRecursively(clazz,
       filterByAnnotation);
 
     return searchClassesByFilter(packagePath, filter);
@@ -44,24 +41,6 @@ public class ScanUtilsImpl implements ScanUtils {
       .filter(filter)
       .collect(Collectors.toSet());
   }
-
-  public boolean checkIfClassHasAnnotationRecursively(Class<?> clazz,
-    Class<? extends Annotation> searchedAnnotation) {
-    Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
-    Set<Annotation> processedAnnotations = new HashSet<>(annotations);
-    while (!annotations.isEmpty()) {
-      var annotation = annotations.poll();
-      processedAnnotations.add(annotation);
-      if (annotation.annotationType().equals(searchedAnnotation)) {
-        return true;
-      }
-      Arrays.stream(annotation.annotationType().getAnnotations())
-        .filter(not(processedAnnotations::contains))
-        .forEach(annotations::add);
-    }
-    return false;
-  }
-
 
   /**
    * Valid incoming packages for not existing package, null input, not valid symbols

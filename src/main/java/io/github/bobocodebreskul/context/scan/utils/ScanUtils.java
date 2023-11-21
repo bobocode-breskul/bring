@@ -37,16 +37,4 @@ public interface ScanUtils {
      * @return Set of all classes which pass the filter.
      */
     Set<Class<?>> searchClassesByFilter(String packagePathPrefix, Predicate<Class<?>> filter);
-
-    /**
-     * Check if provided class has provided annotation.
-     *
-     * @param clazz target class
-     * @param searchedAnnotation searched annotation.
-     *
-     * @return true even if class have the searched annotation or if any of it annotations have the
-     * searched annotation inside.
-     */
-    boolean checkIfClassHasAnnotationRecursively(
-      Class<?> clazz, Class<? extends Annotation> searchedAnnotation);
 }

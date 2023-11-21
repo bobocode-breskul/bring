@@ -16,6 +16,7 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.cyclic.CyclicCandidate2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none.NoneCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.parent.ParentCandidate;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.single.SingleCandidate;
 import java.lang.annotation.Annotation;
@@ -171,5 +172,50 @@ class ScanUtilsImplTest {
     var actualResult = scanUtils.searchClassesByFilter(inputPackage, filter);
     // verify
     assertThat(actualResult).containsExactlyInAnyOrderElementsOf(expectedResult);
+  }
+
+  @Test
+  @DisplayName("Check if annotation found in class")
+  @Order(10)
+  void given_ClassWithTargetAnnotation_When_checkIfClassHasAnnotationRecursively_ThenReturnTrue() {
+    // data
+    Class<?> classForCheck = ParentCandidate.class;
+    Class<TestComponentAnnotation> searchedAnnotation = TestComponentAnnotation.class;
+    // when
+    var actualResult = scanUtils.checkIfClassHasAnnotationRecursively(
+      classForCheck, searchedAnnotation
+    );
+    // verify
+    assertThat(actualResult).isTrue();
+  }
+
+  @Test
+  @DisplayName("Check if annotation found in class recursively")
+  @Order(11)
+  void given_ClassWithTargetAnnotationAsParent_When_checkIfClassHasAnnotationRecursively_ThenReturnTrue() {
+    // data
+    Class<?> classForCheck = ParentCandidate.class;
+    Class<TestAnnotationWithComponent> searchedAnnotation = TestAnnotationWithComponent.class;
+    // when
+    var actualResult = scanUtils.checkIfClassHasAnnotationRecursively(
+      classForCheck, searchedAnnotation
+    );
+    // verify
+    assertThat(actualResult).isTrue();
+  }
+
+  @Test
+  @DisplayName("Find nothing if class don't have searched annotation")
+  @Order(12)
+  void given_ClassWithoutTargetAnnotation_When_checkIfClassHasAnnotationRecursively_ThenReturnFalse() {
+    // data
+    Class<?> classForCheck = NoneCandidate1.class;
+    Class<TestAnnotationWithComponent> searchedAnnotation = TestAnnotationWithComponent.class;
+    // when
+    var actualResult = scanUtils.checkIfClassHasAnnotationRecursively(
+      classForCheck, searchedAnnotation
+    );
+    // verify
+    assertThat(actualResult).isFalse();
   }
 }

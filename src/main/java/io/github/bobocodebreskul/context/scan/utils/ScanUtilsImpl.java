@@ -25,22 +25,8 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
     Class<? extends Annotation> filterByAnnotation) {
-    Predicate<Class<?>> filter = clazz -> {
-      Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
-      Set<Annotation> processedAnnotations = new HashSet<>(annotations);
-      while (!annotations.isEmpty()) {
-        var annotation = annotations.poll();
-        processedAnnotations.add(annotation);
-        if (annotation.annotationType().equals(filterByAnnotation)) {
-          return true;
-        }
-        Arrays.stream(annotation.annotationType().getAnnotations())
-          .filter(not(processedAnnotations::contains))
-          .forEach(annotations::add);
-      }
-
-      return false;
-    };
+    Predicate<Class<?>> filter = clazz -> this.checkIfClassHasAnnotationRecursively(clazz,
+      filterByAnnotation);
 
     return searchClassesByFilter(packagePath, filter);
   }
@@ -51,6 +37,23 @@ public class ScanUtilsImpl implements ScanUtils {
       .stream()
       .filter(filter)
       .collect(Collectors.toSet());
+  }
+
+  public boolean checkIfClassHasAnnotationRecursively(Class<?> clazz,
+    Class<? extends Annotation> searchedAnnotation) {
+    Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
+    Set<Annotation> processedAnnotations = new HashSet<>(annotations);
+    while (!annotations.isEmpty()) {
+      var annotation = annotations.poll();
+      processedAnnotations.add(annotation);
+      if (annotation.annotationType().equals(searchedAnnotation)) {
+        return true;
+      }
+      Arrays.stream(annotation.annotationType().getAnnotations())
+        .filter(not(processedAnnotations::contains))
+        .forEach(annotations::add);
+    }
+    return false;
   }
 
 }

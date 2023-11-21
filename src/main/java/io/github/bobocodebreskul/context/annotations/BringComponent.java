@@ -7,7 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation which is used to mark types as BringComponent in order to be scanned by ApplicationContext
+ * Annotation which is used to mark types as BringComponent in order to be scanned by
+ * ApplicationContext
  * <p>Usage:</p>
  * <pre>
  * {@code @BringComponent(name = "componentName")
@@ -25,6 +26,7 @@ public @interface BringComponent {
 
   /**
    * Represents component name if the component is installed automatically.
+   *
    * @return the filled component name if a value has been specified
    */
   String value() default "";

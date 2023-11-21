@@ -3,9 +3,11 @@ package io.github.bobocodebreskul.context.registry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
 
+import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
+import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -21,6 +23,8 @@ class SimpleBeanDefinitionRegistryTest {
   private static final String ALIAS_SHOULD_NOT_BE_NULL = "alias should not be null";
   private static final String BEAN_NAME_SHOULD_NOT_BE_NULL = "beanName should not be null";
   private static final String BEAN_DEFINITION_SHOULD_NOT_BE_NULL_MESSAGE = "beanDefinition should not be null";
+  private static final String BEAN_DEFINITION_FOR_CLASS_NOT_FOUND = "BeanDefinition for bean with class %s is not found!";
+  private static final String BEAN_DEFINITION_FOR_NAME_NOT_FOUND = "BeanDefinition for bean with name %s is not found!";
   private static final String TEST_BEAN_NAME = "testBeanName";
   private static final String TEST_BEAN_NAME_1 = "testBeanName1";
   private static final String TEST_BEAN_NAME_2 = "testBeanName2";
@@ -245,9 +249,13 @@ class SimpleBeanDefinitionRegistryTest {
         .as("Bean definition with name TEST_BEAN_NAME_1 should not be null")
         .isNotNull();
     simpleBeanDefinitionRegistry.removeBeanDefinition(TEST_BEAN_NAME_1);
-    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
-        .as("Bean definition with name TEST_BEAN_NAME_1 should be null after removing")
-        .isNull();
+
+    Exception actualException = catchException(() ->
+        simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1));
+    assertThat(actualException)
+        .isInstanceOf(NoSuchBeanDefinitionException.class)
+        .hasMessage(BEAN_DEFINITION_FOR_NAME_NOT_FOUND.formatted(TEST_BEAN_NAME_1));
+
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2))
         .as("Bean definition with name TEST_BEAN_NAME_2 should not be null")
         .isNotNull();
@@ -282,15 +290,12 @@ class SimpleBeanDefinitionRegistryTest {
   }
 
   @Test
-  @DisplayName("Get bean definition")
+  @DisplayName("Get bean definition by name")
   @Order(20)
   void given_BeanName_When_GetBeanDefinition_Then_GetBeanDefinition() {
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
 
-    assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME))
-        .as("Bean definition with name TEST_BEAN_NAME should be null")
-        .isNull();
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1))
         .isEqualTo(BEAN_DEFINITION_MOCK);
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2))
@@ -298,8 +303,22 @@ class SimpleBeanDefinitionRegistryTest {
   }
 
   @Test
-  @DisplayName("Get bean definition with null name")
+  @DisplayName("Get not existing bean definition by name")
   @Order(21)
+  void given_BeanName_When_BeanDefinitionNotExists_Then_ThrowNoSuchBeanDefinitionException() {
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME));
+
+    assertThat(actualException)
+        .isInstanceOf(NoSuchBeanDefinitionException.class)
+        .hasMessage(BEAN_DEFINITION_FOR_NAME_NOT_FOUND.formatted(TEST_BEAN_NAME));
+  }
+
+  @Test
+  @DisplayName("Get bean definition by name with null name")
+  @Order(22)
   void given_NullBeanName_When_GetBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.getBeanDefinition(null));
@@ -311,7 +330,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Contains existing bean definition")
-  @Order(22)
+  @Order(23)
   void given_BeanName_When_ContainsExistingBeanDefinition_Then_CheckContainsBeanDefinitionReturnsTrue() {
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
@@ -326,7 +345,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Contains non-existing bean definition")
-  @Order(23)
+  @Order(24)
   void given_BeanName_When_ContainsNonExistingBeanDefinition_Then_CheckContainsBeanDefinitionReturnsFalse() {
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
     simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK);
@@ -338,7 +357,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Contains bean definition with null name")
-  @Order(24)
+  @Order(25)
   void given_NullBeanName_When_ContainsBeanDefinition_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.containsBeanDefinition(null));
@@ -350,7 +369,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Get registered bean definition names")
-  @Order(25)
+  @Order(26)
   void when_RegisterBeanDefinitions_Then_GetRegisteredBeanDefinitionNames() {
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionNames()).isEmpty();
 
@@ -363,7 +382,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Get registered bean definition count after register bean definition")
-  @Order(26)
+  @Order(27)
   void when_RegisterBeanDefinitions_Then_GetRegisteredBeanDefinitionCount() {
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isZero();
 
@@ -374,7 +393,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("Get registered bean definition count after remove bean definition")
-  @Order(27)
+  @Order(28)
   void when_RemoveBeanDefinitions_Then_GetRegisteredBeanDefinitionCount() {
     assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionCount()).isZero();
 
@@ -388,7 +407,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("isBeanNameInUse with used bean name")
-  @Order(28)
+  @Order(29)
   void given_BeanName_When_UsedBeanName_Then_IsBeanNameInUseReturnsTrue() {
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_FOR_ALIAS, TEST_ALIAS);
 
@@ -406,7 +425,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("isBeanNameInUse with non-used bean name")
-  @Order(29)
+  @Order(30)
   void given_BeanName_When_NonUsedBeanName_Then_IsBeanNameInUseReturnsFalse() {
     simpleBeanDefinitionRegistry.registerAlias(TEST_BEAN_NAME_FOR_ALIAS, TEST_ALIAS);
 
@@ -421,7 +440,7 @@ class SimpleBeanDefinitionRegistryTest {
 
   @Test
   @DisplayName("isBeanNameInUse with null bean name")
-  @Order(30)
+  @Order(31)
   void given_NullBeanName_When_IsBeanNameInUseNullBeanName_Then_ThrowIllegalArgumentException() {
     Exception actualException = catchException(
         () -> simpleBeanDefinitionRegistry.isBeanNameInUse(null));
@@ -429,5 +448,61 @@ class SimpleBeanDefinitionRegistryTest {
     assertThat(actualException)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
+  }
+
+  @Test
+  @DisplayName("Get all BeanDefinitions")
+  @Order(32)
+  void when_GetBeanDefinitions_Then_ReturnsAllBeanDefinitionsFromRegistry() {
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitions()).isEmpty();
+
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
+
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitions())
+        .containsExactlyInAnyOrder(BEAN_DEFINITION_MOCK, BEAN_DEFINITION_MOCK_2);
+  }
+
+  @Test
+  @DisplayName("Get bean definition by class")
+  @Order(33)
+  void given_BeanClass_When_GetBeanDefinitionByClass_Then_RetrieveBeanDefinitionByClassFromRegistry() {
+    BeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(BeanClass1.class);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, beanDefinition);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, BEAN_DEFINITION_MOCK_2);
+
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionByClass(BeanClass1.class))
+        .isEqualTo(beanDefinition);
+  }
+
+  @Test
+  @DisplayName("Get not existing bean definition by class")
+  @Order(34)
+  void given_BeanClass_When_BeanDefinitionNotExists_Then_ThrowNoSuchBeanDefinitionException() {
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, BEAN_DEFINITION_MOCK);
+
+    Class<BeanClass1> beanClass = BeanClass1.class;
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.getBeanDefinitionByClass(beanClass));
+
+    assertThat(actualException)
+        .isInstanceOf(NoSuchBeanDefinitionException.class)
+        .hasMessage(BEAN_DEFINITION_FOR_CLASS_NOT_FOUND.formatted(beanClass.getName()));
+  }
+
+  @Test
+  @DisplayName("Get bean definition with null class")
+  @Order(35)
+  void given_NullBeanClass_When_GetBeanDefinitionByClass_Then_ThrowIllegalArgumentException() {
+    Exception actualException = catchException(
+        () -> simpleBeanDefinitionRegistry.getBeanDefinition(null));
+
+    assertThat(actualException)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
+  }
+
+  public static class BeanClass1 {
+
   }
 }

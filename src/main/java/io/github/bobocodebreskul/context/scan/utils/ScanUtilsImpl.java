@@ -2,10 +2,15 @@ package io.github.bobocodebreskul.context.scan.utils;
 
 import static java.util.function.Predicate.not;
 
+import io.github.bobocodebreskul.context.annotations.BringComponent;
+import java.awt.Component;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -13,6 +18,8 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 @Slf4j
 public class ScanUtilsImpl implements ScanUtils {
@@ -57,6 +64,35 @@ public class ScanUtilsImpl implements ScanUtils {
         .stream()
         .filter(filter)
         .collect(Collectors.toSet());
+  }
+
+  /**
+   * Scans the specified base packages for classes annotated with {@code @BringComponent}.
+   *
+   * @param basePackages the base packages to scan
+   * @return a list of instantiated components
+   */
+  public static List<Object> scanComponents(String[] basePackages) {
+    Reflections reflections = new Reflections(
+        new ConfigurationBuilder()
+            .forPackages(basePackages)
+            .addScanners(Scanners.TypesAnnotated)
+    );
+
+    Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(BringComponent.class);
+
+    List<Object> components = new ArrayList<>();
+    for (Class<?> clazz : annotatedClasses) {
+      if (clazz.isInterface() || clazz.isEnum() || clazz.isAnnotation()) {
+        continue;
+      }
+      try {
+        components.add(clazz.getDeclaredConstructor().newInstance());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return components;
   }
 
 

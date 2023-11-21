@@ -85,7 +85,8 @@ class ReflectionUtilsTest {
     Class<TestAnnotation> annotationClass = TestAnnotation.class;
 
     // when
-    var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, fieldName, fieldType);
+    var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass,
+      fieldName, fieldType);
 
     // then
     assertThat(actualResult).isEqualTo(expectedValue);
@@ -100,7 +101,8 @@ class ReflectionUtilsTest {
     Class<TestAnnotation> annotationClass = TestAnnotation.class;
 
     // when
-    var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, "enumValue", TestEnum.class);
+    var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass,
+      "enumValue", TestEnum.class);
 
     // then
     assertThat(actualResult).isEqualTo(SECOND_VALUE);
@@ -116,8 +118,9 @@ class ReflectionUtilsTest {
     String fieldName = "value";
 
     // when
-    Exception actualException = catchException( () ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, fieldName, Integer.class));
+    Exception actualException = catchException(() ->
+      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, fieldName,
+        Integer.class));
 
     // then
     assertThat(actualException).
@@ -136,8 +139,9 @@ class ReflectionUtilsTest {
     String wrongField = "notExistedField";
 
     // when
-    Exception actualException = catchException( () ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField, Object.class));
+    Exception actualException = catchException(() ->
+      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
+        Object.class));
 
     // then
     assertThat(actualException).
@@ -156,8 +160,9 @@ class ReflectionUtilsTest {
     String wrongField = "value";
 
     // when
-    Exception actualException = catchException( () ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField, Object.class));
+    Exception actualException = catchException(() ->
+      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
+        Object.class));
 
     // then
     assertThat(actualException).
@@ -219,9 +224,12 @@ class ReflectionUtilsTest {
 
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
-  @interface TestAnnotation{
+  @interface TestAnnotation {
+
     String value() default "";
+
     int intValue();
+
     boolean boolValue() default false;
 
     TestEnum enumValue() default TestEnum.FIRST_VALUE;
@@ -231,6 +239,7 @@ class ReflectionUtilsTest {
   @Retention(RetentionPolicy.RUNTIME)
   @BringComponent
   @interface AnnotationWithComponent {
+
   }
 
   @TestAnnotation(value = "stringValue", intValue = 4, boolValue = true, enumValue = SECOND_VALUE)
@@ -243,7 +252,7 @@ class ReflectionUtilsTest {
 
   }
 
-  static class TestClassWithoutAnnotation{
+  static class TestClassWithoutAnnotation {
 
   }
 

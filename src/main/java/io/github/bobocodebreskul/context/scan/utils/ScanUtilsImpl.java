@@ -3,9 +3,7 @@ package io.github.bobocodebreskul.context.scan.utils;
 import static java.util.function.Predicate.not;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import java.awt.Component;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +16,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
-import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
 
 @Slf4j

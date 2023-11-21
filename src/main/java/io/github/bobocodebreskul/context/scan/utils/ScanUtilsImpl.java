@@ -86,7 +86,7 @@ public class ScanUtilsImpl implements ScanUtils {
       try {
         components.add(clazz.getDeclaredConstructor().newInstance());
       } catch (Exception e) {
-        e.printStackTrace();
+        log.error("Error instantiating class: {}", clazz.getName(), e);
       }
     }
     return components;

@@ -2,12 +2,15 @@ package io.github.bobocodebreskul.context.support;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -35,32 +38,43 @@ public class BeanDefinitionReaderUtils {
       log.error("Failed to generate bean name for nullable bean definition");
       return "Null bean definition specified";
     });
-    Objects.requireNonNull(beanDefinition.getBeanClass(), () -> {
-      log.error("Failed to generate bean name for nullable bean class");
-      return "Bean class has not been specified";
-    });
+    validateBeanClassNonNull(beanDefinition.getBeanClass());
+    validateBeanClassName(beanDefinition, registry);
 
-    Class<?> beanClass = beanDefinition.getBeanClass();
-    String beanName = StringUtils.uncapitalize(beanClass.getSimpleName());
-    if (isSameBeanNameFromAnotherPackage(registry, beanDefinition, beanName)) {
-      beanName = beanClass.getName();
-    }
+    String beanName = uncapitalize(beanDefinition.getBeanClass());
 
-    log.trace("Generated bean name: {} for class {}", beanName, beanClass.getName());
+    log.trace("Generated bean name: {} for class {}", beanName, beanDefinition.getBeanClass().getName());
+
     return beanName;
   }
 
   /**
-   * Returns a list of bean types that this bean depends on, including constructor argument types,
-   * fields, and methods annotated with the {@link Autowired} annotation.
+   * Generate bean name for the given class type.
+   *
+   * @param beanClass bean class to generate bean name for
+   * @return the generated bean name
+   */
+  public static String generateClassBeanName(Class<?> beanClass) {
+    validateBeanClassNonNull(beanClass);
+    return uncapitalize(beanClass);
+  }
+
+  /**
+   * Returns a list of bean dependencies (as {@link BeanDependency}) this bean depends on,
+   * including constructor argument types, fields, and methods annotated with the
+   * {@link Autowired} annotation.
    *
    * @param beanClass the class of the bean to scan for dependencies
    * @return a list of bean dependency types
    */
-  public static List<Class<?>> getBeanDependencies(Class<?> beanClass) {
+  public static List<BeanDependency> getBeanDependencies(Class<?> beanClass) {
     log.trace("Scanning class {} for @Autowire candidates", beanClass.getName());
-    Stream<Class<?>> constructorDependenciesStream = Arrays.stream(
-            beanClass.getDeclaredConstructors())
+
+    Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
+
+    validateBeanClassConstructorSize(beanClass.getName(), declaredConstructors);
+
+    Stream<Class<?>> constructorDependenciesStream = Arrays.stream(declaredConstructors)
         .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()));
 
     Stream<Class<?>> fieldDependenciesStream = Arrays.stream(beanClass.getDeclaredFields())
@@ -73,7 +87,8 @@ public class BeanDefinitionReaderUtils {
 
     return Stream.concat(Stream.concat(constructorDependenciesStream, fieldDependenciesStream),
             methodDependenciesStream)
-        .collect(Collectors.toList());
+        .map(dependency -> new BeanDependency(generateClassBeanName(dependency), dependency))
+        .toList();
   }
 
   /**
@@ -90,19 +105,48 @@ public class BeanDefinitionReaderUtils {
     log.trace("Check if bean class {} is autowire candidate", beanClass.getName());
     boolean isAutowiredCandidate = registry.getBeanDefinitions().stream()
         .filter(beanDefinition -> !beanDefinition.getBeanClass().equals(beanClass))
-        .flatMap(beanDefinition -> beanDefinition.getDependsOn().stream())
-        .anyMatch(beanDefinitionClass -> beanDefinitionClass.equals(beanClass));
+        .flatMap(beanDefinition -> beanDefinition.getDependencies().stream())
+        .anyMatch(beanDefinitionClass -> beanDefinitionClass.type().equals(beanClass));
     if (isAutowiredCandidate) {
       log.trace("Bean class {} is registered as autowired candidate", beanClass.getName());
     }
     return isAutowiredCandidate;
   }
 
+  // TODO: possible move to separate general validation class
+  private static void validateBeanClassNonNull(Class<?> beanClass) {
+    Objects.requireNonNull(beanClass, () -> {
+      log.error("Failed to generate bean name for nullable bean class");
+      return "Bean class has not been specified";
+    });
+  }
+  
+  public static void validateBeanClassName(BeanDefinition beanDefinition, BeanDefinitionRegistry registry) {
+    Class<?> beanClass = beanDefinition.getBeanClass();
+    String beanClassName = beanClass.getName();
+
+    if (isSameBeanNameFromAnotherPackage(registry, beanClass, beanClassName)) {
+      log.error("Bean definition with name {} already existed", beanClassName);
+      throw new BeanDefinitionDuplicateException("Bean definition %s already exist".formatted(beanClassName));
+    }
+  }
+
+  private static void validateBeanClassConstructorSize(String beanName, Constructor<?>[] declaredConstructors) {
+    if (declaredConstructors.length != 1) {
+      log.error("Bean candidate [{}] has more then 1 candidate: [{}]", beanName, declaredConstructors.length);
+      throw new BeanDefinitionCreationException("Bean candidate should have only one constructor declared");
+    }
+  }
+
+  private static String uncapitalize(Class<?> beanClass) {
+    return StringUtils.uncapitalize(beanClass.getSimpleName());
+  }
+
   private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,
-      BeanDefinition beanDefinition,
+      Class<?> beanClass,
       String beanName) {
     return registry.isBeanNameInUse(beanName)
-        && !Objects.equals(beanDefinition.getBeanClass().getPackageName(),
+        && !Objects.equals(beanClass.getPackageName(),
         registry.getBeanDefinition(beanName).getBeanClass().getPackageName());
 
   }

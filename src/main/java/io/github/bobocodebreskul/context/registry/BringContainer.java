@@ -5,6 +5,7 @@ import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
+import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +42,8 @@ public class BringContainer implements ObjectFactory {
    */
   public static BringContainer run(String... scanPackages) {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
-    AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(definitionRegistry);
+    ScanUtils scanUtils = new ScanUtilsImpl();
+    AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(definitionRegistry, scanUtils);
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(scanPackages);
 

@@ -36,10 +36,10 @@ Then create a new Controller with following code
 package org.example;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.annotations.Controller;
+import io.github.bobocodebreskul.context.annotations.RestController;
 import io.github.bobocodebreskul.context.annotations.Get;
 
-@Controller("/hello")
+@RestController("/hello")
 @BringComponent
 public class MyController {
 

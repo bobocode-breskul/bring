@@ -6,9 +6,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Post annotation marks our method as a Get handler of a corresponding Controller
+ * Indicates that the annotated method serves as a POST request handler within a corresponding Controller.
+ * This annotation is designed for use in conjunction with the {@link RestController @RestController} annotation.
  *
- * @see Controller
+ * <p>Usage:</p>
+ * <pre>
+ * {@code
+ * @RestController("/sample")
+ * public class SampleController {
+ *
+ *   @Post
+ *   public YourClass doPost() {
+ *     return new YourClass();
+ *   }
+ * }}
+ * </pre>
+ *
+ * @see RestController
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

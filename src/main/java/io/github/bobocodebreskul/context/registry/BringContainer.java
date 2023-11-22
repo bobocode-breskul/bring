@@ -8,6 +8,9 @@ import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanSca
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +57,9 @@ public class BringContainer implements ObjectFactory {
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
 
-    new Thread(() -> TomcatServer.run(container)).start();
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    executor.submit(() -> TomcatServer.run(container));
+
     return container;
   }
 

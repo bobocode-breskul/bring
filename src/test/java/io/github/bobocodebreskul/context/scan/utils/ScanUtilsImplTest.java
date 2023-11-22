@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.scan.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
@@ -14,6 +15,7 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.Ty
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeInterface;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.AnnotatedTestClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithComponent;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.cyclic.CyclicCandidate2;
@@ -229,5 +231,17 @@ class ScanUtilsImplTest {
     String thirdInputPackage = "io.github.bobocodebreskul";
     assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
         thirdInputPackage));
+  }
+
+  @Test
+  @Order(15)
+  @DisplayName("Read base packages from class with annotation @BringComponentScan")
+  void given_BasePackages_When_Class_Has_BringComponentScanAnnotation() {
+    Class<?> annotatedClass = AnnotatedTestClass.class;
+    String[] basePackages = scanUtils.readBasePackages(annotatedClass);
+
+    String[] expectedPackages = {"com.example.package1", "com.example.package2"};
+    assertArrayEquals(expectedPackages, basePackages,
+        "Base packages should match the annotated values");
   }
 }

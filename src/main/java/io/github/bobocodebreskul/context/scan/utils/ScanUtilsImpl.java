@@ -77,7 +77,7 @@ public class ScanUtilsImpl implements ScanUtils {
    * @see BringComponentScan
    * @see BringComponentScan#basePackages()
    */
-  public static String[] readBasePackages(Class<?> annotatedClass) {
+  public String[] readBasePackages(Class<?> annotatedClass) {
     BringComponentScan bringComponentScan = annotatedClass.getAnnotation(BringComponentScan.class);
 
     if (bringComponentScan != null) {

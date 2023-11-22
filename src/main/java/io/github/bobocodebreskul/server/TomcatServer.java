@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.server;
 
+import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,8 +23,8 @@ public class TomcatServer {
   private static final int DEFAULT_PORT = 8080;
   private static final String DEFAULT_CONTEXT_PATH = "/";
   private static final String DOC_BASE = ".";
-  private static Tomcat tomcat;
   private static final ExecutorService executor = Executors.newFixedThreadPool(1);
+  private static Tomcat tomcat;
 
   /**
    * Starts an embedded Tomcat server with the specified {@link BringContainer}.
@@ -39,7 +40,7 @@ public class TomcatServer {
     tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);
-    tomcat.setPort(DEFAULT_PORT);
+    tomcat.setPort(PropertiesConfiguration.getPropertyAsIntOrDefault("port", DEFAULT_PORT));
     tomcat.getConnector();
     setContext(tomcat, container);
 

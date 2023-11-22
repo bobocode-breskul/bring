@@ -2,14 +2,11 @@ package io.github.bobocodebreskul.context.scan.utils;
 
 import static java.util.function.Predicate.not;
 
-import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -17,7 +14,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
 
 @Slf4j
 public class ScanUtilsImpl implements ScanUtils {

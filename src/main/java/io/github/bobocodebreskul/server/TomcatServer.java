@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.server;
 
+import io.github.bobocodebreskul.config.AppConfig;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
@@ -7,7 +8,6 @@ import org.apache.catalina.startup.Tomcat;
 public class TomcatServer {
 
   private static final String DEFAULT_HOST = "localhost";
-  private static final int DEFAULT_PORT = 8080;
   private static final String DEFAULT_CONTEXT_PATH = "/";
   private static final String DOC_BASE = ".";
 
@@ -15,7 +15,7 @@ public class TomcatServer {
     Tomcat tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);
-    tomcat.setPort(DEFAULT_PORT);
+    tomcat.setPort(AppConfig.getPort());
     tomcat.getConnector();
     setContext(tomcat, container);
 

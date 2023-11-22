@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.context.registry;
 
+import io.github.bobocodebreskul.config.AppConfig;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
@@ -50,6 +51,8 @@ public class BringContainer implements ObjectFactory {
     BringContainer container = new BringContainer(definitionRegistry);
 
     definitionRegistry.getBeanDefinitions().forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
+
+    AppConfig.loadProperties();
 
     new Thread(()->TomcatServer.run(container)).start();
     return container;

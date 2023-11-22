@@ -3,6 +3,7 @@ package io.github.bobocodebreskul.context.scan.utils;
 import static java.util.function.Predicate.not;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -64,32 +65,34 @@ public class ScanUtilsImpl implements ScanUtils {
   }
 
   /**
-   * Scans the specified base packages for classes annotated with {@code @BringComponent}.
+   * Reads the base package names specified in the {@code @BringComponentScan} annotation on the
+   * given class. If the annotation is present, retrieves and returns the base packages; otherwise,
+   * returns an empty array.
    *
-   * @param basePackages the base packages to scan
-   * @return a list of instantiated components
+   * <p>The {@code @BringComponentScan} annotation allows configuration of package scanning for
+   * components.
+   * The specified base packages and their sub-packages will be searched for classes annotated with
+   * stereotypes, such as {@code @BringComponent}.
+   *
+   * @param annotatedClass The class annotated with {@code @BringComponentScan} from which to read
+   *                       base packages.
+   * @return An array of base package names to be scanned. If not specified in the annotation,
+   * returns an empty array.
+   * @see BringComponentScan
+   * @see BringComponentScan#basePackages()
    */
-  public static List<Object> scanComponents(String[] basePackages) {
-    Reflections reflections = new Reflections(
-        new ConfigurationBuilder()
-            .forPackages(basePackages)
-            .addScanners(Scanners.TypesAnnotated)
-    );
+  public static String[] readBasePackages(Class<?> annotatedClass) {
+    BringComponentScan bringComponentScan = annotatedClass.getAnnotation(BringComponentScan.class);
 
-    Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(BringComponent.class);
-
-    List<Object> components = new ArrayList<>();
-    for (Class<?> clazz : annotatedClasses) {
-      if (clazz.isInterface() || clazz.isEnum() || clazz.isAnnotation()) {
-        continue;
-      }
-      try {
-        components.add(clazz.getDeclaredConstructor().newInstance());
-      } catch (Exception e) {
-        log.error("Error instantiating class: {}", clazz.getName(), e);
-      }
+    if (bringComponentScan != null) {
+      String[] basePackages = bringComponentScan.basePackages();
+      log.info("Base packages read from @BringComponentScan annotation: " + String.join(", ",
+          basePackages));
+      return basePackages;
+    } else {
+      log.warn("No @BringComponentScan annotation found on class: " + annotatedClass.getName());
+      return new String[]{};
     }
-    return components;
   }
 
 

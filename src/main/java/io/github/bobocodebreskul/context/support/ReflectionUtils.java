@@ -4,15 +4,14 @@ import static java.util.function.Predicate.not;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -149,6 +148,7 @@ public class ReflectionUtils {
    * @param classType target class
    * @param annotationType target annotation defined in provided class
    * @param fieldName annotation field name
+   * @param fieldType class of the target field.
    * @return provided annotation field value.
    *
    * @throws IllegalStateException if class don't have provided annotation or if annotation don't
@@ -185,7 +185,7 @@ public class ReflectionUtils {
    */
   public static boolean isComponentAnnotation(Annotation annotation) {
     return annotation.annotationType().equals(BringComponent.class)
-      || ReflectionUtils.checkIfClassHasAnnotationRecursively(annotation.annotationType(),
+      || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
       BringComponent.class);
   }
 }

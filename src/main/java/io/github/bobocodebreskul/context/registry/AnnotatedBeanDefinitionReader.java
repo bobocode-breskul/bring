@@ -103,7 +103,7 @@ public class AnnotatedBeanDefinitionReader {
       .filter(ReflectionUtils::isComponentAnnotation)
       .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
         annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
-      .filter(beanName -> nonNull(beanName) && !beanName.isEmpty())
+      .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
       .collect(Collectors.toSet());
     if (componentAnnotations.isEmpty()) {
       return Optional.empty();

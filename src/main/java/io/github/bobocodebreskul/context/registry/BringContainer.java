@@ -5,20 +5,22 @@ import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.FeatureNotImplementedException;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
+import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds
- * all found and registered beans.
+ * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all found
+ * and registered beans.
  *
  * @author Ruslan Hladchenko
  * @author Roman Pryshchepa
@@ -37,19 +39,29 @@ public class BringContainer implements ObjectFactory {
   }
 
   /**
-   * Collect all bean definitions by specified scan packages and build container to create and hold all found beans.
+   * Collect all bean definitions by specified scan packages and build container to create and hold
+   * all found beans.
    *
    * @param scanPackages packages where to search beans
    * @return created beans container
    */
   public static BringContainer run(String... scanPackages) {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
-    ScanUtils scanUtils = new ScanUtilsImpl();
-    AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(definitionRegistry);
-    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(scanUtils, beanDefinitionReader);
+    AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
+        definitionRegistry);
+    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
+        new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(scanPackages);
 
-    return new BringContainer(definitionRegistry);
+    BringContainer container = new BringContainer(definitionRegistry);
+
+    definitionRegistry.getBeanDefinitions()
+        .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
+
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    executor.submit(() -> TomcatServer.run(container));
+
+    return container;
   }
 
   // TODO: 1. add dependency injection by @Autowired field
@@ -62,7 +74,9 @@ public class BringContainer implements ObjectFactory {
 
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(name);
     if (beanDefinition == null) {
-      throw new NoSuchBeanDefinitionException("BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(name));
+      throw new NoSuchBeanDefinitionException(
+          "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(
+              name));
     }
     Class<?> beanClass = beanDefinition.getBeanClass();
     try {
@@ -91,5 +105,9 @@ public class BringContainer implements ObjectFactory {
   @Override
   public Object getBean(Class<?> clazz) {
     throw new UnsupportedOperationException();
+  }
+
+  public List<Object> getAllBeans() {
+    return storageByName.values().stream().toList();
   }
 }

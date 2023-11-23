@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.then;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate3;
@@ -48,8 +49,10 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
 
     given(scanUtils.searchClassesByAnnotationRecursively(inputPackage, BringComponent.class))
         .willReturn(Set.of(expectedClass1, expectedClass2));
+    given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
+        new String[]{TEST_PACKAGE_ONE});
     // when
-    annotatedBeanScanner.scan(inputPackage);
+    annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
     then(beanDefinitionReader).should().registerBean(expectedClass1);
     then(beanDefinitionReader).should().registerBean(expectedClass2);
@@ -72,8 +75,10 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
         .willReturn(Set.of(expectedClass1, expectedClass2));
     given(scanUtils.searchClassesByAnnotationRecursively(inputPackage2, BringComponent.class))
         .willReturn(Set.of(expectedClass3));
+    given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
+        new String[]{TEST_PACKAGE_ONE, TEST_PACKAGE_TWO});
     // when
-    annotatedBeanScanner.scan(inputPackage1, inputPackage2);
+    annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
     then(beanDefinitionReader).should().registerBean(expectedClass1);
     then(beanDefinitionReader).should().registerBean(expectedClass2);
@@ -90,20 +95,11 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
     // given
     given(scanUtils.searchClassesByAnnotationRecursively(packageName, BringComponent.class))
         .willReturn(Collections.emptySet());
+    given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
+        new String[]{TEST_PACKAGE_ONE});
     // when
-    annotatedBeanScanner.scan(packageName);
+    annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
-    then(beanDefinitionReader).shouldHaveNoInteractions();
-  }
-
-  @Test
-  @DisplayName("Do nothing when provided empty package list")
-  @Order(4)
-  void given_EmptyInput_When_Scan_Then_RegisterDoNothing() {
-    // when
-    annotatedBeanScanner.scan();
-    // verify
-    then(scanUtils).shouldHaveNoInteractions();
     then(beanDefinitionReader).shouldHaveNoInteractions();
   }
 }

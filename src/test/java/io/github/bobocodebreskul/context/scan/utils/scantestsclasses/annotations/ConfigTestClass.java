@@ -3,6 +3,6 @@ package io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotation
 import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 
 @BringComponentScan(basePackages = {"com.example.package1", "com.example.package2"})
-public class AnnotatedTestClass {
+public class ConfigTestClass {
 
 }

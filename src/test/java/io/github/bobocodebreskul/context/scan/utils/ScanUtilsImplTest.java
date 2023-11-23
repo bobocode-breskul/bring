@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import io.github.bobocodebreskul.context.exception.BringComponentScanNotFoundException;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree.TreeClass1;
@@ -15,7 +16,8 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.Ty
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeInterface;
-import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.AnnotatedTestClass;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClass;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClassWithEmptyAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithComponent;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.cyclic.CyclicCandidate2;
@@ -237,11 +239,33 @@ class ScanUtilsImplTest {
   @Order(15)
   @DisplayName("Read base packages from class with annotation @BringComponentScan")
   void given_BasePackages_When_Class_Has_BringComponentScanAnnotation() {
-    Class<?> annotatedClass = AnnotatedTestClass.class;
+    Class<?> annotatedClass = ConfigTestClass.class;
     String[] basePackages = scanUtils.readBasePackages(annotatedClass);
 
     String[] expectedPackages = {"com.example.package1", "com.example.package2"};
     assertArrayEquals(expectedPackages, basePackages,
         "Base packages should match the annotated values");
+  }
+
+  @Test
+  @Order(16)
+  @DisplayName("Read base package from class if @BringComponentScan is empty")
+  void given_BasePackage_When_Class_BringComponentScanAnnotation_Is_Empty() {
+    Class<?> annotatedClass = ConfigTestClassWithEmptyAnnotation.class;
+    String[] basePackage = scanUtils.readBasePackages(annotatedClass);
+
+    String[] expectedPackage = {"io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations"};
+    assertArrayEquals(expectedPackage, basePackage,
+        "Base packages should match the annotated values");
+  }
+
+  @Order(17)
+  @Test
+  @DisplayName("Throws exception when class has not annotation @BringComponentScan")
+  void given_ThrowsException_When_ClassHasNotAnnotation() {
+    assertThatThrownBy(() -> scanUtils.readBasePackages(SingleCandidate.class))
+        .isInstanceOf(BringComponentScanNotFoundException.class)
+        .hasMessage(
+            "No @BringComponentScan annotation found on class: SingleCandidate.class");
   }
 }

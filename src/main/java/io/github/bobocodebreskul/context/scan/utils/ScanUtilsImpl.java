@@ -65,7 +65,7 @@ public class ScanUtilsImpl implements ScanUtils {
   public String[] readBasePackages(Class<?> annotatedClass) {
     BringComponentScan bringComponentScan = annotatedClass.getAnnotation(BringComponentScan.class);
     if (bringComponentScan != null) {
-      if (bringComponentScan.basePackages() != null) {
+      if (bringComponentScan.basePackages().length != 0) {
         String[] basePackages = bringComponentScan.basePackages();
         log.info("Base packages read from @BringComponentScan annotation: " + String.join(", ",
             basePackages));
@@ -76,7 +76,9 @@ public class ScanUtilsImpl implements ScanUtils {
         return new String[]{basePackage};
       }
     } else {
-      String errorMessage = "No @BringComponentScan annotation found on class: " + annotatedClass.getName();
+      String errorMessage =
+          "No @BringComponentScan annotation found on class: " + annotatedClass.getSimpleName()
+              + ".class";
       log.warn(errorMessage);
       throw new BringComponentScanNotFoundException(errorMessage);
     }

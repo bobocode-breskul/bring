@@ -1,9 +1,10 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanDependencies;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
@@ -15,6 +16,7 @@ import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -102,7 +104,6 @@ public class AnnotatedBeanDefinitionReader {
     return beanDefinitionRegistry;
   }
 
-  //TODO update java docs
   private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
     log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), beanName);
     log.info("Registering the bean definition of class {}", beanClass.getName());
@@ -119,14 +120,18 @@ public class AnnotatedBeanDefinitionReader {
           "The bean definition with specified name %s already exists".formatted(beanName));
     }
 
-    if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
+
+    if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
       log.trace("Found @Primary annotation on the beanName={}", beanName);
       annotatedBeanDefinition.setPrimary(true);
     }
 
     setBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition);
 
-    List<BeanDependency> dependencies = getBeanDependencies(beanClass);
+    Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, beanName);
+    log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
+    annotatedBeanDefinition.setInitConstructor(beanConstructor);
+    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), beanName);
     annotatedBeanDefinition.setDependencies(dependencies);
@@ -139,9 +144,8 @@ public class AnnotatedBeanDefinitionReader {
 
   private static <T> void setBeanDefinitionScope(Class<T> beanClass, String beanName,
       AnnotatedGenericBeanDefinition annotatedBeanDefinition) {
-    String scopeName = beanClass.getAnnotation(Scope.class).value();
-
-    if (ReflectionUtils.isAnnotationExistsFor(Scope.class, beanClass)) {
+    if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
+      String scopeName = beanClass.getAnnotation(Scope.class).value();
       log.trace("Found @Scope annotation on the beanName={}", beanName);
       if (PROTOTYPE_SCOPE.equals(scopeName)) {
         log.trace("Set prototype scope for bean: {}", beanName);

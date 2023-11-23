@@ -14,6 +14,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.List;
 import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,7 @@ class BringContainerTest {
     AnnotatedGenericBeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(
         BeanClass1.class);
     beanDefinition.setName(inputBeanName);
+    beanDefinition.setInitConstructor(ReflectionUtils.getDefaultConstructor(BeanClass1.class));
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition);
     // when
@@ -76,6 +78,8 @@ class BringContainerTest {
     AnnotatedGenericBeanDefinition beanDefinition = new AnnotatedGenericBeanDefinition(
         BeanClass1.class);
     beanDefinition.setName(inputBeanName);
+    beanDefinition.setInitConstructor(ReflectionUtils.getDefaultConstructor(BeanClass1.class));
+
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition);
     // when
@@ -111,6 +115,7 @@ class BringContainerTest {
         new BeanDependency(TEST_BEAN_NAME_2, BeanClass2.class),
         new BeanDependency(TEST_BEAN_NAME_1, BeanClass1.class)
     ));
+    beanDefinition3.setInitConstructor(BeanClass3.class.getDeclaredConstructors()[0]);
     AnnotatedGenericBeanDefinition beanDefinition2 = new AnnotatedGenericBeanDefinition(
         BeanClass2.class);
     beanDefinition2.setName(TEST_BEAN_NAME_2);
@@ -118,12 +123,15 @@ class BringContainerTest {
         new BeanDependency(TEST_BEAN_NAME_1, BeanClass1.class),
         new BeanDependency(TEST_BEAN_NAME_4, BeanClass4.class)
     ));
+    beanDefinition2.setInitConstructor(BeanClass2.class.getDeclaredConstructors()[0]);
     AnnotatedGenericBeanDefinition beanDefinition1 = new AnnotatedGenericBeanDefinition(
         BeanClass1.class);
     beanDefinition1.setName(TEST_BEAN_NAME_1);
+    beanDefinition1.setInitConstructor(BeanClass1.class.getDeclaredConstructors()[0]);
     AnnotatedGenericBeanDefinition beanDefinition4 = new AnnotatedGenericBeanDefinition(
         BeanClass4.class);
     beanDefinition4.setName(TEST_BEAN_NAME_4);
+    beanDefinition4.setInitConstructor(BeanClass4.class.getDeclaredConstructors()[0]);
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition3);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2)).willReturn(beanDefinition2);
@@ -151,17 +159,20 @@ class BringContainerTest {
     var firstDependencyBeanClass = BeanClass1.class;
     var firstDependencyBeanDefinition = new AnnotatedGenericBeanDefinition(firstDependencyBeanClass);
     firstDependencyBeanDefinition.setName(firstDependencyBeanName);
+    firstDependencyBeanDefinition.setInitConstructor(firstDependencyBeanClass.getDeclaredConstructors()[0]);
 
     var secondDependencyBeanName = TEST_BEAN_NAME_4;
     var secondDependencyBeanClass = BeanClass4.class;
     var secondDependencyBeanDefinition = new AnnotatedGenericBeanDefinition(secondDependencyBeanClass);
     secondDependencyBeanDefinition.setName(secondDependencyBeanName);
+    secondDependencyBeanDefinition.setInitConstructor(secondDependencyBeanClass.getDeclaredConstructors()[0]);
 
     var mainBeanDefinition = new AnnotatedGenericBeanDefinition(BeanClass2.class);
     mainBeanDefinition.setName(inputBeanName);
     mainBeanDefinition.setDependencies(
         List.of(new BeanDependency(firstDependencyBeanName, secondDependencyBeanClass),
             new BeanDependency(secondDependencyBeanName, secondDependencyBeanClass)));
+    mainBeanDefinition.setInitConstructor(BeanClass2.class.getDeclaredConstructors()[0]);
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(mainBeanDefinition);
     given(beanDefinitionRegistry.getBeanDefinition(firstDependencyBeanName)).willReturn(
@@ -213,6 +224,8 @@ class BringContainerTest {
     // given
     var beanDefinition = new AnnotatedGenericBeanDefinition(AbstractBeanClass.class);
     beanDefinition.setName(TEST_BEAN_NAME_1);
+    beanDefinition.setInitConstructor(AbstractBeanClass.class.getDeclaredConstructors()[0]);
+
     
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1)).willReturn(beanDefinition);
 
@@ -236,7 +249,6 @@ class BringContainerTest {
 
   }
 
-  // TODO: add test when bean is Prototype then bean should not be stored in storageByClass and in storageByName
   @Test
   @Description("Create prototype bean by bean name")
   @Order(9)
@@ -248,6 +260,7 @@ class BringContainerTest {
     var beanDefinition = new AnnotatedGenericBeanDefinition(BeanClass5.class);
     beanDefinition.setName(inputBeanName);
     beanDefinition.setScope(BeanDefinition.PROTOTYPE_SCOPE);
+    beanDefinition.setInitConstructor(ReflectionUtils.getDefaultConstructor(BeanClass5.class));
 
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition);
     // when

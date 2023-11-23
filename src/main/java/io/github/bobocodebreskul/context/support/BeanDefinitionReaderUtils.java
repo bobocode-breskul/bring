@@ -113,7 +113,6 @@ public class BeanDefinitionReaderUtils {
       log.trace("Multiple constructors found for bean candidate [{}]", beanClass.getName());
       if (isAnnotationPresentForAnyConstructor(Autowired.class, declaredConstructors)) {
         // Multiple constructors with only one @Autowired
-        // TODO: checked
         if (isAnnotationPresentForSingleConstructorOnly(Autowired.class, declaredConstructors)) {
           Constructor<?> initConstructor =
               getConstructorsAnnotatedWith(Autowired.class, declaredConstructors).get(0);
@@ -122,7 +121,6 @@ public class BeanDefinitionReaderUtils {
               initConstructor);
           return initConstructor;
         }
-        // TODO: checked
         // Multiple constructors with multiple @Autowired annotations
         List<Constructor<?>> autowiredConstructors =
             getConstructorsAnnotatedWith(Autowired.class, declaredConstructors);
@@ -134,14 +132,12 @@ public class BeanDefinitionReaderUtils {
       }
 
       // Multiple  constructors without @Autowired and with default constructor
-      // TODO: checked
       if (hasDefaultConstructor(beanClass)) {
         log.trace(
             "No @Autowired constructor found for bean candidate [{}], default constructor registered as init one",
             beanName);
         return getDefaultConstructor(beanClass);
       }
-      // TODO: checked
       // Multiple constructors without @Autowired and a default constructor
       log.error("Bean candidate [{}] of type [{}] has more then 1 constructor declared.",
           beanName, beanClass);

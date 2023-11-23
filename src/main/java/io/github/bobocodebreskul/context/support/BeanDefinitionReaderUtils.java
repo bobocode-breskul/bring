@@ -101,7 +101,6 @@ public class BeanDefinitionReaderUtils {
    *                                         {@link Autowired} annotation or multiple constructors
    *                                         marked with {@link Autowired}.
    */
-  // TODO: cover with tests
   public static Constructor<?> findBeanInitConstructor(Class<?> beanClass, String beanName) {
     Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
 

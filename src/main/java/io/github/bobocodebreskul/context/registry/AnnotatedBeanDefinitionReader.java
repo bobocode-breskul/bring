@@ -102,6 +102,41 @@ public class AnnotatedBeanDefinitionReader {
     return beanDefinitionRegistry;
   }
 
+  //TODO update java docs
+  private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
+    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), beanName);
+    log.info("Registering the bean definition of class {}", beanClass.getName());
+    // todo: create beanDefinitionValidator that validate things such as:
+    //  bean name validity (not allowed characters), check for circular dependency
+
+    var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
+    beanName = beanName != null ? beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    annotatedBeanDefinition.setName(beanName);
+
+    if (beanDefinitionRegistry.isBeanNameInUse(beanName)) {
+      log.error("The specified bean name is already in use");
+      throw new DuplicateBeanDefinitionException(
+          "The bean definition with specified name %s already exists".formatted(beanName));
+    }
+
+    if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
+      log.trace("Found @Primary annotation on the beanName={}", beanName);
+      annotatedBeanDefinition.setPrimary(true);
+    }
+
+    setBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition);
+
+    List<BeanDependency> dependencies = getBeanDependencies(beanClass);
+    log.debug("{} dependencies found for beanClass={} with beanName={}",
+        dependencies.size(), beanClass.getName(), beanName);
+    annotatedBeanDefinition.setDependencies(dependencies);
+    annotatedBeanDefinition.setAutowireCandidate(
+        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
+
+    beanDefinitionRegistry.registerBeanDefinition(beanName, annotatedBeanDefinition);
+    log.trace("Registered bean definition: {}", annotatedBeanDefinition);
+  }
+
   private static <T> void setBeanDefinitionScope(Class<T> beanClass, String beanName,
       AnnotatedGenericBeanDefinition annotatedBeanDefinition) {
     String scopeName = beanClass.getAnnotation(Scope.class).value();
@@ -125,47 +160,6 @@ public class AnnotatedBeanDefinitionReader {
       log.trace("Set default singleton scope for bean: {}", beanName);
       annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
     }
-  }
-
-  //TODO update java docs
-  //TODO add test when scope singleton provided
-  //TODO add test when default scope provided (empty string, should be singleton)
-  //TODO add test when no scope provided (should be singleton)
-  //TODO add test when prototype scope provided (should be prototype)
-  //TODO add test when non existing scope provided (should be thrown BeanDefinitionCreationException)
-  private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
-    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), beanName);
-    log.info("Registering the bean definition of class {}", beanClass.getName());
-    // todo: create beanDefinitionValidator that validate things such as:
-    //  bean name validity (not allowed characters), check for circular dependency
-
-    var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    beanName = beanName != null ? beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
-    annotatedBeanDefinition.setName(beanName);
-
-    if (beanDefinitionRegistry.isBeanNameInUse(beanName)) {
-      log.error("The specified bean name is already in use");
-      throw new DuplicateBeanDefinitionException(
-          "The bean definition with specified name %s already exists".formatted(beanName));
-    }
-
-    if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
-      log.trace("Found @Primary annotation on the beanName={}", beanName);
-      annotatedBeanDefinition.setPrimary(true);
-    }
-
-    // TODO: add test when class has scope
-    setBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition);
-
-    List<BeanDependency> dependencies = getBeanDependencies(beanClass);
-    log.debug("{} dependencies found for beanClass={} with beanName={}",
-        dependencies.size(), beanClass.getName(), beanName);
-    annotatedBeanDefinition.setDependencies(dependencies);
-    annotatedBeanDefinition.setAutowireCandidate(
-        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
-
-    beanDefinitionRegistry.registerBeanDefinition(beanName, annotatedBeanDefinition);
-    log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
 
 }

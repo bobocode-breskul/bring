@@ -86,7 +86,7 @@ public class ReflectionUtils {
    * constructors, {@code false} otherwise.
    * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
    *                              is {@code null}.
-   * @see #isAnnotationPresentForConstructor
+   * @see #getConstructorsAnnotatedWith
    */
   public static boolean isAnnotationPresentForSingleConstructorOnly(
       Class<? extends Annotation> annotation,

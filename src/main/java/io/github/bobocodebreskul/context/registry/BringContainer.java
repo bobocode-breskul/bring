@@ -1,15 +1,20 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.FeatureNotImplementedException;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
+import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,13 +53,26 @@ public class BringContainer implements ObjectFactory {
         new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(configClass);
 
-    return new BringContainer(definitionRegistry);
+
+    BringContainer container = new BringContainer(definitionRegistry);
+
+    definitionRegistry.getBeanDefinitions()
+        .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
+
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    executor.submit(() -> TomcatServer.run(container));
+
+    return container;
   }
 
-  // TODO: 1. add dependency Injection by one constructor with parameters
-  // TODO: 2. add dependency injection by @Autowired field
+  // TODO: 1. add dependency injection by @Autowired field
+
   @Override
   public Object getBean(String name) {
+    if (storageByName.containsKey(name)) {
+      return storageByName.get(name);
+    }
+
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(name);
     if (beanDefinition == null) {
       throw new NoSuchBeanDefinitionException(
@@ -63,22 +81,23 @@ public class BringContainer implements ObjectFactory {
     }
     Class<?> beanClass = beanDefinition.getBeanClass();
     try {
-      if (storageByName.containsKey(name)) {
-        return storageByName.get(name);
+      Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
+      if (beanClass.getDeclaredConstructors().length > 1) {
+        // TODO: multiple constructor logic not implemented
+        throw new FeatureNotImplementedException(
+            "Bean instantiation with multiple constructors is not implemented");
       }
-      Constructor<?> declaredConstructor = beanClass.getDeclaredConstructor();
-      Object newInstance = declaredConstructor.newInstance();
+      Object[] dependentBeans = beanDefinition.getDependencies().stream()
+          .map(BeanDependency::name)
+          .map(this::getBean)
+          .toArray();
+      Object newInstance = declaredConstructor.newInstance(dependentBeans);
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
-    } catch (NoSuchMethodException e) {
+    } catch (InvocationTargetException | InstantiationException | IllegalAccessException
+             | IllegalArgumentException e) {
       // TODO: add additional logging with some input parameters
-      // TODO: cover with tests
-      throw new NotFoundDeclaredConstructorException(
-          "No default constructor for class \"%s\"!".formatted(name), e);
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-      // TODO: add additional logging with some input parameters
-      // TODO: cover with tests
       throw new InstanceCreationException(
           "Could not create an instance of \"%s\" class!".formatted(name), e);
     }
@@ -87,5 +106,9 @@ public class BringContainer implements ObjectFactory {
   @Override
   public Object getBean(Class<?> clazz) {
     throw new UnsupportedOperationException();
+  }
+
+  public List<Object> getAllBeans() {
+    return storageByName.values().stream().toList();
   }
 }

@@ -2,7 +2,7 @@ package io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotation
 
 import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 
-@BringComponentScan(basePackages = {})
+@BringComponentScan
 public class ConfigTestClassWithEmptyAnnotation {
 
 }

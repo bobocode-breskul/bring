@@ -41,13 +41,11 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
   @DisplayName("Register two bean definitions when scan by single package")
   @Order(1)
   void given_SinglePackage_When_Scan_Then_RegisterTwoBeans() {
-    // data
-    String inputPackage = TEST_PACKAGE_ONE;
     // given
     Class<?> expectedClass1 = MultiCandidate1.class;
     Class<?> expectedClass2 = MultiCandidate2.class;
 
-    given(scanUtils.searchClassesByAnnotationRecursively(inputPackage, BringComponent.class))
+    given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_ONE, BringComponent.class))
         .willReturn(Set.of(expectedClass1, expectedClass2));
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
         new String[]{TEST_PACKAGE_ONE});
@@ -63,17 +61,14 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
   @DisplayName("Register three bean definitions when scan by multi package")
   @Order(2)
   void given_MultiPackage_When_Scan_Then_RegisterThreeBeans() {
-    // data
-    String inputPackage1 = TEST_PACKAGE_ONE;
-    String inputPackage2 = TEST_PACKAGE_TWO;
     // given
     Class<?> expectedClass1 = MultiCandidate1.class;
     Class<?> expectedClass2 = MultiCandidate2.class;
     Class<?> expectedClass3 = MultiCandidate3.class;
 
-    given(scanUtils.searchClassesByAnnotationRecursively(inputPackage1, BringComponent.class))
+    given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_ONE, BringComponent.class))
         .willReturn(Set.of(expectedClass1, expectedClass2));
-    given(scanUtils.searchClassesByAnnotationRecursively(inputPackage2, BringComponent.class))
+    given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_TWO, BringComponent.class))
         .willReturn(Set.of(expectedClass3));
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
         new String[]{TEST_PACKAGE_ONE, TEST_PACKAGE_TWO});
@@ -90,10 +85,8 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
   @DisplayName("Register none bean definition when scan empty package")
   @Order(3)
   void given_EmptyPackage_When_Scan_Then_RegisterNothing() {
-    // data
-    String packageName = TEST_PACKAGE_ONE;
     // given
-    given(scanUtils.searchClassesByAnnotationRecursively(packageName, BringComponent.class))
+    given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_ONE, BringComponent.class))
         .willReturn(Collections.emptySet());
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
         new String[]{TEST_PACKAGE_ONE});

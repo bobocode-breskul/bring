@@ -51,10 +51,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
-
-  private final static String COMPONENT_NAME_FIELD = "value";
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
+  private final static String COMPONENT_NAME_FIELD = "value";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
+
 
   /**
    * Create a new AnnotatedBeanDefinitionReader for the given registry.
@@ -107,14 +107,13 @@ public class AnnotatedBeanDefinitionReader {
       return Optional.empty();
     } else if (componentAnnotations.size() == 1) {
       return componentAnnotations.stream().findFirst();
-    } else {
-      String beanNames = String.join(", ", componentAnnotations);
-      log.error(
-        "For bean {} was found several different names definitions: [{}]. Please choose one.",
-        beanClass.getName(), beanNames);
-      throw new IllegalStateException(
-        UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
     }
+    String beanNames = String.join(", ", componentAnnotations);
+    log.error(
+      "For bean {} was found several different names definitions: [{}]. Please choose one.",
+      beanClass.getName(), beanNames);
+    throw new IllegalStateException(
+      UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
   }
 
   private <T> void doRegisterBean(Class<T> beanClass, String name) {

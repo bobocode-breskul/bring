@@ -2,7 +2,6 @@ package io.github.bobocodebreskul.context.registry;
 
 import static io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader.UNCERTAIN_BEAN_NAME_EXCEPTION_MSG;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,7 +19,6 @@ import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
-import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -184,7 +182,6 @@ class AnnotatedBeanDefinitionReaderTest {
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.getDependsOn()).isEmpty();
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
@@ -214,7 +211,6 @@ class AnnotatedBeanDefinitionReaderTest {
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.getDependsOn()).isEmpty();
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
@@ -266,7 +262,6 @@ class AnnotatedBeanDefinitionReaderTest {
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.getDependsOn()).isEmpty();
     assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();

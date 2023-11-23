@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
+import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
@@ -7,9 +9,10 @@ import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtil
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
+import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.Arrays;
@@ -99,37 +102,69 @@ public class AnnotatedBeanDefinitionReader {
     return beanDefinitionRegistry;
   }
 
-  private <T> void doRegisterBean(Class<T> beanClass, String name) {
-    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
+  private static <T> void setBeanDefinitionScope(Class<T> beanClass, String beanName,
+      AnnotatedGenericBeanDefinition annotatedBeanDefinition) {
+    String scopeName = beanClass.getAnnotation(Scope.class).value();
+
+    if (ReflectionUtils.isAnnotationExistsFor(Scope.class, beanClass)) {
+      log.trace("Found @Scope annotation on the beanName={}", beanName);
+      if (PROTOTYPE_SCOPE.equals(scopeName)) {
+        log.trace("Set prototype scope for bean: {}", beanName);
+        annotatedBeanDefinition.setScope(PROTOTYPE_SCOPE);
+      } else if (SINGLETON_SCOPE.equals(scopeName)) {
+        log.trace("Set singleton scope for bean: {}", beanName);
+        annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+      } else if ("".equals(scopeName)) {
+        log.trace("Set default singleton scope for bean: {}", beanName);
+        annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+      } else {
+        log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
+        throw new BeanDefinitionCreationException("Invalid scope name provided %s".formatted(scopeName));
+      }
+    } else {
+      log.trace("Set default singleton scope for bean: {}", beanName);
+      annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+    }
+  }
+
+  //TODO update java docs
+  //TODO add test when scope singleton provided
+  //TODO add test when default scope provided (empty string, should be singleton)
+  //TODO add test when no scope provided (should be singleton)
+  //TODO add test when prototype scope provided (should be prototype)
+  //TODO add test when non existing scope provided (should be thrown BeanDefinitionCreationException)
+  private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
+    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), beanName);
     log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as:
     //  bean name validity (not allowed characters), check for circular dependency
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    name = name != null ? name : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
-    annotatedBeanDefinition.setName(name);
+    beanName = beanName != null ? beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    annotatedBeanDefinition.setName(beanName);
 
-    if (beanDefinitionRegistry.isBeanNameInUse(name)) {
+    if (beanDefinitionRegistry.isBeanNameInUse(beanName)) {
       log.error("The specified bean name is already in use");
       throw new DuplicateBeanDefinitionException(
-          "The bean definition with specified name %s already exists".formatted(name));
+          "The bean definition with specified name %s already exists".formatted(beanName));
     }
 
-    annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
-
     if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
-      log.trace("Found @Primary annotation on the beanName={}", name);
+      log.trace("Found @Primary annotation on the beanName={}", beanName);
       annotatedBeanDefinition.setPrimary(true);
     }
 
+    // TODO: add test when class has scope
+    setBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition);
+
     List<BeanDependency> dependencies = getBeanDependencies(beanClass);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
-        dependencies.size(), beanClass.getName(), name);
+        dependencies.size(), beanClass.getName(), beanName);
     annotatedBeanDefinition.setDependencies(dependencies);
     annotatedBeanDefinition.setAutowireCandidate(
         isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
-    beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
+    beanDefinitionRegistry.registerBeanDefinition(beanName, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
 

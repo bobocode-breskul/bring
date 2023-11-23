@@ -90,6 +90,13 @@ public class BringContainer implements ObjectFactory {
           .map(this::getBean)
           .toArray();
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
+
+      // TODO update java docs
+      // TODO: add test when bean is Prototype then bean should not be stored in storageByClass and in storageByName
+      if (beanDefinition.isPrototype()) {
+        return newInstance;
+      }
+
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;

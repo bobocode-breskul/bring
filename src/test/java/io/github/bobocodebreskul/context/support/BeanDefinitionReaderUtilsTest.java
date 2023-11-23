@@ -6,9 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
@@ -182,42 +184,86 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Get bean constructor when bean class has only default constructor")
-  @Disabled
   @Order(11)
-  void given_BeanClassWithSingleDefaultConstructor_When_FindBeanInitConstructor_Then_ReturnDefaultConstructor(){
-    // TODO: IMPLEMENT return single constructor for class with default constructor
+  void given_BeanClassWithSingleDefaultConstructor_When_FindBeanInitConstructor_Then_ReturnDefaultConstructor() {
+    //given
+    var beanClass = MyComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+
+    //when
+    var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
+
+    //then
+    assertThat(result).isEqualTo(ReflectionUtils.getDefaultConstructor(beanClass));
   }
 
   @Test
   @DisplayName("Get bean constructor when bean class has single constructor with parameters")
-  @Disabled
   @Order(12)
   void given_BeanClassWithSingleMultiParamsConstructor_When_FindBeanInitConstructor_Then_ReturnConstructor() {
-    // TODO: IMPLEMENT return single constructor for class with one explicit constructor with parameters
+    //given
+    var beanClass = MultipleArgumentDependentComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+
+    //when
+    var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
+
+    //then
+    var expected = beanClass.getDeclaredConstructors()[0];
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
   @DisplayName("Get bean constructor when bean class has more than one constructor and one of them is auto wired")
-  @Disabled
   @Order(13)
   void given_BeanClassWithMultiConstructorAndOneOfThemAutowired_When_FindBeanInitConstructor_Then_ReturnConstructor() {
-    // TODO: IMPLEMENT find single autowired constructor if more than 1 constructor present and one on of them marked as @Autowired
+    //given
+    var beanClass = MultipleConstructorDependentComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+
+    //when
+    var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
+
+    //then
+    var expected = ReflectionUtils.getConstructorsAnnotatedWith(Autowired.class,
+        beanClass.getDeclaredConstructors()).get(0);
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
   @DisplayName("Get bean constructor when bean class has more than one constructor and one of them is default constructor")
-  @Disabled
   @Order(14)
   void given_BeanClassWithMultiConstructorIncludingDefault_When_FindBeanInitConstructor_Then_ReturnValidConstructor() {
-    // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
+    //given
+    var beanClass = MultipleConstructorIncludingDefaultComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+
+    //when
+    var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
+
+    //then
+    var expected = ReflectionUtils.getDefaultConstructor(beanClass);
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
   @DisplayName("Throw exception when bean class has more than one constructor annotated with @Autowired")
-  @Disabled
   @Order(15)
   void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
-    // TODO: IMPLEMENT throw exception when more than one constructor present and more than one @Autowired present
+    //given
+    var beanClass = MultipleAutowiredConstructorComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var declaredConstructors = beanClass.getDeclaredConstructors();
+
+    //when
+    //then
+    var expected1 = declaredConstructors[0];
+    var expected2 = declaredConstructors[1];
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessage(
+            BeanDefinitionReaderUtils.MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE.formatted(beanName,
+                expected2, expected1));
   }
 
   @Test
@@ -233,7 +279,7 @@ class BeanDefinitionReaderUtilsTest {
   @DisplayName("Throw exception when interface/primitive/array/void class specified")
   @Disabled
   @Order(17)
-  void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException(){
+  void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException() {
     // TODO: IMPLEMENT throw exception when there is no constructor at all - interface; a primitive type; an array class; void
     // TODO: make it as parameterized test
   }
@@ -307,6 +353,7 @@ class BeanDefinitionReaderUtilsTest {
   @BringComponent
   @RequiredArgsConstructor
   static class AnotherComponent {
+
     private final MyComponent myComponent;
   }
 
@@ -318,4 +365,54 @@ class BeanDefinitionReaderUtilsTest {
     private final AnotherComponent anotherComponent;
   }
 
+  @BringComponent
+  static class MultipleConstructorDependentComponent {
+
+    private MyComponent myComponent;
+    private AnotherComponent anotherComponent;
+
+    public MultipleConstructorDependentComponent(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
+
+    @Autowired
+    public MultipleConstructorDependentComponent(AnotherComponent anotherComponent) {
+      this.anotherComponent = anotherComponent;
+    }
+  }
+
+  @BringComponent
+  static class MultipleConstructorIncludingDefaultComponent {
+
+    private MyComponent myComponent;
+    private AnotherComponent anotherComponent;
+
+    public MultipleConstructorIncludingDefaultComponent() {
+    }
+
+    public MultipleConstructorIncludingDefaultComponent(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
+
+    public MultipleConstructorIncludingDefaultComponent(AnotherComponent anotherComponent) {
+      this.anotherComponent = anotherComponent;
+    }
+  }
+
+  @BringComponent
+  static class MultipleAutowiredConstructorComponent {
+
+    private MyComponent myComponent;
+    private AnotherComponent anotherComponent;
+
+    @Autowired
+    public MultipleAutowiredConstructorComponent(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
+
+    @Autowired
+    public MultipleAutowiredConstructorComponent(AnotherComponent anotherComponent) {
+      this.anotherComponent = anotherComponent;
+    }
+  }
 }

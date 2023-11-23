@@ -27,8 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 @UtilityClass
 public class BeanDefinitionReaderUtils {
 
-  private static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found";
-  private static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
+  static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found";
+  static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
 
 
   /**
@@ -117,7 +117,8 @@ public class BeanDefinitionReaderUtils {
         if (isAnnotationPresentForSingleConstructorOnly(Autowired.class, declaredConstructors)) {
           Constructor<?> initConstructor =
               getConstructorsAnnotatedWith(Autowired.class, declaredConstructors).get(0);
-          log.trace("@Autowired constructor found for bean candidate [{}]: [{}]", beanClass.getName(),
+          log.trace("@Autowired constructor found for bean candidate [{}]: [{}]",
+              beanClass.getName(),
               initConstructor);
           return initConstructor;
         }

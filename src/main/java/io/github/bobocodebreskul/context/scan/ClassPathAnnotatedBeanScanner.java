@@ -14,7 +14,7 @@ public interface ClassPathAnnotatedBeanScanner {
    * packages provided by found configurations. Then register class as bean definition by
    * using {@link io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry}
    *
-   * @param scanPackages packages to scan
+   * @param configClass packages to scan
    */
-  void scan(String... scanPackages);
+  void scan(Class<?> configClass);
 }

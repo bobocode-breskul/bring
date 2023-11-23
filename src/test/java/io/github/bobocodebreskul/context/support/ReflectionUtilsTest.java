@@ -134,86 +134,8 @@ public class ReflectionUtilsTest {
   }
 
   @Test
-  @DisplayName("Return true when class with multiple constructors and single annotation")
-  @Order(9)
-  void given_ClassWithMultipleConstructorsAndSingleAnnotation_When_isAnnotationPresentForAnyConstructor_Then_ReturnTrue() {
-    //given
-    var constructors = MultipleConstructorClass.class.getDeclaredConstructors();
-
-    //when
-    boolean result =
-        ReflectionUtils.isAnnotationPresentForAnyConstructor(MyAnnotation.class, constructors);
-
-    //then
-    assertThat(result).isTrue();
-  }
-
-  @Test
-  @DisplayName("Return false when class with multiple constructors and no annotation")
-  @Order(10)
-  void given_ClassWithMultipleConstructorsAndNoAnnotation_When_isAnnotationPresentForAnyConstructor_Then_ReturnFalse() {
-    //given
-    var constructors = NoConstructorAnnotationClass.class.getDeclaredConstructors();
-
-    //when
-    boolean result =
-        ReflectionUtils.isAnnotationPresentForAnyConstructor(MyAnnotation.class, constructors);
-
-    //then
-    assertThat(result).isFalse();
-  }
-
-  @Test
-  @DisplayName("Return true when class with multiple constructors and single annotation")
-  @Order(11)
-  void given_ClassWithMultipleConstructorsAndSingleAnnotation_When_isAnnotationPresentForSingleConstructorOnly_Then_ReturnTrue() {
-    //given
-    var constructors = MultipleConstructorClass.class.getDeclaredConstructors();
-    var annotation = MyAnnotation.class;
-
-    //when
-    boolean result =
-        ReflectionUtils.isAnnotationPresentForSingleConstructorOnly(annotation, constructors);
-
-    //then
-    assertThat(result).isTrue();
-  }
-
-  @Test
-  @DisplayName("Return false when class with multiple constructors and multiple annotation")
-  @Order(12)
-  void given_ClassWithMultipleConstructorsAndMultipleAnnotations_When_isAnnotationPresentForSingleConstructorOnly_Then_ReturnFalse() {
-    //given
-    var constructors = MultipleConstructorMultipleAnnotationClass.class.getDeclaredConstructors();
-    var annotation = MyAnnotation.class;
-
-    //when
-    boolean result =
-        ReflectionUtils.isAnnotationPresentForSingleConstructorOnly(annotation, constructors);
-
-    //then
-    assertThat(result).isFalse();
-  }
-
-  @Test
-  @DisplayName("Return false when class with multiple constructors and no annotation")
-  @Order(13)
-  void given_ClassWithMultipleConstructorsAndNoAnnotation_When_isAnnotationPresentForSingleConstructorOnly_Then_ReturnFalse() {
-    //given
-    var constructors = NoConstructorAnnotationClass.class.getDeclaredConstructors();
-    var annotation = MyAnnotation.class;
-
-    //when
-    boolean result =
-        ReflectionUtils.isAnnotationPresentForSingleConstructorOnly(annotation, constructors);
-
-    //then
-    assertThat(result).isFalse();
-  }
-
-  @Test
   @DisplayName("Return 2 constructors when multiple constructors and only 2 contains annotation")
-  @Order(14)
+  @Order(9)
   void given_ClassWithMultipleConstructorsAnd2AnnotatedConstructors_When_getConstructorsAnnotatedWith_ThenReturn2Constructor() {
     //given
     var constructors = MultipleConstructorMultipleAnnotationClass.class.getDeclaredConstructors();
@@ -235,7 +157,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return empty result when multiple constructors but none with annotation")
-  @Order(15)
+  @Order(10)
   void given_ClassWithMultipleConstructorsAndNoAnnotation_When_getConstructorsAnnotatedWith_Then_ReturnEmptyList() {
     //given
     var constructors = NoConstructorAnnotationClass.class.getDeclaredConstructors();
@@ -252,7 +174,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return single default/no parameter constructor when class without declared constructors")
-  @Order(16)
+  @Order(11)
   void given_ClassWithoutDeclaredConstructors_When_GetDefaultConstructor_Then_ReturnSingleConstructor() {
     // given
     var availableConstructors = NoAnnotationClass.class.getDeclaredConstructors();
@@ -265,7 +187,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return single default/no parameter constructor when class with multiple declared constructors including one without parameters")
-  @Order(17)
+  @Order(12)
   @SneakyThrows
   void given_ClassWithMultiConstructorIncludingNoParamOne_When_GetDefaultConstructor_Then_ReturnSingleConstructor() {
     // given
@@ -281,7 +203,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Throw exception when class with multiple constructors and no default constructor")
-  @Order(18)
+  @Order(13)
   void given_ClassWithMultipleConstructorsAndNoDefaultConstructor_When_getDefaultConstructor_Then_ThrowException(){
     //given
     var clazz = MultipleConstructorClass.class;
@@ -295,7 +217,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Throw exception when nullable class")
-  @Order(19)
+  @Order(14)
   void given_NullableClass_When_getDefaultConstructor_Then_ThrowException() {
     //given
     //when
@@ -308,7 +230,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return true when class without declared constructors")
-  @Order(20)
+  @Order(15)
   void given_ClassWithoutDeclaredConstructors_When_hasDefaultConstructor_Then_ReturnTrue() {
     //given
     var clazz = NoAnnotationClass.class;
@@ -322,7 +244,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return true when class with multiple constructors and explicitly declared default constructor")
-  @Order(21)
+  @Order(16)
   void given_ClassWithMultipleConstructorsAndDefaultConstructor_When_hasDefaultConstructor_Then_ReturnTrue() {
     //given
     var clazz = MultipleConstructorMultipleAnnotationClass.class;
@@ -336,7 +258,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Return false when class with multiple constructors and no default constructor")
-  @Order(22)
+  @Order(17)
   void given_ClassWithMultipleConstructorsAndNoDefaultConstructor_When_hasDefaultConstructor_Then_ReturnFalse() {
     //given
     var clazz = MultipleConstructorClass.class;
@@ -350,7 +272,7 @@ public class ReflectionUtilsTest {
 
   @Test
   @DisplayName("Throw exception when nullable class")
-  @Order(23)
+  @Order(18)
   void given_NullableClass_When_hasDefaultConstructor_Then_ThrowException() {
     //given
     //when

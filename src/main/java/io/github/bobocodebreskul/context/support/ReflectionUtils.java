@@ -57,43 +57,6 @@ public class ReflectionUtils {
     return constructor.isAnnotationPresent(annotation);
   }
 
-
-  /**
-   * Checks if a specified annotation is present on any of the given constructors.
-   *
-   * @param annotation   The annotation type to check for. Must not be null.
-   * @param constructors The constructors on which to check for the presence of the annotation. Must
-   *                     not be null.
-   * @return {@code true} if the specified annotation is present on any of the given constructors,
-   * {@code false} otherwise.
-   * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
-   *                              is {@code null}.
-   * @see #isAnnotationPresentForConstructor
-   */
-  public static boolean isAnnotationPresentForAnyConstructor(Class<? extends Annotation> annotation,
-      Constructor<?>... constructors) {
-    return Arrays.stream(constructors)
-        .anyMatch(constructor -> isAnnotationPresentForConstructor(annotation, constructor));
-  }
-
-  /**
-   * Checks if a specified annotation is present on only one of the given constructors.
-   *
-   * @param annotation   The annotation type to check for. Must not be null.
-   * @param constructors The constructors on which to check for the presence of the annotation. Must
-   *                     not be null.
-   * @return {@code true} if the specified annotation is present on only one of the given
-   * constructors, {@code false} otherwise.
-   * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
-   *                              is {@code null}.
-   * @see #getConstructorsAnnotatedWith
-   */
-  public static boolean isAnnotationPresentForSingleConstructorOnly(
-      Class<? extends Annotation> annotation,
-      Constructor<?>... constructors) {
-    return getConstructorsAnnotatedWith(annotation, constructors).size() == 1;
-  }
-
   /**
    * Retrieves a list of constructors annotated with a specified annotation from the provided array
    * of constructors.

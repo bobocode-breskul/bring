@@ -29,6 +29,7 @@ public class BeanDefinitionReaderUtils {
 
   static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found";
   static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
+  static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
 
 
   /**
@@ -149,47 +150,8 @@ public class BeanDefinitionReaderUtils {
           NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
     }
 
-//    if (declaredConstructors.length > 1) {
-//      log.trace("Multiple constructors found for bean candidate [{}]", beanClass.getName());
-//      if (!isAnnotationPresentForAnyConstructor(Autowired.class, declaredConstructors)) {
-//        // Multiple  constructors without @Autowired and with default constructor
-//        if (hasDefaultConstructor(beanClass)) {
-//          log.trace(
-//              "No @Autowired constructor found for bean candidate [{}], default constructor registered as init one",
-//              beanName);
-//          return getDefaultConstructor(beanClass);
-//        }
-//        // Multiple  constructors without @Autowired and a default constructor
-//          log.error("Bean candidate [{}] of type [{}] has more then 1 constructor declared.",
-//              beanName, beanClass);
-//          throw new BeanDefinitionCreationException(
-//              NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
-//      }
-//
-//      // Multiple constructors with multiple @Autowired annotations
-//      if (isAnnotationPresentForMultipleConstructors(Autowired.class, declaredConstructors)) {
-//        List<Constructor<?>> autowiredConstructors =
-//            getConstructorsAnnotatedWith(Autowired.class, declaredConstructors);
-//        log.error(
-//            "Bean candidate [{}] of type [{}] has more then 1 constructor marked with @Autowired.",
-//            beanName, beanClass);
-//        throw new BeanDefinitionCreationException(MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE
-//            .formatted(beanName, autowiredConstructors.get(1), autowiredConstructors.get(0)));
-//      }
-//
-//      // Multiple constructors with only one @Autowired
-//      if (isAnnotationPresentForSingleConstructorOnly(Autowired.class, declaredConstructors)) {
-//        Constructor<?> initConstructor =
-//            getConstructorsAnnotatedWith(Autowired.class, declaredConstructors).get(0);
-//        log.trace("@Autowired constructor found for bean candidate [{}]: [{}]", beanClass.getName(),
-//            initConstructor);
-//        return initConstructor;
-//      }
-//    }
     throw new BeanDefinitionCreationException(
-        ("Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, "
-            + "target type is one of the list: [interface; a primitive type; an array class; void]")
-            .formatted(beanName, beanClass.getName()));
+        CLASS_WITHOUT_CONSTRUCTORS_MESSAGE.formatted(beanName, beanClass.getName()));
   }
 
   /**

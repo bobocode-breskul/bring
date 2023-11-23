@@ -16,6 +16,8 @@ import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -268,30 +271,35 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
-  @Disabled
   @Order(16)
   void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     //given
     var beanClass = MultipleConstructorWithoutAutowiredAndDefaultComponent.class;
     var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
-    var declaredConstructors = beanClass.getDeclaredConstructors();
 
     //when
     //then
     assertThatThrownBy(() -> BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName))
         .isInstanceOf(BeanDefinitionCreationException.class)
         .hasMessage(
-            BeanDefinitionReaderUtils.NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
+            BeanDefinitionReaderUtils.NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName,
+                beanClass.getName()));
   }
 
   @ParameterizedTest
   @MethodSource("getBeanClassesWithoutConstructors")
   @DisplayName("Throw exception when interface/primitive/array/void class specified")
-  @Disabled
   @Order(17)
-  void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException() {
-    // TODO: IMPLEMENT throw exception when there is no constructor at all - interface; a primitive type; an array class; void
-    // TODO: make it as parameterized test
+  void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException(
+      Class<?> beanClass, String beanName) {
+    //given
+    //when
+    //then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessage(
+            BeanDefinitionReaderUtils.CLASS_WITHOUT_CONSTRUCTORS_MESSAGE.formatted(beanName,
+                beanClass.getName()));
   }
 
   @Test
@@ -349,10 +357,16 @@ class BeanDefinitionReaderUtilsTest {
     assertThat(result).isFalse();
   }
 
-  private static Object[][] getConstructors() {
-    return new Object[][]{
-        {AnotherComponent.class.getDeclaredConstructors()[0], 1},
-        {MultipleArgumentDependentComponent.class.getDeclaredConstructors()[0], 2}};
+  private static Stream<Arguments> getConstructors() {
+    return Stream.of(Arguments.of(AnotherComponent.class.getDeclaredConstructors()[0], 1),
+        Arguments.of(MultipleArgumentDependentComponent.class.getDeclaredConstructors()[0], 2));
+  }
+
+  private static Stream<Arguments> getBeanClassesWithoutConstructors() {
+    return Stream.of(Arguments.of(Function.class, "function"),
+        Arguments.of(int.class, "integer"),
+        Arguments.of(int[].class, "integerArray"),
+        Arguments.of(void.class, "void"));
   }
 
   @BringComponent

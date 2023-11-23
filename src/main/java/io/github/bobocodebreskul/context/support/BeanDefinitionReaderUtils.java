@@ -109,7 +109,8 @@ public class BeanDefinitionReaderUtils {
       log.trace("One init constructor found and registered [{}] for bean candidate [{}]",
           declaredConstructors[0], beanClass.getName());
       return declaredConstructors[0];
-    } else if (declaredConstructors.length > 1) {
+    }
+    if (declaredConstructors.length > 1) {
       log.trace("Multiple constructors found for bean candidate [{}]", beanClass.getName());
       if (isAnnotationPresentForAnyConstructor(Autowired.class, declaredConstructors)) {
         // Multiple constructors with only one @Autowired

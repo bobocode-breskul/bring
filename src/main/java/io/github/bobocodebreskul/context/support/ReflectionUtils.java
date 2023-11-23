@@ -91,9 +91,7 @@ public class ReflectionUtils {
   public static boolean isAnnotationPresentForSingleConstructorOnly(
       Class<? extends Annotation> annotation,
       Constructor<?>... constructors) {
-    return Arrays.stream(constructors)
-        .filter(constructor -> isAnnotationPresentForConstructor(annotation, constructor))
-        .count() == 1;
+    return getConstructorsAnnotatedWith(annotation, constructors).size() == 1;
   }
 
   /**

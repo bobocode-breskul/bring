@@ -10,7 +10,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
@@ -208,9 +207,11 @@ class AnnotatedBeanDefinitionReaderTest {
   }
 
   static class AnotherComponent {
-
-    @Autowired
     private MyComponent myComponent;
+
+    public AnotherComponent(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
   }
 
   @Primary

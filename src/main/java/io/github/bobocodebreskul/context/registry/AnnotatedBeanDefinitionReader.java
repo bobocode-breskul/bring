@@ -1,7 +1,8 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanDependencies;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
@@ -12,6 +13,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -117,12 +119,13 @@ public class AnnotatedBeanDefinitionReader {
 
     annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
 
-    if (ReflectionUtils.isAnnotationExistsFor(Primary.class, beanClass)) {
+    if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
       log.trace("Found @Primary annotation on the beanName={}", name);
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    List<BeanDependency> dependencies = getBeanDependencies(beanClass);
+    Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
+    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);
@@ -132,5 +135,4 @@ public class AnnotatedBeanDefinitionReader {
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
-
 }

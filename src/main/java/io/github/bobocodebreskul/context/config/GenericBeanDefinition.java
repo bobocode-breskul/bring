@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.context.config;
 
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -20,6 +21,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   private boolean primary;
   private boolean autowireCandidate;
   private List<BeanDependency> dependencies;
+  private Constructor<?> initConstructor;
 
   public GenericBeanDefinition(Class<?> beanClass) {
     setBeanClass(beanClass);
@@ -98,6 +100,16 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   }
 
   @Override
+  public Constructor<?> getInitConstructor() {
+    return this.initConstructor;
+  }
+
+  @Override
+  public void setInitConstructor(Constructor<?> initConstructor) {
+    this.initConstructor = initConstructor;
+  }
+
+  @Override
   public boolean equals(Object object) {
     if (this == object) {
       return true;
@@ -116,6 +128,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append(beanClass, that.beanClass)
         .append(scope, that.scope)
         .append(dependencies, that.dependencies)
+        .append(initConstructor, that.initConstructor)
         .isEquals();
   }
 
@@ -128,6 +141,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append(primary)
         .append(autowireCandidate)
         .append(dependencies)
+        .append(initConstructor)
         .toHashCode();
   }
 
@@ -139,6 +153,7 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append("scope", scope)
         .append("primary", primary)
         .append("autowireCandidate", autowireCandidate)
+        .append("initConstructor", initConstructor)
         .toString();
   }
 }

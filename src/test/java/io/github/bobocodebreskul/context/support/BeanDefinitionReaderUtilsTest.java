@@ -6,36 +6,36 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
-import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith(MockitoExtension.class)
 class BeanDefinitionReaderUtilsTest {
 
+  @Mock
   private BeanDefinitionRegistry registry;
 
-  @BeforeEach
-  void init() {
-    registry = Mockito.mock(BeanDefinitionRegistry.class);
-  }
+  // todo fix ordering
 
   @Test
   @DisplayName("Generate bean name for bean definition based on bean class")
@@ -82,7 +82,8 @@ class BeanDefinitionReaderUtilsTest {
 
     //when
     //then
-    String expectedMessage = "Bean definition %s already exist".formatted(abd2.getBeanClass().getName());
+    String expectedMessage = "Bean definition %s already exist".formatted(
+        abd2.getBeanClass().getName());
     assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateBeanName(abd2, registry))
         .isInstanceOf(BeanDefinitionDuplicateException.class)
         .hasMessage(expectedMessage);
@@ -116,7 +117,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Generate bean name based on specified bean class")
   @Order(6)
-  void given_BeanClass_When_GenerateClassBeanName_Then_ReturnValidBeanName(){
+  void given_BeanClass_When_GenerateClassBeanName_Then_ReturnValidBeanName() {
     //given
     var beanClass = MyComponent.class;
     var expectedBeanName = StringUtils.uncapitalize(beanClass.getSimpleName());
@@ -140,98 +141,117 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @Test
-  @DisplayName("Get all dependencies of component class: constructor parameters, autowired fields, autowired method arguments")
-  @Order(8)
-  void given_BeanClassWithDependencies_When_GetBeanDependencies_Then_ReturnAllDependencyClasses() {
+  @DisplayName("Get bean dependencies from the default constructor")
+  void given_BeanClassWithDefaultConstructor_When_GetConstructorBeanDependencies_Then_ReturnEmptyList() {
     //given
-    Class<DependentComponent> componentClass = DependentComponent.class;
+    var beanDefaultConstructor = MyComponent.class.getDeclaredConstructors()[0];
+
     //when
-    List<Class<?>> beanDependencies = BeanDefinitionReaderUtils.getBeanDependencies(componentClass)
-        .stream()
-        .map(BeanDependency::type)
-        .collect(Collectors.toList());
+    var dependencies =
+        BeanDefinitionReaderUtils.getConstructorBeanDependencies(beanDefaultConstructor);
 
     //then
-    assertThat(beanDependencies).containsExactlyInAnyOrder(
-        MyComponent.class,
-        AnotherComponent.class,
-        OneMoreComponent.class);
-
+    assertThat(dependencies).isEmpty();
   }
 
-  @Test
-  @DisplayName("Get bean dependencies from the single class constructor")
-  @Order(9)
-  void given_BeanClassWithOneConstructor_When_GetBeanDependencies_Then_ReturnValidDependency(){
-    //given
-    var beanClass = ConstructorDependentComponent.class;
-    var expectedDependencyClass = MyComponent.class;
-
+  @ParameterizedTest
+  @MethodSource("getConstructors")
+  @DisplayName("Get bean dependencies for constructor with n parameters")
+  void given_ConstructorsWithNArguments_When_GetConstructorBeanDependencies_Then_ReturnAllConstructorArgumentTypes(
+      Constructor<?> constructor, int result) {
     //when
-    var dependencies = BeanDefinitionReaderUtils.getBeanDependencies(beanClass);
+    var dependencies = BeanDefinitionReaderUtils.getConstructorBeanDependencies(constructor);
 
     //then
+    var expectedTypes = constructor.getParameterTypes();
     assertThat(dependencies.stream().map(BeanDependency::type).toArray())
-        .containsExactly(expectedDependencyClass);
+        .hasSize(result)
+        .containsExactlyInAnyOrder(expectedTypes);
   }
 
   @Test
-  @DisplayName("Throw BeanDefinitionCreationException when bean has more then 1 constructor")
-  @Order(10)
-  void given_BeanClassWithSeveralConstructors_When_GetBeanDependencies_Then_ShouldThrowException() {
-    //given
-    //when
-    //then
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanDependencies(ComponentWith2Constructors.class))
-        .isInstanceOf(BeanDefinitionCreationException.class)
-        .hasMessageContaining("Bean candidate should have only one constructor declared");
+  @DisplayName("Throw NullPointerException with meaningful description for nullable constructor")
+  @Order(0)
+  void given_NullableConstructor_When_GetConstructorBeanDependencies_Then_ThrowNullPointerException() {
+    // when
+    // then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getConstructorBeanDependencies(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Bean constructor has not been specified");
   }
 
   @Test
-  @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
+  @DisplayName("Get bean constructor when bean class has only default constructor")
   @Disabled
-  @Order(11)
-  void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_GetBeanDependencies_Then_ThrowException() {
-    // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
+  @Order(0)
+  void given_BeanClassWithSingleDefaultConstructor_When_FindBeanInitConstructor_Then_ReturnDefaultConstructor(){
+    // TODO: IMPLEMENT return single constructor for class with default constructor
   }
 
   @Test
-  @DisplayName("Get bean dependencies when bean class has more than one constructor and one of them is default constructor")
-  @Disabled
-  @Order(12)
-  void given_BeanClassWithMultiConstructorIncludingDefault_When_GetBeanDependencies_Then_ReturnValidDependency() {
-    // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
+  @DisplayName("Get bean constructor when bean class has single constructor with parameters")
+  void given_BeanClassWithSingleMultiParamsConstructor_When_FindBeanInitConstructor_Then_ReturnConstructor() {
+    // TODO: IMPLEMENT return single constructor for class with one explicit constructor with parameters
   }
 
   @Test
-  @DisplayName("Get bean dependencies when bean class has more than one constructor and on of them is auto wired")
+  @DisplayName("Get bean constructor when bean class has more than one constructor and one of them is auto wired")
   @Disabled
   @Order(13)
-  void given_BeanClassWithMultiConstructorAndOneOfThemAutowired_When_GetBeanDependencies_Then_ReturnValidDependency() {
+  void given_BeanClassWithMultiConstructorAndOneOfThemAutowired_When_FindBeanInitConstructor_Then_ReturnConstructor() {
     // TODO: IMPLEMENT find single autowired constructor if more than 1 constructor present and one on of them marked as @Autowired
+  }
+
+  @Test
+  @DisplayName("Get bean constructor when bean class has more than one constructor and one of them is default constructor")
+  @Disabled
+  @Order(12)
+  void given_BeanClassWithMultiConstructorIncludingDefault_When_FindBeanInitConstructor_Then_ReturnValidConstructor() {
+    // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
   }
 
   @Test
   @DisplayName("Throw exception when bean class has more than one constructor annotated with @Autowired")
   @Disabled
   @Order(14)
-  void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_GetBeanDependencies_Then_ThrowException(){
+  void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     // TODO: IMPLEMENT throw exception when more than one constructor present and more than one @Autowired present
   }
+
+  @Test
+  @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
+  @Disabled
+  @Order(11)
+  void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
+    // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
+  }
+
+  @ParameterizedTest
+  @MethodSource("getBeanClassesWithoutConstructors")
+  @DisplayName("Throw exception when interface/primitive/array/void class specified")
+  @Disabled
+  @Order(0)
+  void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException(){
+    // TODO: IMPLEMENT throw exception when there is no constructor at all - interface; a primitive type; an array class; void
+    // TODO: make it as parameterized test
+  }
+
+
+
 
   @Test
   @DisplayName("Get bean dependencies when bean class has only field autowired dependencies")
   @Disabled
   @Order(15)
-  void given_BeanClassWithOnlyAutowiredFieldDependencies_When_GetBeanDependencies_Then_ReturnValidDependencies() {
-  // TODO: IMPLEMENT only field dependencies found
+  void given_BeanClassWithOnlyAutowiredFieldDependencies_When_FindBeanInitConstructor_Then_ReturnValidDependencies() {
+    // TODO: IMPLEMENT only field dependencies found
   }
 
   @Test
   @DisplayName("Get bean dependencies when bean class has only method autowired dependencies")
   @Disabled
   @Order(16)
-  void given_BeanClassWithOnlyMethodDependencies_When_GetBeanDependencies_Then_ReturnValidMethodDependencies() {
+  void given_BeanClassWithOnlyMethodDependencies_When_FindBeanInitConstructor_Then_ReturnValidMethodDependencies() {
     // TODO: IMPLEMENT only method dependencies found
   }
 
@@ -243,7 +263,8 @@ class BeanDefinitionReaderUtilsTest {
     var autowiredBeanClass = MyComponent.class;
     var componentClass = AnotherComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(componentClass);
-    abd.setDependencies(List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
+    abd.setDependencies(
+        List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
     when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
 
     //when
@@ -261,7 +282,8 @@ class BeanDefinitionReaderUtilsTest {
     //given
     var autowiredBeanClass = MyComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(autowiredBeanClass);
-    abd.setDependencies(Collections.singletonList(new BeanDependency(autowiredBeanClass.getSimpleName(),autowiredBeanClass)));
+    abd.setDependencies(Collections.singletonList(
+        new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
     when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
 
     //when
@@ -272,64 +294,29 @@ class BeanDefinitionReaderUtilsTest {
     assertThat(result).isFalse();
   }
 
+  private static Object[][] getConstructors() {
+    return new Object[][]{
+        {AnotherComponent.class.getDeclaredConstructors()[0], 1},
+        {MultipleArgumentDependentComponent.class.getDeclaredConstructors()[0], 2}};
+  }
+
   @BringComponent
   static class MyComponent {
 
   }
 
   @BringComponent
+  @RequiredArgsConstructor
   static class AnotherComponent {
-
-    @Autowired
-    private MyComponent myComponent;
-
-  }
-
-  @BringComponent
-  static class OneMoreComponent {
-
-  }
-
-  @BringComponent
-  static class IgnoreComponent {
-
-  }
-
-  @BringComponent
-  static class ComponentWith2Constructors {
-    private MyComponent myComponent;
-
-    public ComponentWith2Constructors() {}
-
-    public ComponentWith2Constructors(MyComponent myComponent) {
-      this.myComponent = myComponent;
-    }
+    private final MyComponent myComponent;
   }
 
   @BringComponent
   @RequiredArgsConstructor
-  static  class ConstructorDependentComponent {
+  static class MultipleArgumentDependentComponent {
+
     private final MyComponent component;
+    private final AnotherComponent anotherComponent;
   }
 
-  @BringComponent
-  static class DependentComponent {
-
-    private final MyComponent myComponent;
-
-    @Autowired
-    private AnotherComponent anotherComponent;
-
-    private OneMoreComponent oneMoreComponent;
-    private IgnoreComponent ignoreComponent;
-
-    public DependentComponent(MyComponent myComponent) {
-      this.myComponent = myComponent;
-    }
-
-    @Autowired
-    public void setOneMoreComponent(OneMoreComponent oneMoreComponent) {
-      this.oneMoreComponent = oneMoreComponent;
-    }
-  }
 }

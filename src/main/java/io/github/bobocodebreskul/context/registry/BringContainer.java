@@ -2,15 +2,12 @@ package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
-import io.github.bobocodebreskul.context.exception.FeatureNotImplementedException;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
-import io.github.bobocodebreskul.context.exception.NotFoundDeclaredConstructorException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -64,12 +61,7 @@ public class BringContainer implements ObjectFactory {
     }
     Class<?> beanClass = beanDefinition.getBeanClass();
     try {
-      Constructor<?> declaredConstructor = beanClass.getDeclaredConstructors()[0];
-      if (beanClass.getDeclaredConstructors().length > 1) {
-        // TODO: multiple constructor logic not implemented
-        throw new FeatureNotImplementedException(
-            "Bean instantiation with multiple constructors is not implemented");
-      }
+      Constructor<?> declaredConstructor = beanDefinition.getInitConstructor();
       Object[] dependentBeans = beanDefinition.getDependencies().stream()
           .map(BeanDependency::name)
           .map(this::getBean)

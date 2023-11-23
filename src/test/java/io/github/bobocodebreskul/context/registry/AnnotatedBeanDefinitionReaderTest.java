@@ -16,29 +16,29 @@ import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AnnotatedBeanDefinitionReaderTest {
 
+  @Spy
   private BeanDefinitionRegistry registry;
+  @InjectMocks
   private AnnotatedBeanDefinitionReader annotatedBeanDefinitionReader;
-
-  @BeforeEach
-  void init() {
-    registry = Mockito.spy(BeanDefinitionRegistry.class);
-    annotatedBeanDefinitionReader = new AnnotatedBeanDefinitionReader(registry);
-  }
 
   @Test
   @DisplayName("Test simple bean definition is created and passed to registry")
@@ -155,30 +155,9 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
 
-
-  @Test
-  @DisplayName("Throw DuplicateBeanDefinitionException when duplicate bean name specified")
-  @Order(5)
-  void given_BeanClassWithDuplicateName_When_RegisterBean_Then_ThrowDuplicateBeanDefinitionException() {
-    //given
-    var firstBeanClass = MyComponent.class;
-    var secondBeanClass = AnotherComponent.class;
-    String expectedBeanName = "SomeBeanName";
-    doReturn(true).when(registry).isBeanNameInUse(expectedBeanName);
-
-    //when
-    //then
-    assertThatThrownBy(() ->
-        annotatedBeanDefinitionReader.registerBean(secondBeanClass, expectedBeanName))
-        .isInstanceOf(DuplicateBeanDefinitionException.class)
-        .hasMessageContaining("The bean definition with specified name %s already exists"
-            .formatted(expectedBeanName));
-  }
-
-
   @Test
   @DisplayName("Test bean definition isPrimary property marked as true")
-  @Order(6)
+  @Order(5)
   void given_PrimaryBeanClass_When_RegisterBean_Then_BeanDefinitionPrimaryPropertyTrue() {
     //given
     var primaryBeanClass = PrimaryComponent.class;
@@ -201,12 +180,53 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
 
+  @Test
+  @DisplayName("Register bean definition with init constructor found")
+  @Order(6)
+  void given_BeanClassWithOneConstructor_When_RegisterBean_Then_RegisterBeanDefinitionWithInitCOnstructorFound() {
+    //given
+    var beanClass = AnotherComponent.class;
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    //when
+    annotatedBeanDefinitionReader.register(beanClass);
+
+    //then
+    Constructor<?> expectedInitConstructor = beanClass.getDeclaredConstructors()[0];
+    verify(registry, atMostOnce()).registerBeanDefinition(anyString(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
+    assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
+    assertThat(actualBeanDefinition.getInitConstructor()).isEqualTo(expectedInitConstructor);
+  }
+
+  @Test
+  @DisplayName("Throw DuplicateBeanDefinitionException when duplicate bean name specified")
+  @Order(7)
+  void given_BeanClassWithDuplicateName_When_RegisterBean_Then_ThrowDuplicateBeanDefinitionException() {
+    //given
+    var firstBeanClass = MyComponent.class;
+    var secondBeanClass = AnotherComponent.class;
+    String expectedBeanName = "SomeBeanName";
+    doReturn(true).when(registry).isBeanNameInUse(expectedBeanName);
+
+    //when
+    //then
+    assertThatThrownBy(() ->
+        annotatedBeanDefinitionReader.registerBean(secondBeanClass, expectedBeanName))
+        .isInstanceOf(DuplicateBeanDefinitionException.class)
+        .hasMessageContaining("The bean definition with specified name %s already exists"
+            .formatted(expectedBeanName));
+  }
+
   @BringComponent
   static class MyComponent {
 
   }
 
   static class AnotherComponent {
+
     private MyComponent myComponent;
 
     public AnotherComponent(MyComponent myComponent) {

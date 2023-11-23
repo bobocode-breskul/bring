@@ -68,7 +68,7 @@ public class ReflectionUtils {
    * {@code false} otherwise.
    * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
    *                              is {@code null}.
-   * @see #isAnnotationPresentForConstructor(Class, Constructor<?>)
+   * @see #isAnnotationPresentForConstructor
    */
   public static boolean isAnnotationPresentForAnyConstructor(Class<? extends Annotation> annotation,
       Constructor<?>... constructors) {
@@ -86,7 +86,7 @@ public class ReflectionUtils {
    * constructors, {@code false} otherwise.
    * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
    *                              is {@code null}.
-   * @see #isAnnotationPresentForConstructor(Class, Constructor<?>)
+   * @see #isAnnotationPresentForConstructor
    */
   public static boolean isAnnotationPresentForSingleConstructorOnly(
       Class<? extends Annotation> annotation,
@@ -106,7 +106,7 @@ public class ReflectionUtils {
    * if no matching constructors are found.
    * @throws NullPointerException If either the {@code annotation} or {@code constructors} parameter
    *                              is {@code null}.
-   * @see #isAnnotationPresentForConstructor(Class, Constructor<?>)
+   * @see #isAnnotationPresentForConstructor
    */
   public static List<Constructor<?>> getConstructorsAnnotatedWith(
       Class<? extends Annotation> annotation, Constructor<?>... constructors) {

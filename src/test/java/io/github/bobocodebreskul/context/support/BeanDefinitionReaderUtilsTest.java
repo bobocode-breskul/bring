@@ -271,7 +271,17 @@ class BeanDefinitionReaderUtilsTest {
   @Disabled
   @Order(16)
   void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
-    // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
+    //given
+    var beanClass = MultipleConstructorWithoutAutowiredAndDefaultComponent.class;
+    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var declaredConstructors = beanClass.getDeclaredConstructors();
+
+    //when
+    //then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessage(
+            BeanDefinitionReaderUtils.NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
   }
 
   @ParameterizedTest
@@ -412,6 +422,22 @@ class BeanDefinitionReaderUtilsTest {
 
     @Autowired
     public MultipleAutowiredConstructorComponent(AnotherComponent anotherComponent) {
+      this.anotherComponent = anotherComponent;
+    }
+  }
+
+  @BringComponent
+  static class MultipleConstructorWithoutAutowiredAndDefaultComponent {
+
+    private MyComponent myComponent;
+    private AnotherComponent anotherComponent;
+
+    public MultipleConstructorWithoutAutowiredAndDefaultComponent(MyComponent myComponent) {
+      this.myComponent = myComponent;
+    }
+
+    public MultipleConstructorWithoutAutowiredAndDefaultComponent(
+        AnotherComponent anotherComponent) {
       this.anotherComponent = anotherComponent;
     }
   }

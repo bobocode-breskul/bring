@@ -136,53 +136,6 @@ class AnnotatedBeanDefinitionReaderTest {
   }
 
   @Test
-  @DisplayName("Test bean definition registered by specified bean name")
-  @Order(4)
-  void given_BeanClassAndName_When_RegisterBean_Then_BeanDefinitionRegisteredBySpecifiedName() {
-    //given
-    var beanClass = MyComponent.class;
-    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
-    String expectedBeanName = "SomeBeanName";
-    //when
-    annotatedBeanDefinitionReader.registerBean(beanClass, expectedBeanName);
-
-    //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
-    verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
-    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
-    assertThat(nameCaptor.getValue()).isEqualTo(expectedBeanName);
-    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
-    assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
-    assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.getName()).isEqualTo(expectedBeanName);
-    assertThat(actualBeanDefinition.getDependencies()).isEmpty();
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
-    assertThat(actualBeanDefinition.isPrimary()).isFalse();
-    assertThat(actualBeanDefinition.isSingleton()).isTrue();
-  }
-
-
-  @Test
-  @DisplayName("Throw DuplicateBeanDefinitionException when duplicate bean name specified")
-  @Order(5)
-  void given_BeanClassWithDuplicateName_When_RegisterBean_Then_ThrowDuplicateBeanDefinitionException() {
-    //given
-    var secondBeanClass = AnotherComponent.class;
-    String expectedBeanName = "SomeBeanName";
-    doReturn(true).when(registry).isBeanNameInUse(expectedBeanName);
-
-    //when
-    //then
-    assertThatThrownBy(() ->
-      annotatedBeanDefinitionReader.registerBean(secondBeanClass, expectedBeanName))
-      .isInstanceOf(DuplicateBeanDefinitionException.class)
-      .hasMessageContaining("The bean definition with specified name %s already exists"
-        .formatted(expectedBeanName));
-  }
-
-
-  @Test
   @DisplayName("Test bean definition isPrimary property marked as true")
   @Order(6)
   void given_PrimaryBeanClass_When_RegisterBean_Then_BeanDefinitionPrimaryPropertyTrue() {

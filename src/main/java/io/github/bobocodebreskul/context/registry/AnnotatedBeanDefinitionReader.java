@@ -87,19 +87,6 @@ public class AnnotatedBeanDefinitionReader {
     doRegisterBean(beanClass, name);
   }
 
-  // TODO discuss if we really need this method or need to remove it.
-
-  /**
-   * Register a bean from the given bean class, deriving its metadata from declared annotations.
-   *
-   * @param beanClass the class of the bean
-   * @param name      n explicit name for the bean (or null for generating a default bean name)
-   */
-  @Deprecated(forRemoval = true)
-  public void registerBean(Class<?> beanClass, String name) {
-    doRegisterBean(beanClass, name);
-  }
-
   /**
    * Retrieves the associated Bean Definition Registry.
    *

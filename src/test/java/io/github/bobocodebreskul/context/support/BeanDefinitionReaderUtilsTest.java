@@ -35,8 +35,6 @@ class BeanDefinitionReaderUtilsTest {
   @Mock
   private BeanDefinitionRegistry registry;
 
-  // todo fix ordering
-
   @Test
   @DisplayName("Generate bean name for bean definition based on bean class")
   @Order(1)
@@ -142,6 +140,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Get bean dependencies from the default constructor")
+  @Order(8)
   void given_BeanClassWithDefaultConstructor_When_GetConstructorBeanDependencies_Then_ReturnEmptyList() {
     //given
     var beanDefaultConstructor = MyComponent.class.getDeclaredConstructors()[0];
@@ -157,6 +156,7 @@ class BeanDefinitionReaderUtilsTest {
   @ParameterizedTest
   @MethodSource("getConstructors")
   @DisplayName("Get bean dependencies for constructor with n parameters")
+  @Order(9)
   void given_ConstructorsWithNArguments_When_GetConstructorBeanDependencies_Then_ReturnAllConstructorArgumentTypes(
       Constructor<?> constructor, int result) {
     //when
@@ -171,7 +171,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Throw NullPointerException with meaningful description for nullable constructor")
-  @Order(0)
+  @Order(10)
   void given_NullableConstructor_When_GetConstructorBeanDependencies_Then_ThrowNullPointerException() {
     // when
     // then
@@ -183,13 +183,15 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Get bean constructor when bean class has only default constructor")
   @Disabled
-  @Order(0)
+  @Order(11)
   void given_BeanClassWithSingleDefaultConstructor_When_FindBeanInitConstructor_Then_ReturnDefaultConstructor(){
     // TODO: IMPLEMENT return single constructor for class with default constructor
   }
 
   @Test
   @DisplayName("Get bean constructor when bean class has single constructor with parameters")
+  @Disabled
+  @Order(12)
   void given_BeanClassWithSingleMultiParamsConstructor_When_FindBeanInitConstructor_Then_ReturnConstructor() {
     // TODO: IMPLEMENT return single constructor for class with one explicit constructor with parameters
   }
@@ -205,7 +207,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Get bean constructor when bean class has more than one constructor and one of them is default constructor")
   @Disabled
-  @Order(12)
+  @Order(14)
   void given_BeanClassWithMultiConstructorIncludingDefault_When_FindBeanInitConstructor_Then_ReturnValidConstructor() {
     // TODO: IMPLEMENT return valid when more than one constructor present and one of the is default
   }
@@ -213,7 +215,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Throw exception when bean class has more than one constructor annotated with @Autowired")
   @Disabled
-  @Order(14)
+  @Order(15)
   void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     // TODO: IMPLEMENT throw exception when more than one constructor present and more than one @Autowired present
   }
@@ -221,7 +223,7 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Throw exception when bean class has more than one parameterized constructor but no default one and no auto wired one")
   @Disabled
-  @Order(11)
+  @Order(16)
   void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     // TODO: IMPLEMENT trow exception when there are several constructors without @Autowired and a default constructor is not present
   }
@@ -230,19 +232,16 @@ class BeanDefinitionReaderUtilsTest {
   @MethodSource("getBeanClassesWithoutConstructors")
   @DisplayName("Throw exception when interface/primitive/array/void class specified")
   @Disabled
-  @Order(0)
+  @Order(17)
   void given_BeanClassWithoutConstructor_When_FindBeanInitConstructor_Then_ThrowException(){
     // TODO: IMPLEMENT throw exception when there is no constructor at all - interface; a primitive type; an array class; void
     // TODO: make it as parameterized test
   }
 
-
-
-
   @Test
   @DisplayName("Get bean dependencies when bean class has only field autowired dependencies")
   @Disabled
-  @Order(15)
+  @Order(18)
   void given_BeanClassWithOnlyAutowiredFieldDependencies_When_FindBeanInitConstructor_Then_ReturnValidDependencies() {
     // TODO: IMPLEMENT only field dependencies found
   }
@@ -250,14 +249,14 @@ class BeanDefinitionReaderUtilsTest {
   @Test
   @DisplayName("Get bean dependencies when bean class has only method autowired dependencies")
   @Disabled
-  @Order(16)
+  @Order(19)
   void given_BeanClassWithOnlyMethodDependencies_When_FindBeanInitConstructor_Then_ReturnValidMethodDependencies() {
     // TODO: IMPLEMENT only method dependencies found
   }
 
   @Test
   @DisplayName("Verify autowired bean class defined as autowire candidate")
-  @Order(17)
+  @Order(20)
   void given_BeanClassAutowireCandidate_When_IsBeanAutowireCandidate_Then_ReturnTrue() {
     //given
     var autowiredBeanClass = MyComponent.class;
@@ -277,7 +276,7 @@ class BeanDefinitionReaderUtilsTest {
 
   @Test
   @DisplayName("Verify bean class without dependencies is not defined as autowire candidate")
-  @Order(18)
+  @Order(21)
   void given_BeanClass_When_IsBeanAutowireCandidate_Then_ReturnFalse() {
     //given
     var autowiredBeanClass = MyComponent.class;

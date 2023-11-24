@@ -142,8 +142,7 @@ public class AnnotatedBeanDefinitionReader {
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    annotatedBeanDefinition.setScope(
-        getBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition));
+    annotatedBeanDefinition.setScope(getBeanDefinitionScope(beanClass, beanName));
 
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, beanName);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
@@ -159,8 +158,7 @@ public class AnnotatedBeanDefinitionReader {
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
 
-  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName,
-      AnnotatedGenericBeanDefinition annotatedBeanDefinition) {
+  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName) {
     if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
       String scopeName = beanClass.getAnnotation(Scope.class).value();
       log.trace("Found @Scope annotation on the beanName={}", beanName);

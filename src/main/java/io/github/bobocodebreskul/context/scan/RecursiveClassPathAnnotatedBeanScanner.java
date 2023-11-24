@@ -1,7 +1,6 @@
 package io.github.bobocodebreskul.context.scan;
 
 import static io.github.bobocodebreskul.context.support.GeneralConstants.EMPTY;
-import static java.util.Arrays.asList;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toSet;
 
@@ -37,8 +36,8 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
 
   @Override
   public void scan(Class<?> configClass) {
-    String[] scanPackages = scanUtils.readBasePackages(configClass);
-    Queue<String> remainingScanPackages = new ArrayDeque<>(asList(scanPackages));
+    Set<String> scanPackages = scanUtils.readBasePackages(configClass);
+    Queue<String> remainingScanPackages = new ArrayDeque<>(scanPackages);
     Set<String> processedScanPackages = new HashSet<>();
     while (!remainingScanPackages.isEmpty()) {
       String scanPackage = remainingScanPackages.poll();

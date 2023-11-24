@@ -10,11 +10,10 @@ package io.github.bobocodebreskul.context.scan;
 public interface ClassPathAnnotatedBeanScanner {
 
   /**
-   * Recursively scan packages and find all bean definitions located in those packages or in
-   * packages provided by found configurations. Then register class as bean definition by
-   * using {@link io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry}
+   * Scans the specified configuration class, identifying classes annotated with
+   * specific annotations.
    *
-   * @param configClass packages to scan
+   * @param configClass the configuration class to scan
    */
   void scan(Class<?> configClass);
 }

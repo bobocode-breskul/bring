@@ -7,11 +7,14 @@ import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClass;
-import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithBringComponent;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate3;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -49,7 +52,7 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
     given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_ONE, BringComponent.class))
         .willReturn(Set.of(expectedClass1, expectedClass2));
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
-        new String[]{TEST_PACKAGE_ONE});
+        new HashSet<>(List.of(TEST_PACKAGE_ONE)));
     // when
     annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
@@ -72,7 +75,7 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
     given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_TWO, BringComponent.class))
         .willReturn(Set.of(expectedClass3));
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
-        new String[]{TEST_PACKAGE_ONE, TEST_PACKAGE_TWO});
+        new HashSet<>(Arrays.asList(TEST_PACKAGE_ONE, TEST_PACKAGE_TWO)));
     // when
     annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
@@ -90,43 +93,10 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
     given(scanUtils.searchClassesByAnnotationRecursively(TEST_PACKAGE_ONE, BringComponent.class))
         .willReturn(Collections.emptySet());
     given(scanUtils.readBasePackages(ConfigTestClass.class)).willReturn(
-        new String[]{TEST_PACKAGE_ONE});
+        new HashSet<>(List.of(TEST_PACKAGE_ONE)));
     // when
     annotatedBeanScanner.scan(ConfigTestClass.class);
     // verify
-    then(beanDefinitionReader).shouldHaveNoInteractions();
-  }
-
-  @Test
-  @DisplayName("Register classes only when exists annotation with @BringComponent")
-  @Order(4)
-  void given_AnnotationWithBringComponent_When_Scan_Then_NotRegisterAnnotation() {
-    // data
-    String inputPackage1 = TEST_PACKAGE_ONE;
-    // given
-    Class<?> expectedClass1 = MultiCandidate1.class;
-    Class<?> expectedClass2 = MultiCandidate2.class;
-    Class<?> expectedClass3 = TestAnnotationWithBringComponent.class;
-
-    given(scanUtils.searchClassesByAnnotationRecursively(inputPackage1, BringComponent.class))
-      .willReturn(Set.of(expectedClass1, expectedClass2, expectedClass3));
-
-    // when
-    annotatedBeanScanner.scan(inputPackage1);
-    // verify
-    then(beanDefinitionReader).should().registerBean(expectedClass1);
-    then(beanDefinitionReader).should().registerBean(expectedClass2);
-    then(beanDefinitionReader).shouldHaveNoMoreInteractions();
-  }
-
-  @Test
-  @DisplayName("Do nothing when provided empty package list")
-  @Order(4)
-  void given_EmptyInput_When_Scan_Then_RegisterDoNothing() {
-    // when
-    annotatedBeanScanner.scan();
-    // verify
-    then(scanUtils).shouldHaveNoInteractions();
     then(beanDefinitionReader).shouldHaveNoInteractions();
   }
 }

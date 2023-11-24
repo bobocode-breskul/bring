@@ -10,7 +10,6 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate3;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

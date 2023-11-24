@@ -5,7 +5,6 @@ import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
@@ -51,6 +50,8 @@ public class BringContainer implements ObjectFactory {
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
         new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(scanPackages);
+
+    CycleDependencyResolver.validateCycleDependency(definitionRegistry);
 
     BringContainer container = new BringContainer(definitionRegistry);
 

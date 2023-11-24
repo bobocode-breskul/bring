@@ -48,6 +48,12 @@
       <organization>https://github.com/bobocode-breskul</organization>
       <organizationUrl>https://www.linkedin.com/in/vitalii-katkov-09643811a/</organizationUrl>
     </developer>
+    <developer>
+      <name>Serhii Barabash</name>
+      <email>s.barabaw@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/sergey-barabash-365049b9/</organizationUrl>
+    </developer>
   </developers>
 
   <scm>

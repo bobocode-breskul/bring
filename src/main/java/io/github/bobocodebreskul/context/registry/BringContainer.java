@@ -85,6 +85,11 @@ public class BringContainer implements ObjectFactory {
           .map(this::getBean)
           .toArray();
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
+
+      if (beanDefinition.isPrototype()) {
+        return newInstance;
+      }
+
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;

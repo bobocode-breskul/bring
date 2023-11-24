@@ -6,6 +6,7 @@ import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtil
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
+import static java.util.Objects.nonNull;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
@@ -19,6 +20,9 @@ import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,7 +56,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
-
+  final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
+  private final static String COMPONENT_NAME_FIELD = "value";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
   /**
@@ -73,7 +78,7 @@ public class AnnotatedBeanDefinitionReader {
    */
   public void register(Class<?>... componentClasses) {
     Arrays.stream(componentClasses)
-        .forEach(this::registerBean);
+      .forEach(this::registerBean);
   }
 
   /**
@@ -82,16 +87,7 @@ public class AnnotatedBeanDefinitionReader {
    * @param beanClass the class of the bean
    */
   public void registerBean(Class<?> beanClass) {
-    doRegisterBean(beanClass, null);
-  }
-
-  /**
-   * Register a bean from the given bean class, deriving its metadata from declared annotations.
-   *
-   * @param beanClass the class of the bean
-   * @param name      n explicit name for the bean (or null for generating a default bean name)
-   */
-  public void registerBean(Class<?> beanClass, String name) {
+    String name = extractBeanName(beanClass).orElse(null);
     doRegisterBean(beanClass, name);
   }
 
@@ -102,6 +98,26 @@ public class AnnotatedBeanDefinitionReader {
    */
   public final BeanDefinitionRegistry getBeanDefinitionRegistry() {
     return beanDefinitionRegistry;
+  }
+
+  private Optional<String> extractBeanName(Class<?> beanClass) {
+    Set<String> componentAnnotations = Arrays.stream(beanClass.getAnnotations())
+        .filter(ReflectionUtils::isComponentAnnotation)
+        .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
+            annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
+        .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
+        .collect(Collectors.toSet());
+    if (componentAnnotations.isEmpty()) {
+      return Optional.empty();
+    } else if (componentAnnotations.size() == 1) {
+      return componentAnnotations.stream().findFirst();
+    }
+    String beanNames = String.join(", ", componentAnnotations);
+    log.error(
+        "For bean {} was found several different names definitions: [{}]. Please choose one.",
+        beanClass.getName(), beanNames);
+    throw new IllegalStateException(
+        UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
   }
 
   private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
@@ -166,5 +182,4 @@ public class AnnotatedBeanDefinitionReader {
       return SINGLETON_SCOPE;
     }
   }
-
 }

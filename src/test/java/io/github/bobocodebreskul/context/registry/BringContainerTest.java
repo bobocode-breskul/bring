@@ -16,7 +16,6 @@ import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.List;
-import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -46,7 +45,7 @@ class BringContainerTest {
   private BeanDefinitionRegistry beanDefinitionRegistry;
 
   @Test
-  @Description("Create single bean by bean name")
+  @DisplayName("Create single bean by bean name")
   @Order(1)
   void given_BeanName_When_BeanIsRegistered_Then_ReturnBean() {
     // data
@@ -69,7 +68,7 @@ class BringContainerTest {
   }
 
   @Test
-  @Description("Create and return same bean when called twice by same bean name")
+  @DisplayName("Create and return same bean when called twice by same bean name")
   @Order(2)
   void given_BeanName_When_BeanIsRegistered_Then_OnSecondTimeReturnSameBeanAgain() {
     // data
@@ -91,7 +90,7 @@ class BringContainerTest {
   }
 
   @Test
-  @Description("Throw NoSuchBeanDefinitionException when take bean without bean definition by name")
+  @DisplayName("Throw NoSuchBeanDefinitionException when take bean without bean definition by name")
   @Order(3)
   void given_BeanName_When_BeanNameNotRegistered_Then_ThrowNoSuchBeanDefinitionException() {
     assertThatThrownBy(() -> objectFactory.getBean(TEST_BEAN_NAME_1))

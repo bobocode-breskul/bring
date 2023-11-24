@@ -4,11 +4,10 @@ import static java.util.function.Predicate.not;
 
 import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import io.github.bobocodebreskul.context.exception.BringComponentScanNotFoundException;
+import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -30,34 +29,21 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
-      Class<? extends Annotation> filterByAnnotation) {
+    Class<? extends Annotation> filterByAnnotation) {
     log.trace("Search all classes for {} package which has @{} annotation",
-        packagePath, filterByAnnotation);
-    Predicate<Class<?>> filter = clazz -> {
-      Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
-      Set<Annotation> processedAnnotations = new HashSet<>(annotations);
-      while (!annotations.isEmpty()) {
-        var annotation = annotations.poll();
-        processedAnnotations.add(annotation);
-        if (annotation.annotationType().equals(filterByAnnotation)) {
-          return true;
-        }
-        Arrays.stream(annotation.annotationType().getAnnotations())
-            .filter(not(processedAnnotations::contains))
-            .forEach(annotations::add);
-      }
+      packagePath, filterByAnnotation);
+    Predicate<Class<?>> filter = clazz -> ReflectionUtils.checkIfClassHasAnnotationRecursively(clazz,
+      filterByAnnotation);
 
-      return false;
-    };
     return searchClassesByFilter(packagePath, filter);
   }
 
   @Override
   public Set<Class<?>> searchClassesByFilter(String packagePath, Predicate<Class<?>> filter) {
     return searchAllClasses(packagePath)
-        .stream()
-        .filter(filter)
-        .collect(Collectors.toSet());
+      .stream()
+      .filter(filter)
+      .collect(Collectors.toSet());
   }
 
 

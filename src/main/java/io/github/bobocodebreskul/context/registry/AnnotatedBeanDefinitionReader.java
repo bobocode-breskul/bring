@@ -56,6 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
+
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
@@ -78,7 +79,7 @@ public class AnnotatedBeanDefinitionReader {
    */
   public void register(Class<?>... componentClasses) {
     Arrays.stream(componentClasses)
-      .forEach(this::registerBean);
+        .forEach(this::registerBean);
   }
 
   /**
@@ -121,13 +122,16 @@ public class AnnotatedBeanDefinitionReader {
   }
 
   private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
-    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), beanName);
+    log.debug("doRegisterBean method invoked: beanClass={}, name={}",
+        beanClass.getName(),
+        beanName);
     log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as:
     //  bean name validity (not allowed characters), check for circular dependency
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    beanName = beanName != null ? beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    beanName = beanName != null ?
+        beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
     annotatedBeanDefinition.setName(beanName);
 
     if (beanDefinitionRegistry.isBeanNameInUse(beanName)) {
@@ -135,7 +139,6 @@ public class AnnotatedBeanDefinitionReader {
       throw new DuplicateBeanDefinitionException(
           "The bean definition with specified name %s already exists".formatted(beanName));
     }
-
 
     if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
       log.trace("Found @Primary annotation on the beanName={}", beanName);
@@ -173,11 +176,12 @@ public class AnnotatedBeanDefinitionReader {
         return SINGLETON_SCOPE;
       } else {
         log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
-        throw new BeanDefinitionCreationException("Invalid scope name provided %s".formatted(scopeName));
+        throw new BeanDefinitionCreationException(
+            "Invalid scope name provided %s".formatted(scopeName));
       }
-    } else {
-      log.trace("Retrieve default singleton scope for bean: {}", beanName);
-      return SINGLETON_SCOPE;
     }
+
+    log.trace("Retrieve default singleton scope for bean: {}", beanName);
+    return SINGLETON_SCOPE;
   }
 }

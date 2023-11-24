@@ -1,8 +1,8 @@
 package io.github.bobocodebreskul.context.registry;
 
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
@@ -126,7 +126,8 @@ public class AnnotatedBeanDefinitionReader {
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    setBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition);
+    annotatedBeanDefinition.setScope(
+        getBeanDefinitionScope(beanClass, beanName, annotatedBeanDefinition));
 
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, beanName);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
@@ -142,27 +143,27 @@ public class AnnotatedBeanDefinitionReader {
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
   }
 
-  private static <T> void setBeanDefinitionScope(Class<T> beanClass, String beanName,
+  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName,
       AnnotatedGenericBeanDefinition annotatedBeanDefinition) {
     if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
       String scopeName = beanClass.getAnnotation(Scope.class).value();
       log.trace("Found @Scope annotation on the beanName={}", beanName);
       if (PROTOTYPE_SCOPE.equals(scopeName)) {
-        log.trace("Set prototype scope for bean: {}", beanName);
-        annotatedBeanDefinition.setScope(PROTOTYPE_SCOPE);
+        log.trace("Retrieve prototype scope for bean: {}", beanName);
+        return PROTOTYPE_SCOPE;
       } else if (SINGLETON_SCOPE.equals(scopeName)) {
-        log.trace("Set singleton scope for bean: {}", beanName);
-        annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+        log.trace("Retrieve singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
       } else if ("".equals(scopeName)) {
-        log.trace("Set default singleton scope for bean: {}", beanName);
-        annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+        log.trace("Retrieve default singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
       } else {
         log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
         throw new BeanDefinitionCreationException("Invalid scope name provided %s".formatted(scopeName));
       }
     } else {
-      log.trace("Set default singleton scope for bean: {}", beanName);
-      annotatedBeanDefinition.setScope(SINGLETON_SCOPE);
+      log.trace("Retrieve default singleton scope for bean: {}", beanName);
+      return SINGLETON_SCOPE;
     }
   }
 

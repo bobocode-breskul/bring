@@ -249,7 +249,7 @@ class BringContainerTest {
   }
 
   @Test
-  @Description("Create prototype bean by bean name")
+  @DisplayName("Create prototype bean by bean name")
   @Order(9)
   void given_BeanName_When_BeanScopeIsPrototype_Then_BeanShouldNotBeenStored() {
     // data

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ClassPathAnnotatedBeanScanner} to recursively find all bean definitions
@@ -42,7 +43,10 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
       String scanPackage = remainingScanPackages.poll();
       processedScanPackages.add(scanPackage);
 
-      Set<Class<?>> foundClasses = scanSingle(scanPackage);
+      Set<Class<?>> foundClasses = scanSingle(scanPackage).stream()
+        .filter(clazz -> !clazz.isAnnotation())
+        .collect(Collectors.toSet());
+
       foundClasses.forEach(beanDefinitionReader::registerBean);
       // TODO: implement package scan found on discovered configurations
       // recursively find all bean from other found configurations

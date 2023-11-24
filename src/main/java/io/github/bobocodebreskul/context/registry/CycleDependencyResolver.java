@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// TODO: docs
+// TODO: tests
 public class CycleDependencyResolver {
 
   private final BeanDefinitionRegistry registry;
@@ -26,9 +28,12 @@ public class CycleDependencyResolver {
     }
   }
 
+  // TODO: revisit for better improved logic
   public void validate(BeanDefinition beanDefinition) {
     beanDefinitionChain.push(beanDefinition);
     if (!visitedBeanNames.add(beanDefinition.getName())) {
+      // TODO: resolve in reverse order
+      // TODO: show only short path
       String fullPath = beanDefinitionChain.stream()
           .map(BeanDefinition::getName)
           .collect(Collectors.joining(" -> "));

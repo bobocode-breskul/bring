@@ -10,6 +10,7 @@ import io.github.bobocodebreskul.context.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,10 +20,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Initializes the web container by registering a super servlet.
+ * <p>
+ * This class is responsible for initializing the web container when the application starts. It
+ * registers a super servlet named "dispatcherServlet" and maps it to "/*" in the servlet context.
+ * <p>
+ * The initialization process involves collecting paths and controllers from a
+ * {@link BringContainer} and creating an instance of {@link DispatcherServlet} to handle incoming
+ * requests.
+ */
 public class WebContainerInitializer implements ServletContainerInitializer {
 
   private final BringContainer container;
 
+  /**
+   * Constructs a new instance of {@code WebContainerInitializer} with the specified container.
+   *
+   * @param container The container providing information about controllers.
+   */
   public WebContainerInitializer(BringContainer container) {
     this.container = container;
   }
@@ -41,6 +57,16 @@ public class WebContainerInitializer implements ServletContainerInitializer {
     return value;
   }
 
+  /**
+   * Called when the web application starts.
+   * <p>
+   * Initializes the web container by registering the super servlet "dispatcherServlet" and mapping
+   * it to "/*".
+   *
+   * @param c   The set of application classes found by the container.
+   * @param ctx The servlet context of the web application.
+   * @throws ServletException If an error occurs during servlet registration.
+   */
   public void onStartup(Set<Class<?>> c, ServletContext ctx) {
     Map<String, Map<Class<?>, ControllerMethod>> pathToController = getAllPaths();
     // Register your super servlet

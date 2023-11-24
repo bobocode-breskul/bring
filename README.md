@@ -9,7 +9,7 @@ Add Maven dependency to your project:
 <dependency>
     <groupId>io.github.bobocode-breskul</groupId>
     <artifactId>bring</artifactId>
-    <version>1.1</version>
+    <version>1.3</version>
 </dependency>
 ```
 
@@ -28,24 +28,39 @@ The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) in
 
 Here is a quick teaser of a complete Bring application in Java:
 
+Add BringContainer.run("org.example") to your main method, where "org.example" is your package name.
+
 ```java
-import com.breskul.bring.*;
+package org.example;
 
-@RestController
-@BringApplication
-public class Example {
-
-    @RequestMapping("/")
-    String home() {
-        return "Hello World!";
-    }
-
-    public static void main(String[] args) {
-        BringApplication.run(Example.class, args);
-    }
-
+public class Main {
+  public static void main(String[] args) {
+    BringContainer.run("org.example");
+  }
 }
 ```
+
+Then create a new Controller with following code
+
+```java
+package org.example;
+
+import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.RestController;
+import io.github.bobocodebreskul.context.annotations.Get;
+
+@RestController("/hello")
+@BringComponent
+public class MyController {
+
+  @Get
+  public String getHello() {
+    return "Hello, world!";
+  }
+}
+```
+
+Now run the application and open http://localhost:8080/hello in your browser.
 
 ## Features
 

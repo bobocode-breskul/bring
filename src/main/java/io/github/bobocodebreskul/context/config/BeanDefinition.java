@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.context.config;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 /**
@@ -37,14 +38,18 @@ public interface BeanDefinition {
   void setName(String name);
 
   /**
-   * Set the list of bean types that this bean depends on being initialized.
+   * Set all bean dependencies.
+   *
+   * @param dependencies bean dependencies
    */
-  void setDependsOn(List<Class<?>> dependsOn);
+  void setDependencies(List<BeanDependency> dependencies);
 
   /**
-   * Return the bean types that this bean depends on.
+   * Return all bean dependencies.
+   *
+   * @return bean dependencies
    */
-  List<Class<?>> getDependsOn();
+  List<BeanDependency> getDependencies();
 
   /**
    * Override the target scope of this bean, specifying a new scope name.
@@ -109,4 +114,20 @@ public interface BeanDefinition {
    * @return type of current {@link BeanDefinition}
    */
   Class<?> getBeanClass();
+
+  /**
+   * Sets the initialization constructor of the current {@link BeanDefinition}. The initialization
+   * constructor is used during the bean creation
+   *
+   * @param initConstructor The constructor to be set as the initialization constructor. May be
+   *                        {@code null}.
+   */
+  void setInitConstructor(Constructor<?> initConstructor);
+
+  /**
+   * Retrieves the initialization constructor of the current {@link BeanDefinition}.
+   *
+   * @return The initialization constructor or {@code null} if none is set.
+   */
+  Constructor<?> getInitConstructor();
 }

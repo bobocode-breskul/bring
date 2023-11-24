@@ -2,7 +2,7 @@ package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
-
+import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -18,7 +18,7 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    *
    * @param beanName       the name of the bean definition
    * @param beanDefinition the definition of the bean
-   * @throws IllegalArgumentException           if the specified name or bean definition is null
+   * @throws IllegalArgumentException         if the specified name or bean definition is null
    * @throws BeanDefinitionDuplicateException if the specified bean definition already exists in
    *                                          registry
    */
@@ -37,7 +37,9 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    *
    * @param beanName the name of the bean definition to be retrieved
    * @return the bean definition associated with the specified name
-   * @throws IllegalArgumentException if the specified bean name is null
+   * @throws IllegalArgumentException      if the specified bean name is null
+   * @throws NoSuchBeanDefinitionException if this registry contains no bean definition for the
+   *                                       specified bean class
    */
   BeanDefinition getBeanDefinition(String beanName);
 
@@ -79,4 +81,15 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    * @return a collection containing all the bean definitions registered in the container
    */
   Collection<BeanDefinition> getBeanDefinitions();
+
+  /**
+   * Retrieve the bean definition with the specified class.
+   *
+   * @param beanClass the class of the bean definition to be retrieved
+   * @return the bean definition associated with the specified class
+   * @throws IllegalArgumentException      if the specified bean class is null
+   * @throws NoSuchBeanDefinitionException if this registry contains no bean definition for the
+   *                                       specified bean class
+   */
+  BeanDefinition getBeanDefinitionByClass(Class<?> beanClass);
 }

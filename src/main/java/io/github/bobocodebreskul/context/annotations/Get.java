@@ -6,8 +6,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Get annotation marks our method as a Get handler of a corresponding Controller
- *  @see Controller
+ * Indicates that the annotated method serves as a GET request handler within a corresponding Controller.
+ * This annotation is intended for use in combination with the {@link RestController @RestController} annotation.
+ *
+ * <p>Usage:</p>
+ * <pre>
+ * {@code
+ * @RestController("/sample")
+ * public class SampleController {
+ *
+ *   @Get
+ *   public YourClass doGet() {
+ *     return new YourClass();
+ *   }
+ * }}
+ * </pre>
+ *
+ * @see RestController
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

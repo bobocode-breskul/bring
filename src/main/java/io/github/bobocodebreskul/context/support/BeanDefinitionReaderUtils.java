@@ -1,14 +1,19 @@
 package io.github.bobocodebreskul.context.support;
 
+import static io.github.bobocodebreskul.context.support.ReflectionUtils.getConstructorsAnnotatedWith;
+import static io.github.bobocodebreskul.context.support.ReflectionUtils.getDefaultConstructor;
+import static io.github.bobocodebreskul.context.support.ReflectionUtils.hasDefaultConstructor;
+
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 @UtilityClass
 public class BeanDefinitionReaderUtils {
+
+  // todo: tip for the end-user to fix smth like: use @Autowired or create default constructor
+  static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found.";
+  static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
+  static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
 
 
   /**
@@ -35,45 +45,112 @@ public class BeanDefinitionReaderUtils {
       log.error("Failed to generate bean name for nullable bean definition");
       return "Null bean definition specified";
     });
-    Objects.requireNonNull(beanDefinition.getBeanClass(), () -> {
-      log.error("Failed to generate bean name for nullable bean class");
-      return "Bean class has not been specified";
-    });
+    validateBeanClassNonNull(beanDefinition.getBeanClass());
+    validateBeanClassName(beanDefinition, registry);
 
-    Class<?> beanClass = beanDefinition.getBeanClass();
-    String beanName = StringUtils.uncapitalize(beanClass.getSimpleName());
-    if (isSameBeanNameFromAnotherPackage(registry, beanDefinition, beanName)) {
-      beanName = beanClass.getName();
-    }
+    String beanName = uncapitalize(beanDefinition.getBeanClass());
 
-    log.trace("Generated bean name: {} for class {}", beanName, beanClass.getName());
+    log.trace("Generated bean name: {} for class {}", beanName,
+        beanDefinition.getBeanClass().getName());
+
     return beanName;
   }
 
   /**
-   * Returns a list of bean types that this bean depends on, including constructor argument types,
-   * fields, and methods annotated with the {@link Autowired} annotation.
+   * Generate bean name for the given class type.
    *
-   * @param beanClass the class of the bean to scan for dependencies
-   * @return a list of bean dependency types
+   * @param beanClass bean class to generate bean name for
+   * @return the generated bean name
    */
-  public static List<Class<?>> getBeanDependencies(Class<?> beanClass) {
-    log.trace("Scanning class {} for @Autowire candidates", beanClass.getName());
-    Stream<Class<?>> constructorDependenciesStream = Arrays.stream(
-            beanClass.getDeclaredConstructors())
-        .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()));
+  public static String generateClassBeanName(Class<?> beanClass) {
+    validateBeanClassNonNull(beanClass);
+    return uncapitalize(beanClass);
+  }
 
-    Stream<Class<?>> fieldDependenciesStream = Arrays.stream(beanClass.getDeclaredFields())
-        .filter(field -> field.isAnnotationPresent(Autowired.class))
-        .map(Field::getType);
+  /**
+   * Returns a list of bean constructor dependencies (as {@link BeanDependency}) this bean depends
+   * on by reading constructor argument types.
+   *
+   * @param beanConstructor the constructor of the bean to analyze for dependencies
+   * @return a list of bean constructor dependency types
+   */
+  public static List<BeanDependency> getConstructorBeanDependencies(
+      Constructor<?> beanConstructor) {
+    Objects.requireNonNull(beanConstructor, () -> {
+      log.error("Failed to get bean constructor dependencies for nullable constructor");
+      return "Bean constructor has not been specified";
+    });
+    log.trace("Scanning class {} for @Autowire candidates", beanConstructor.getDeclaringClass());
 
-    Stream<Class<?>> methodDependenciesStream = Arrays.stream(beanClass.getDeclaredMethods())
-        .filter(method -> method.isAnnotationPresent(Autowired.class))
-        .flatMap(method -> Arrays.stream(method.getParameterTypes()));
+    return Arrays.stream(beanConstructor.getParameterTypes())
+        .map(dependency -> new BeanDependency(generateClassBeanName(dependency), dependency))
+        .toList();
+  }
 
-    return Stream.concat(Stream.concat(constructorDependenciesStream, fieldDependenciesStream),
-            methodDependenciesStream)
-        .collect(Collectors.toList());
+  /**
+   * Finds and returns the initialization constructor for a given bean class. The initialization
+   * constructor is determined based on the presence of the {@link Autowired} annotation and the
+   * number of available constructors.
+   *
+   * @param beanClass the class of the bean to find the initialization constructor for.
+   * @param beanName  the name of the bean, used for logging and error handling.
+   * @return the initialization constructor for the specified bean class.
+   * @throws BeanDefinitionCreationException If there are issues with the bean's constructors, such
+   *                                         as having more than one constructor without the
+   *                                         {@link Autowired} annotation or multiple constructors
+   *                                         marked with {@link Autowired}.
+   */
+  // TODO: need to discuss: remove beanName
+  public static Constructor<?> findBeanInitConstructor(Class<?> beanClass, String beanName) {
+    Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
+
+    // zero constructor: interface; a primitive type; an array class; void
+    if (declaredConstructors.length == 0) {
+      throw new BeanDefinitionCreationException(
+          CLASS_WITHOUT_CONSTRUCTORS_MESSAGE.formatted(beanName, beanClass.getName()));
+    }
+
+    // One constructor with or without @Autowired.
+    if (declaredConstructors.length == 1) {
+      log.trace("One init constructor found and registered [{}] for bean candidate [{}]",
+          declaredConstructors[0], beanClass.getName());
+      return declaredConstructors[0];
+    }
+
+    log.trace("Multiple constructors found for bean candidate [{}]", beanClass.getName());
+
+    List<Constructor<?>> autowiredConstructors =
+        getConstructorsAnnotatedWith(Autowired.class, declaredConstructors);
+    if (autowiredConstructors.size() > 1) {
+      // Multiple constructors with multiple @Autowired annotations
+      log.error(
+          "Bean candidate [{}] of type [{}] has more then 1 constructor marked with @Autowired.",
+          beanName, beanClass);
+      throw new BeanDefinitionCreationException(MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE
+          .formatted(beanName, autowiredConstructors.get(1), autowiredConstructors.get(0)));
+    }
+
+    if (autowiredConstructors.size() == 1) {
+      // Multiple constructors with only one @Autowired
+      Constructor<?> initConstructor = autowiredConstructors.get(0);
+      log.trace("@Autowired constructor found for bean candidate [{}]: [{}]", beanClass.getName(),
+          initConstructor);
+      return initConstructor;
+    }
+
+    // Multiple  constructors without @Autowired and with default constructor
+    if (hasDefaultConstructor(beanClass)) {
+      log.trace(
+          "No @Autowired constructor found for bean candidate [{}], default constructor registered as init one",
+          beanName);
+      return getDefaultConstructor(beanClass);
+    }
+
+    // Multiple constructors without @Autowired and a default constructor
+    log.error("Bean candidate [{}] of type [{}] has more then 1 constructor declared.",
+        beanName, beanClass);
+    throw new BeanDefinitionCreationException(
+        NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
   }
 
   /**
@@ -90,19 +167,43 @@ public class BeanDefinitionReaderUtils {
     log.trace("Check if bean class {} is autowire candidate", beanClass.getName());
     boolean isAutowiredCandidate = registry.getBeanDefinitions().stream()
         .filter(beanDefinition -> !beanDefinition.getBeanClass().equals(beanClass))
-        .flatMap(beanDefinition -> beanDefinition.getDependsOn().stream())
-        .anyMatch(beanDefinitionClass -> beanDefinitionClass.equals(beanClass));
+        .flatMap(beanDefinition -> beanDefinition.getDependencies().stream())
+        .anyMatch(beanDefinitionClass -> beanDefinitionClass.type().equals(beanClass));
     if (isAutowiredCandidate) {
       log.trace("Bean class {} is registered as autowired candidate", beanClass.getName());
     }
     return isAutowiredCandidate;
   }
 
+  // TODO: possible move to separate general validation class
+  private static void validateBeanClassNonNull(Class<?> beanClass) {
+    Objects.requireNonNull(beanClass, () -> {
+      log.error("Failed to generate bean name for nullable bean class");
+      return "Bean class has not been specified";
+    });
+  }
+
+  public static void validateBeanClassName(BeanDefinition beanDefinition,
+      BeanDefinitionRegistry registry) {
+    Class<?> beanClass = beanDefinition.getBeanClass();
+    String beanClassName = beanClass.getName();
+
+    if (isSameBeanNameFromAnotherPackage(registry, beanClass, beanClassName)) {
+      log.error("Bean definition with name {} already existed", beanClassName);
+      throw new BeanDefinitionDuplicateException(
+          "Bean definition %s already exist".formatted(beanClassName));
+    }
+  }
+
+  private static String uncapitalize(Class<?> beanClass) {
+    return StringUtils.uncapitalize(beanClass.getSimpleName());
+  }
+
   private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,
-      BeanDefinition beanDefinition,
+      Class<?> beanClass,
       String beanName) {
     return registry.isBeanNameInUse(beanName)
-        && !Objects.equals(beanDefinition.getBeanClass().getPackageName(),
+        && !Objects.equals(beanClass.getPackageName(),
         registry.getBeanDefinition(beanName).getBeanClass().getPackageName());
 
   }

@@ -21,6 +21,13 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Servlet that dispatches incoming HTTP GET requests to the appropriate controller methods.
+ * <p>
+ * This servlet is responsible for handling HTTP GET requests and dispatching them to the
+ * corresponding methods in the controllers provided by the {@link BringContainer}. It uses
+ * annotations like {@link Get} to identify the methods that should handle GET requests.
+ */
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
@@ -28,6 +35,13 @@ public class DispatcherServlet extends HttpServlet {
 
   private final Map<String, Map<Class<?>, ControllerMethod>> pathToControllerMethod;
 
+  /**
+   * Constructs a new instance of {@code DispatcherServlet} with the specified container and
+   * path-to-controller mapping.
+   *
+   * @param container              The container providing information about controllers.
+   * @param pathToControllerMethod A mapping of paths to controller instances.
+   */
   public DispatcherServlet(BringContainer container,
       Map<String, Map<Class<?>, ControllerMethod>> pathToControllerMethod) {
     this.container = container;
@@ -80,6 +94,12 @@ public class DispatcherServlet extends HttpServlet {
     }
   }
 
+  /**
+   * Handles HTTP GET requests by dispatching them to the appropriate controller method.
+   *
+   * @param req  The HTTP servlet request.
+   * @param resp The HTTP servlet response.
+   */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
     this.processRequest(req, resp, Get.class);
@@ -105,6 +125,12 @@ public class DispatcherServlet extends HttpServlet {
     this.processRequest(req, resp, Head.class);
   }
 
+  /**
+   * Custom service method that logs information before and after the request processing.
+   *
+   * @param request  The HTTP servlet request.
+   * @param response The HTTP servlet response.
+   */
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {

@@ -23,8 +23,9 @@ public interface ScanUtils {
 
   /**
    * Search classes which has given annotation or annotations which has given annotation inside. For
-   * example if @Service annotation has @BringComponent annotation, and we're searching by
-   * @BringComponent we also will find all classes with @Service service annotation.
+   * example if annotation has {@code @BringComponent} annotation, and we're searching by
+   * {@code @BringComponent} we also will find all classes with this annotation. !Note:
+   * given annotation must have {@code @retention(RetentionPolicy.RUNTIME)}
    *
    * @param packagePathPrefix root package for search.
    * @param annotation        target annotation.

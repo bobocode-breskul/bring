@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.context.registry;
 
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
+//import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
 import static java.util.Objects.nonNull;
@@ -13,10 +13,12 @@ import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
+import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,8 +55,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
-  final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
-  private final static String COMPONENT_NAME_FIELD = "value";
+
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
 
@@ -85,8 +86,7 @@ public class AnnotatedBeanDefinitionReader {
    * @param beanClass the class of the bean
    */
   public void registerBean(Class<?> beanClass) {
-    String name = extractBeanName(beanClass).orElse(null);
-    doRegisterBean(beanClass, name);
+    doRegisterBean(beanClass);
   }
 
   /**
@@ -98,25 +98,6 @@ public class AnnotatedBeanDefinitionReader {
     return beanDefinitionRegistry;
   }
 
-  private Optional<String> extractBeanName(Class<?> beanClass) {
-    Set<String> componentAnnotations = Arrays.stream(beanClass.getAnnotations())
-      .filter(ReflectionUtils::isComponentAnnotation)
-      .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
-        annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
-      .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
-      .collect(Collectors.toSet());
-    if (componentAnnotations.isEmpty()) {
-      return Optional.empty();
-    } else if (componentAnnotations.size() == 1) {
-      return componentAnnotations.stream().findFirst();
-    }
-    String beanNames = String.join(", ", componentAnnotations);
-    log.error(
-      "For bean {} was found several different names definitions: [{}]. Please choose one.",
-      beanClass.getName(), beanNames);
-    throw new IllegalStateException(
-      UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
-  }
 
   private <T> void doRegisterBean(Class<T> beanClass, String name) {
     log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
@@ -125,7 +106,7 @@ public class AnnotatedBeanDefinitionReader {
     //  bean name validity (not allowed characters), check for circular dependency
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    name = name != null ? name : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    String name = BeanDefinitionReaderUtils.getBeanName(beanClass, beanDefinitionRegistry);
     annotatedBeanDefinition.setName(name);
 
     if (beanDefinitionRegistry.isBeanNameInUse(name)) {
@@ -144,7 +125,7 @@ public class AnnotatedBeanDefinitionReader {
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
     annotatedBeanDefinition.setInitConstructor(beanConstructor);
-    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
+    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor, beanDefinitionRegistry);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);

@@ -1,15 +1,16 @@
 package io.github.bobocodebreskul;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.lang.reflect.Constructor;
 
 @BringComponent
 public class Main {
 
-    private final TestClass testClass1;
+    private final TestInterface testClass1;
 
-    public Main(TestClass testClass1) {
+    public Main(@Qualifier("bean2") TestInterface testClass1) {
         this.testClass1 = testClass1;
     }
 

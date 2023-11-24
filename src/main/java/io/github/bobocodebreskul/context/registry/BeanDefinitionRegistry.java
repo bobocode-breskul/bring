@@ -4,6 +4,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -92,4 +93,6 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    *                                       specified bean class
    */
   BeanDefinition getBeanDefinitionByClass(Class<?> beanClass);
+
+  List<BeanDefinition> getBeanDefinitionByType(Class<?> type);
 }

@@ -5,13 +5,17 @@ import static java.util.function.Predicate.not;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -177,6 +181,34 @@ public class ReflectionUtils {
       ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
         classType.getName()) + "Provided class don't have such annotation.");
   }
+
+  public  <T> Map<Integer, T> extractMethodAnnotationValues(Annotation[][] annotations,
+    Class<? extends Annotation> targetAnnotation, String targetField, Class<T> valueType) {
+    Map<Integer, T> result = new HashMap<>();
+    for (int i = 0; i < annotations.length; i++) {
+      Annotation[] paramAnnotations = annotations[i];
+      List<Annotation> foundAnnotations = Arrays.stream(paramAnnotations)
+        .filter(annotation -> annotation.annotationType().equals(targetAnnotation))
+        .toList();
+
+      if (foundAnnotations.size() == 1) {
+        Annotation annotation = foundAnnotations.get(0);
+        try {
+          T value = valueType.cast(annotation.annotationType().getMethod(targetField).invoke(annotation));
+          result.put(i, value);
+        } catch (ClassCastException castException) {
+          throw new RuntimeException(castException);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+      if (foundAnnotations.size() > 1) {
+        throw new RuntimeException();
+      }
+    }
+    return result;
+  }
+
 
   /**
    * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent} annotation

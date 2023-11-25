@@ -1,10 +1,9 @@
 package io.github.bobocodebreskul.context.registry;
 
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
-//import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
-import static java.util.Objects.nonNull;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.validateBeanName;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
@@ -18,10 +17,6 @@ import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -77,7 +72,7 @@ public class AnnotatedBeanDefinitionReader {
    */
   public void register(Class<?>... componentClasses) {
     Arrays.stream(componentClasses)
-      .forEach(this::registerBean);
+        .forEach(this::registerBean);
   }
 
   /**
@@ -89,30 +84,22 @@ public class AnnotatedBeanDefinitionReader {
     doRegisterBean(beanClass);
   }
 
-  /**
-   * Retrieves the associated Bean Definition Registry.
-   *
-   * @return The Bean Definition Registry to which this reader is operates on.
-   */
-  public final BeanDefinitionRegistry getBeanDefinitionRegistry() {
-    return beanDefinitionRegistry;
-  }
-
-
-  private <T> void doRegisterBean(Class<T> beanClass, String name) {
+  private <T> void doRegisterBean(Class<T> beanClass) {
+    String name = BeanDefinitionReaderUtils.getBeanName(beanClass);
     log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
     log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as:
     //  bean name validity (not allowed characters), check for circular dependency
 
+    validateBeanName(name, beanDefinitionRegistry);
+
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    String name = BeanDefinitionReaderUtils.getBeanName(beanClass, beanDefinitionRegistry);
     annotatedBeanDefinition.setName(name);
 
     if (beanDefinitionRegistry.isBeanNameInUse(name)) {
       log.error("The specified bean name is already in use");
       throw new DuplicateBeanDefinitionException(
-        "The bean definition with specified name %s already exists".formatted(name));
+          "The bean definition with specified name %s already exists".formatted(name));
     }
 
     annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
@@ -130,7 +117,7 @@ public class AnnotatedBeanDefinitionReader {
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);
     annotatedBeanDefinition.setAutowireCandidate(
-      isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
+        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);

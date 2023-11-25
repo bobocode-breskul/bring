@@ -1,15 +1,17 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static java.lang.reflect.Modifier.isAbstract;
+
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,9 +95,75 @@ public class BringContainer implements ObjectFactory {
     }
   }
 
+  private Object[] prepareDependencies(BeanDefinition beanDefinition) {
+    List<BeanDependency> dependencies = beanDefinition.getDependencies();
+    List<Object> result = new LinkedList<>();
+    for (BeanDependency dependency : dependencies) {
+      result.add(getDependency(dependency));
+    }
+    return result.toArray();
+  }
+
+  private Object getDependency(BeanDependency dependency) {
+    String qualifier = dependency.qualifier();
+
+    if (qualifier != null && definitionRegistry.containsBeanDefinition(qualifier)) {
+      return getDependencyFromQualifier(qualifier, dependency);
+    }
+
+    if (definitionRegistry.containsBeanDefinition(dependency.name())) {
+      return getBean(dependency.name());
+    }
+
+    if (dependency.type().isAnnotation() || isAbstract(dependency.type().getModifiers())) {
+      return getDependencyForType(dependency.type());
+    }
+
+    log.error("No suitable dependency found for {}", dependency);
+    throw new RuntimeException("No suitable dependency found for " + dependency);
+  }
+
+  private Object getDependencyFromQualifier(String qualifier, BeanDependency dependency) {
+    BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(qualifier);
+
+    if (dependency.type().isAssignableFrom(beanDefinition.getBeanClass())) {
+      return getBean(qualifier);
+    }
+
+    log.error("Mismatched type for dependency {}. Expected: {}, Actual: {}",
+        dependency, dependency.type(), beanDefinition.getBeanClass());
+    throw new RuntimeException("Mismatched type for dependency " + dependency +
+        ". Expected: " + dependency.type() + ", Actual: " + beanDefinition.getBeanClass());
+  }
+
+  private Object getDependencyForType(Class<?> type) {
+    List<BeanDefinition> beanDefinitionByType = definitionRegistry.getBeanDefinitionByType(
+        type);
+
+    if (beanDefinitionByType.isEmpty()) {
+      log.error("No bean definition found for type {}", type);
+      throw new RuntimeException("No bean definition found for type " + type);
+    }
+
+    if (beanDefinitionByType.size() == 1) {
+      return getBean(beanDefinitionByType.get(0).getName());
+    }
+
+    List<BeanDefinition> primaryBeans = beanDefinitionByType.stream()
+        .filter(BeanDefinition::isPrimary)
+        .toList();
+
+    if (primaryBeans.size() == 1) {
+      return getBean(primaryBeans.get(0).getName());
+    }
+
+    log.error("Multiple qualifying beans found for type {}", type);
+    throw new RuntimeException("Multiple qualifying beans found for type " + type);
+  }
+
   @Override
   public Object getBean(Class<?> clazz) {
-    throw new UnsupportedOperationException();
+      return getDependencyForType(clazz);
   }
 
   public List<Object> getAllBeans() {

@@ -7,19 +7,17 @@ import static io.github.bobocodebreskul.context.support.ReflectionUtils.hasDefau
 import static java.util.Objects.nonNull;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
+import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
@@ -49,16 +47,16 @@ public class BeanDefinitionReaderUtils {
    *                       for existing bean names)
    * @return the generated bean name
    */
-  public String getBeanName(Class<?> beanClass,
-    BeanDefinitionRegistry registry) {
+  public String getBeanName(Class<?> beanClass) {
 
     validateBeanClassNonNull(beanClass);
 
     Set<String> namesFromAnnotations = extractBeanNamesFromAnnotations(beanClass);
 
     if (namesFromAnnotations.isEmpty()) {
-      return generateBeanName(beanClass, registry);
-    } else if (namesFromAnnotations.size() == 1) {
+      return generateBeanName(beanClass);
+    }
+    if (namesFromAnnotations.size() == 1) {
       return namesFromAnnotations.stream().findFirst().get();
     }
 
@@ -70,10 +68,8 @@ public class BeanDefinitionReaderUtils {
       UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
   }
 
-  private static String generateBeanName(Class<?> beanClass,
-      BeanDefinitionRegistry registry) {
+  private static String generateBeanName(Class<?> beanClass) {
 
-    validateBeanClassName(beanClass, registry);
     String beanName = uncapitalize(beanClass);
 
     log.trace("Generated bean name: {} for class {}", beanName,
@@ -100,8 +96,7 @@ public class BeanDefinitionReaderUtils {
    * @param beanConstructor the constructor of the bean to analyze for dependencies
    * @return a list of bean constructor dependency types
    */
-  public static List<BeanDependency> getConstructorBeanDependencies(
-      Constructor<?> beanConstructor, BeanDefinitionRegistry registry) {
+  public static List<BeanDependency> getConstructorBeanDependencies(Constructor<?> beanConstructor, BeanDefinitionRegistry registry) {
     Objects.requireNonNull(beanConstructor, () -> {
       log.error("Failed to get bean constructor dependencies for nullable constructor");
       return "Bean constructor has not been specified";
@@ -113,7 +108,7 @@ public class BeanDefinitionReaderUtils {
     List<BeanDependency> result = new LinkedList<>();
     Class<?>[] parameterTypes = beanConstructor.getParameterTypes();
     for (int i = 0; i < parameterTypes.length; i++) {
-      String beanName = getBeanName(parameterTypes[i], registry);
+      String beanName = getBeanName(parameterTypes[i]);
       result.add(new BeanDependency(beanName, qualifierValues.get(i) , parameterTypes[i]));
     }
     return result;
@@ -216,14 +211,13 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
-  public static void validateBeanClassName(Class<?> beanClass,
+  public static void validateBeanName(String name,
       BeanDefinitionRegistry registry) {
-    String beanClassName = beanClass.getName();
 
-    if (isSameBeanNameFromAnotherPackage(registry, beanClass, beanClassName)) {
-      log.error("Bean definition with name {} already existed", beanClassName);
+    if (registry.isBeanNameInUse(name)) {
+      log.error("Bean definition with name {} already existed", name);
       throw new BeanDefinitionDuplicateException(
-          "Bean definition %s already exist".formatted(beanClassName));
+          "Bean definition %s already exist".formatted(name));
     }
   }
 

@@ -99,7 +99,7 @@ class BeanDefinitionReaderUtilsTest {
     //given
     //when
     //then
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanName(null, registry))
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanName(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("Null bean definition specified");
   }

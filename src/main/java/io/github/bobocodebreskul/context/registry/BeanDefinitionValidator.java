@@ -1,5 +1,14 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.support.GeneralConstants.BACKSPACE;
+import static io.github.bobocodebreskul.context.support.GeneralConstants.FORM_FEED;
+import static io.github.bobocodebreskul.context.support.GeneralConstants.HORIZONTAL_TAB;
+import static org.apache.commons.lang3.StringUtils.CR;
+import static org.apache.commons.lang3.StringUtils.LF;
+import static org.apache.commons.lang3.StringUtils.SPACE;
+import static org.apache.commons.lang3.StringUtils.containsAny;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionValidationException;
@@ -18,6 +27,10 @@ import java.util.Set;
  * naming conventions.
  */
 public class BeanDefinitionValidator {
+
+  static final String DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE = "Bean candidate [%s] has invalid bean name: must not be blank or contain disallowed characters";
+  private static final CharSequence[] DISALLOWED_BEAN_NAME_CHARACTERS =
+      {SPACE, LF, CR, BACKSPACE, FORM_FEED, HORIZONTAL_TAB};
 
   private final BeanDefinitionRegistry definitionRegistry;
 
@@ -42,7 +55,7 @@ public class BeanDefinitionValidator {
   public void validateBeanDefinitions() {
     for (BeanDefinition beanDefinition : definitionRegistry.getBeanDefinitions()) {
       validateForCircularDependency(beanDefinition);
-      validateBeanName(beanDefinition.getName());
+      validateBeanName(beanDefinition.getBeanClass(), beanDefinition.getName());
     }
   }
 
@@ -67,8 +80,11 @@ public class BeanDefinitionValidator {
     beanDefinitionChain.pop();
   }
 
-  private void validateBeanName(String beanName) {
-    //TODO: write validation for not allowed characters in the beanName
+  private void validateBeanName(Class<?> beanClass, String beanName) {
+    if (isBlank(beanName) || containsAny(beanName, DISALLOWED_BEAN_NAME_CHARACTERS)) {
+      throw new BeanDefinitionValidationException(
+          DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE.formatted(beanClass));
+    }
   }
 
   private String buildErrorMessage(Deque<BeanDefinition> circularDependencies) {

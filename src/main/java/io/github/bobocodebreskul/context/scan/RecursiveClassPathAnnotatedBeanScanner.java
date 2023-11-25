@@ -1,9 +1,9 @@
 package io.github.bobocodebreskul.context.scan;
 
-import static io.github.bobocodebreskul.context.support.GeneralConstants.EMPTY;
 import static java.util.Arrays.asList;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;

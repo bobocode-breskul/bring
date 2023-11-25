@@ -9,5 +9,19 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class GeneralConstants {
-    public static final String EMPTY = "";
+    /**
+     * Represents the escape sequence for the backspace character ('\b').
+     */
+    public static final String BACKSPACE = "\b";
+
+    /**
+     * Represents the escape sequence for the horizontal tab character ('\t').
+     */
+    public static final String HORIZONTAL_TAB = "\t";
+
+    /**
+     * Represents the escape sequence for the form feed character ('\f').
+     */
+    public static final String FORM_FEED = "\f";
+
 }

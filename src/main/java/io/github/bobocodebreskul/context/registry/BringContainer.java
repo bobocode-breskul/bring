@@ -40,10 +40,11 @@ public class BringContainer implements ObjectFactory {
    * Collect all bean definitions by specified scan packages and build container to create and hold
    * all found beans.
    *
-   * @param scanPackages packages where to search beans
+   * @param configClass configuration class annotated @BringComponentScan with information where to
+   *                    search beans
    * @return created beans container
    */
-  public static BringContainer run(String... scanPackages) {
+  public static BringContainer run(Class<?> configClass) {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);
@@ -51,7 +52,7 @@ public class BringContainer implements ObjectFactory {
         definitionRegistry);
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
         new ScanUtilsImpl(), beanDefinitionReader);
-    scanner.scan(scanPackages);
+    scanner.scan(configClass);
     beanDefinitionValidator.validateBeanDefinitions();
 
     BringContainer container = new BringContainer(definitionRegistry);
@@ -87,6 +88,11 @@ public class BringContainer implements ObjectFactory {
           .map(this::getBean)
           .toArray();
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
+
+      if (beanDefinition.isPrototype()) {
+        return newInstance;
+      }
+
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;

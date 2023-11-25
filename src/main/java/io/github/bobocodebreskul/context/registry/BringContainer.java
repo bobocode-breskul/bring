@@ -5,7 +5,6 @@ import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
-import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
@@ -41,16 +40,17 @@ public class BringContainer implements ObjectFactory {
    * Collect all bean definitions by specified scan packages and build container to create and hold
    * all found beans.
    *
-   * @param scanPackages packages where to search beans
+   * @param configClass configuration class annotated @BringComponentScan with information where to
+   *                    search beans
    * @return created beans container
    */
-  public static BringContainer run(String... scanPackages) {
+  public static BringContainer run(Class<?> configClass) {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
         new ScanUtilsImpl(), beanDefinitionReader);
-    scanner.scan(scanPackages);
+    scanner.scan(configClass);
 
     BringContainer container = new BringContainer(definitionRegistry);
 

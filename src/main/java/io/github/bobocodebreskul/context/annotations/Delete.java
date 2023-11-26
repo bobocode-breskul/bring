@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Delete annotation marks our method as a Delete handler of a corresponding Controller
  *
- * @see Controller
+ * @see RestController
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

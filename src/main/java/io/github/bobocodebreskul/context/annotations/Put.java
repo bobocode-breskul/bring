@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Put annotation marks our method as a Put handler of a corresponding Controller
- *  @see Controller
+ *  @see RestController
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

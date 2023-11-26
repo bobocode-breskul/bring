@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Head annotation marks our method as a Head handler of a corresponding Controller
- *  @see Controller
+ *  @see RestController
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

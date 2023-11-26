@@ -11,7 +11,7 @@ import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
-import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
@@ -95,12 +95,6 @@ public class AnnotatedBeanDefinitionReader {
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     annotatedBeanDefinition.setName(name);
-
-    if (beanDefinitionRegistry.isBeanNameInUse(name)) {
-      log.error("The specified bean name is already in use");
-      throw new DuplicateBeanDefinitionException(
-          "The bean definition with specified name %s already exists".formatted(name));
-    }
 
     annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
 

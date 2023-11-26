@@ -10,11 +10,9 @@ import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
-import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility methods that are useful for bean definition reader implementations.
@@ -37,6 +34,7 @@ public class BeanDefinitionReaderUtils {
   static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
   static final String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
+  private final static String QUALIFIER_NAME_FIELD = "value";
 
   /**
    * Extract bean name from component annotation or generate a unique bean name for
@@ -90,15 +88,14 @@ public class BeanDefinitionReaderUtils {
       return "Bean constructor has not been specified";
     });
     log.trace("Scanning class {} for @Autowire candidates", beanConstructor.getDeclaringClass());
-    Map<Integer, String> qualifierValues = ReflectionUtils.extractMethodAnnotationValues(
-      beanConstructor.getParameterAnnotations(), Qualifier.class, "value", String.class);
-    List<BeanDependency> result = new LinkedList<>();
-    Class<?>[] parameterTypes = beanConstructor.getParameterTypes();
-    for (int i = 0; i < parameterTypes.length; i++) {
-      String beanName = getBeanName(parameterTypes[i]);
-      result.add(new BeanDependency(beanName, qualifierValues.get(i) , parameterTypes[i]));
-    }
-    return result;
+
+    Map<String, String> parameterNameByAnnotationValue =
+      ReflectionUtils.extractMethodAnnotationValues(beanConstructor, Qualifier.class,
+        QUALIFIER_NAME_FIELD, String.class);
+
+    return Arrays.stream(beanConstructor.getParameters())
+      .map(parameter -> new BeanDependency(getBeanName(parameter.getType()), parameterNameByAnnotationValue.get(parameter.getName()), parameter.getType()))
+      .collect(Collectors.toList());
   }
 
 

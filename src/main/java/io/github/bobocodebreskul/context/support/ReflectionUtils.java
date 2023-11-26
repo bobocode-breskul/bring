@@ -25,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UtilityClass
 public class ReflectionUtils {
-  final static String ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Class [%s] ";
+
+  final static String CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Class [%s] ";
+  final static String METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Method [%s] ";
 
   /**
    * Checks if a specified annotation is present on the given class.
@@ -43,7 +45,7 @@ public class ReflectionUtils {
    * method.
    */
   public static boolean isAnnotationPresentForClass(Class<? extends Annotation> annotation,
-      Class<?> clazz) {
+    Class<?> clazz) {
     Objects.requireNonNull(annotation, "The annotation parameter cannot be null!");
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     log.trace("Scanning class {} for@ @{} existence", clazz.getName(), annotation.getSimpleName());
@@ -63,7 +65,7 @@ public class ReflectionUtils {
    *                              is {@code null}.
    */
   public static boolean isAnnotationPresentForConstructor(Class<? extends Annotation> annotation,
-      Constructor<?> constructor) {
+    Constructor<?> constructor) {
     Objects.requireNonNull(annotation, "The annotation parameter cannot be null!");
     Objects.requireNonNull(constructor, "The constructor parameter cannot be null!");
     return constructor.isAnnotationPresent(annotation);
@@ -82,10 +84,10 @@ public class ReflectionUtils {
    * @see #isAnnotationPresentForConstructor
    */
   public static List<Constructor<?>> getConstructorsAnnotatedWith(
-      Class<? extends Annotation> annotation, Constructor<?>... constructors) {
+    Class<? extends Annotation> annotation, Constructor<?>... constructors) {
     return Arrays.stream(constructors)
-        .filter(constructor -> isAnnotationPresentForConstructor(annotation, constructor))
-        .toList();
+      .filter(constructor -> isAnnotationPresentForConstructor(annotation, constructor))
+      .toList();
   }
 
 
@@ -100,10 +102,10 @@ public class ReflectionUtils {
   public static Constructor<?> getDefaultConstructor(Class<?> clazz) {
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     return Arrays.stream(clazz.getDeclaredConstructors())
-        .filter(constructor -> constructor.getParameterCount() == 0)
-        .findAny()
-        .orElseThrow(() -> new IllegalStateException(
-            "Not found a default constructor for class [%s]".formatted(clazz.getName())));
+      .filter(constructor -> constructor.getParameterCount() == 0)
+      .findAny()
+      .orElseThrow(() -> new IllegalStateException(
+        "Not found a default constructor for class [%s]".formatted(clazz.getName())));
   }
 
 
@@ -117,15 +119,14 @@ public class ReflectionUtils {
   public static boolean hasDefaultConstructor(Class<?> clazz) {
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     return Arrays.stream(clazz.getDeclaredConstructors())
-        .anyMatch(constructor -> constructor.getParameterCount() == 0);
+      .anyMatch(constructor -> constructor.getParameterCount() == 0);
   }
 
   /**
    * Check if provided class has provided annotation.
    *
-   * @param clazz target class
+   * @param clazz              target class
    * @param searchedAnnotation searched annotation.
-   *
    * @return true even if class have the searched annotation or if any of it annotations have the
    * searched annotation inside.
    */
@@ -149,14 +150,13 @@ public class ReflectionUtils {
   /**
    * Extract annotation field value.
    *
-   * @param classType target class
+   * @param classType      target class
    * @param annotationType target annotation defined in provided class
-   * @param fieldName annotation field name
-   * @param fieldType class of the target field.
+   * @param fieldName      annotation field name
+   * @param fieldType      class of the target field.
    * @return provided annotation field value.
-   *
-   * @throws IllegalStateException if class don't have provided annotation or if annotation don't
-   *                               have fieldName.
+   * @throws IllegalStateException    if class don't have provided annotation or if annotation don't
+   *                                  have fieldName.
    * @throws IllegalArgumentException if annotation field value is not matches provided fieldType
    */
   public static <T> T getClassAnnotationValue(Class<?> classType,
@@ -168,50 +168,44 @@ public class ReflectionUtils {
           .invoke(annotation));
       } catch (ClassCastException castException) {
         throw new IllegalArgumentException(
-          ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+          CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
             classType.getName()) + "Got unexpected value type.", castException);
       } catch (Exception exception) {
         throw new IllegalStateException(
-          ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+          CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
             classType.getName()), exception);
       }
     }
 
     throw new IllegalStateException(
-      ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+      CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
         classType.getName()) + "Provided class don't have such annotation.");
   }
 
-  public  <T> Map<Integer, T> extractMethodAnnotationValues(Annotation[][] annotations,
-    Class<? extends Annotation> targetAnnotation, String targetField, Class<T> valueType) {
-    Map<Integer, T> result = new HashMap<>();
-    for (int i = 0; i < annotations.length; i++) {
-      Annotation[] paramAnnotations = annotations[i];
-      List<Annotation> foundAnnotations = Arrays.stream(paramAnnotations)
-        .filter(annotation -> annotation.annotationType().equals(targetAnnotation))
-        .toList();
-
-      if (foundAnnotations.size() == 1) {
-        Annotation annotation = foundAnnotations.get(0);
-        try {
-          T value = valueType.cast(annotation.annotationType().getMethod(targetField).invoke(annotation));
-          result.put(i, value);
-        } catch (ClassCastException castException) {
-          throw new RuntimeException(castException);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-      if (foundAnnotations.size() > 1) {
-        throw new RuntimeException();
-      }
-    }
-    return result;
+  /**
+   * Method for extracting values from parameter annotations.
+   *
+   * @param executable method or constructor for searching annotation.
+   * @param targetAnnotation searched annotation.
+   * @param annotationTargetField annotation field name which will be extracted.
+   * @param valueType class type of extracted value
+   *
+   * @return map of param names and extracted values.
+   */
+  public static <T> Map<String, T> extractMethodAnnotationValues(Executable executable,
+    Class<? extends Annotation> targetAnnotation, String annotationTargetField, Class<T> valueType) {
+    Parameter[] parameters = executable.getParameters();
+    return Arrays.stream(parameters)
+      .filter(parameter -> parameter.isAnnotationPresent(targetAnnotation))
+      .collect(Collectors.toMap(Parameter::getName,
+        parameter -> extractParameterAnnotationValue(parameter, annotationTargetField,targetAnnotation, valueType)));
   }
 
 
   /**
-   * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent} annotation
+   * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent}
+   * annotation
+   *
    * @param annotation provided annotation
    * @return true - if annotation is {@link BringComponent} or has it inside on any depth level.
    */

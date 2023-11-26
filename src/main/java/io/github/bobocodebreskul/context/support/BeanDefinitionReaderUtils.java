@@ -45,14 +45,13 @@ public class BeanDefinitionReaderUtils {
    * @return the generated bean name
    */
   public String getBeanName(Class<?> beanClass) {
-
     validateBeanClassNonNull(beanClass);
-
     Set<String> namesFromAnnotations = extractBeanNamesFromAnnotations(beanClass);
 
     if (namesFromAnnotations.isEmpty()) {
       return generateBeanName(beanClass);
     }
+
     if (namesFromAnnotations.size() == 1) {
       return namesFromAnnotations.stream().findFirst().get();
     }
@@ -63,16 +62,6 @@ public class BeanDefinitionReaderUtils {
       beanClass.getName(), beanNames);
     throw new IllegalStateException(
       UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
-  }
-
-  private static String generateBeanName(Class<?> beanClass) {
-
-    String beanName = uncapitalize(beanClass);
-
-    log.trace("Generated bean name: {} for class {}", beanName,
-        beanClass.getName());
-
-    return beanName;
   }
 
   /**
@@ -112,7 +101,6 @@ public class BeanDefinitionReaderUtils {
    *                                         {@link Autowired} annotation or multiple constructors
    *                                         marked with {@link Autowired}.
    */
-  // TODO: need to discuss: remove beanName
   public static Constructor<?> findBeanInitConstructor(Class<?> beanClass, String beanName) {
     Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
 
@@ -195,15 +183,6 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
-  public static void validateBeanName(String name, BeanDefinitionRegistry registry) {
-
-    if (registry.isBeanNameInUse(name)) {
-      log.error("Bean definition with name {} already exists", name);
-      throw new BeanDefinitionDuplicateException(
-          "Bean definition %s already exist".formatted(name));
-    }
-  }
-
   private static Set<String> extractBeanNamesFromAnnotations(Class<?> beanClass) {
     return Arrays.stream(beanClass.getAnnotations())
       .filter(ReflectionUtils::isComponentAnnotation)
@@ -213,16 +192,11 @@ public class BeanDefinitionReaderUtils {
       .collect(Collectors.toSet());
   }
 
-  private static String uncapitalize(Class<?> beanClass) {
-    return StringUtils.uncapitalize(beanClass.getSimpleName());
+  private static String generateBeanName(Class<?> beanClass) {
+   String beanName = beanClass.getName();
+    log.trace("Generated bean name: {} for class {}", beanName,
+      beanClass.getSimpleName());
+    return beanName;
   }
 
-  private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,
-      Class<?> beanClass,
-      String beanName) {
-    return registry.isBeanNameInUse(beanName)
-        && !Objects.equals(beanClass.getPackageName(),
-        registry.getBeanDefinition(beanName).getBeanClass().getPackageName());
-
-  }
 }

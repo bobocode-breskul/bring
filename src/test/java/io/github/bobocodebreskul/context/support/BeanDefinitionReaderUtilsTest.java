@@ -136,17 +136,17 @@ class BeanDefinitionReaderUtilsTest {
   @ParameterizedTest
   @MethodSource("getConstructors")
   @DisplayName("Get bean dependencies for constructor with n parameters")
-  @Order(9)
+  @Order(7)
   void given_ConstructorsWithNArguments_When_GetConstructorBeanDependencies_Then_ReturnAllConstructorArgumentTypes(
       Constructor<?> constructor, int result) {
-    //when
-//    var dependencies = BeanDefinitionReaderUtils.getConstructorBeanDependencies(constructor);
-//
-//    //then
-//    var expectedTypes = constructor.getParameterTypes();
-//    assertThat(dependencies.stream().map(BeanDependency::type).toArray())
-//        .hasSize(result)
-//        .containsExactlyInAnyOrder(expectedTypes);
+   // when
+    var dependencies = BeanDefinitionReaderUtils.getConstructorBeanDependencies(constructor);
+
+    //then
+    var expectedTypes = constructor.getParameterTypes();
+    assertThat(dependencies.stream().map(BeanDependency::type).toArray())
+        .hasSize(result)
+        .containsExactlyInAnyOrder(expectedTypes);
   }
 
   @Test
@@ -169,16 +169,16 @@ class BeanDefinitionReaderUtilsTest {
   }
 
 
-//  @Test
-//  @DisplayName("Throw NullPointerException with meaningful description for nullable constructor")
-//  @Order(10)
-//  void given_NullableConstructor_When_GetConstructorBeanDependencies_Then_ThrowNullPointerException() {
-//    // when
-//    // then
-//    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getConstructorBeanDependencies(null))
-//        .isInstanceOf(NullPointerException.class)
-//        .hasMessage("Bean constructor has not been specified");
-//  }
+  @Test
+  @DisplayName("Throw NullPointerException with meaningful description for nullable constructor")
+  @Order(9)
+  void given_NullableConstructor_When_GetConstructorBeanDependencies_Then_ThrowNullPointerException() {
+    // when
+    // then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getConstructorBeanDependencies(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Bean constructor has not been specified");
+  }
 
   @Test
   @DisplayName("Get bean constructor when bean class has only default constructor")
@@ -313,44 +313,44 @@ class BeanDefinitionReaderUtilsTest {
     // TODO: IMPLEMENT only method dependencies found
   }
 
-//  @Test
-//  @DisplayName("Verify autowired bean class defined as autowire candidate")
-//  @Order(20)
-//  void given_BeanClassAutowireCandidate_When_IsBeanAutowireCandidate_Then_ReturnTrue() {
-//    //given
-//    var autowiredBeanClass = MyComponent.class;
-//    var componentClass = AnotherComponent.class;
-//    var abd = new AnnotatedGenericBeanDefinition(componentClass);
-//    abd.setDependencies(
-//        List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
-//    when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
-//
-//    //when
-//    boolean result = BeanDefinitionReaderUtils.isBeanAutowireCandidate(autowiredBeanClass,
-//        registry);
-//
-//    //then
-//    assertThat(result).isTrue();
-//  }
+  @Test
+  @DisplayName("Verify autowired bean class defined as autowire candidate")
+  @Order(20)
+  void given_BeanClassAutowireCandidate_When_IsBeanAutowireCandidate_Then_ReturnTrue() {
+    //given
+    var autowiredBeanClass = MyComponent.class;
+    var componentClass = AnotherComponent.class;
+    var abd = new AnnotatedGenericBeanDefinition(componentClass);
+    abd.setDependencies(
+        List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), null, autowiredBeanClass)));
+    when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
 
-//  @Test
-//  @DisplayName("Verify bean class without dependencies is not defined as autowire candidate")
-//  @Order(21)
-//  void given_BeanClass_When_IsBeanAutowireCandidate_Then_ReturnFalse() {
-//    //given
-//    var autowiredBeanClass = MyComponent.class;
-//    var abd = new AnnotatedGenericBeanDefinition(autowiredBeanClass);
-//    abd.setDependencies(Collections.singletonList(
-//        new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
-//    when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
-//
-//    //when
-//    boolean result = BeanDefinitionReaderUtils.isBeanAutowireCandidate(autowiredBeanClass,
-//        registry);
-//
-//    //then
-//    assertThat(result).isFalse();
-//  }
+    //when
+    boolean result = BeanDefinitionReaderUtils.isBeanAutowireCandidate(autowiredBeanClass,
+        registry);
+
+    //then
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @DisplayName("Verify bean class without dependencies is not defined as autowire candidate")
+  @Order(21)
+  void given_BeanClass_When_IsBeanAutowireCandidate_Then_ReturnFalse() {
+    //given
+    var autowiredBeanClass = MyComponent.class;
+    var abd = new AnnotatedGenericBeanDefinition(autowiredBeanClass);
+    abd.setDependencies(Collections.singletonList(
+        new BeanDependency(autowiredBeanClass.getSimpleName(), null, autowiredBeanClass)));
+    when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
+
+    //when
+    boolean result = BeanDefinitionReaderUtils.isBeanAutowireCandidate(autowiredBeanClass,
+        registry);
+
+    //then
+    assertThat(result).isFalse();
+  }
 
   private static Stream<Arguments> getConstructors() {
     return Stream.of(Arguments.of(AnotherComponent.class.getDeclaredConstructors()[0], 1),

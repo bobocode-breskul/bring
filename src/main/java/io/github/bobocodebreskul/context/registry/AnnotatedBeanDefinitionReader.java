@@ -3,7 +3,6 @@ package io.github.bobocodebreskul.context.registry;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.validateBeanName;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
@@ -66,7 +65,7 @@ public class AnnotatedBeanDefinitionReader {
 
   /**
    * Register one or more component classes to be processed. Adding the same component class more
-   * than once causes {@link DuplicateBeanDefinitionException}.
+   * than once causes {@link BeanDefinitionDuplicateException}.
    *
    * @param componentClasses one or more component classes
    */
@@ -85,13 +84,12 @@ public class AnnotatedBeanDefinitionReader {
   }
 
   private <T> void doRegisterBean(Class<T> beanClass) {
-    String name = BeanDefinitionReaderUtils.getBeanName(beanClass);
-    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
+    log.debug("doRegisterBean method invoked: beanClass={}", beanClass);
     log.info("Registering the bean definition of class {}", beanClass.getName());
+    String name = BeanDefinitionReaderUtils.getBeanName(beanClass);
+
     // todo: create beanDefinitionValidator that validate things such as:
     //  bean name validity (not allowed characters), check for circular dependency
-
-    validateBeanName(name, beanDefinitionRegistry);
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     annotatedBeanDefinition.setName(name);

@@ -5,10 +5,11 @@ import static java.util.function.Predicate.not;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -199,6 +200,24 @@ public class ReflectionUtils {
       .filter(parameter -> parameter.isAnnotationPresent(targetAnnotation))
       .collect(Collectors.toMap(Parameter::getName,
         parameter -> extractParameterAnnotationValue(parameter, annotationTargetField,targetAnnotation, valueType)));
+  }
+
+  private static <T> T extractParameterAnnotationValue(Parameter parameter, String targetField,
+    Class<? extends Annotation> targetAnnotation, Class<T> valueType) {
+    Annotation annotation = parameter.getAnnotation(targetAnnotation);
+    try {
+      return valueType.cast(annotation.annotationType().getMethod(targetField).invoke(annotation));
+    } catch (ClassCastException | NoSuchMethodException e) {
+      String methodName = parameter.getDeclaringExecutable().getName();
+      throw new IllegalArgumentException(
+        METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(), targetField,
+          methodName), e);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      String methodName = parameter.getDeclaringExecutable().getName();
+      throw new IllegalStateException(
+        METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(), targetField,
+          methodName), e);
+    }
   }
 
 

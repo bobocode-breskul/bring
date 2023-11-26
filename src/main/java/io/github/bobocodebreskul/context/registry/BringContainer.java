@@ -82,7 +82,10 @@ public class BringContainer implements ObjectFactory {
     Class<?> beanClass = beanDefinition.getBeanClass();
     try {
       Constructor<?> declaredConstructor = beanDefinition.getInitConstructor();
-      Object[] dependentBeans = prepareDependencies(beanDefinition);
+      List<BeanDefinition> dependentDefinitions = prepareDependencies(beanDefinition);
+      Object[] dependentBeans = dependentDefinitions.stream()
+          .map(dependentDefinition -> getBean(dependentDefinition.getName()))
+          .toArray();
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
       storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
@@ -95,16 +98,13 @@ public class BringContainer implements ObjectFactory {
     }
   }
 
-  private Object[] prepareDependencies(BeanDefinition beanDefinition) {
-    List<BeanDependency> dependencies = beanDefinition.getDependencies();
-    List<Object> result = new LinkedList<>();
-    for (BeanDependency dependency : dependencies) {
-      result.add(getDependency(dependency));
-    }
-    return result.toArray();
+  private List<BeanDefinition> prepareDependencies(BeanDefinition beanDefinition) {
+    return beanDefinition.getDependencies().stream()
+        .map(this::getDependency)
+        .toList();
   }
 
-  private Object getDependency(BeanDependency dependency) {
+  private BeanDefinition getDependency(BeanDependency dependency) {
     String qualifier = dependency.qualifier();
 
     if (qualifier != null && definitionRegistry.containsBeanDefinition(qualifier)) {
@@ -112,10 +112,10 @@ public class BringContainer implements ObjectFactory {
     }
 
     if (definitionRegistry.containsBeanDefinition(dependency.name())) {
-      return getBean(dependency.name());
+      return definitionRegistry.getBeanDefinition(dependency.name());
     }
 
-    if (dependency.type().isAnnotation() || isAbstract(dependency.type().getModifiers())) {
+    if (dependency.type().isInterface() || isAbstract(dependency.type().getModifiers())) {
       return getDependencyForType(dependency.type());
     }
 
@@ -123,11 +123,11 @@ public class BringContainer implements ObjectFactory {
     throw new RuntimeException("No suitable dependency found for " + dependency);
   }
 
-  private Object getDependencyFromQualifier(String qualifier, BeanDependency dependency) {
+  private BeanDefinition getDependencyFromQualifier(String qualifier, BeanDependency dependency) {
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(qualifier);
 
     if (dependency.type().isAssignableFrom(beanDefinition.getBeanClass())) {
-      return getBean(qualifier);
+      return beanDefinition;
     }
 
     log.error("Mismatched type for dependency {}. Expected: {}, Actual: {}",
@@ -136,7 +136,7 @@ public class BringContainer implements ObjectFactory {
         ". Expected: " + dependency.type() + ", Actual: " + beanDefinition.getBeanClass());
   }
 
-  private Object getDependencyForType(Class<?> type) {
+  private BeanDefinition getDependencyForType(Class<?> type) {
     List<BeanDefinition> beanDefinitionByType = definitionRegistry.getBeanDefinitionByType(
         type);
 
@@ -146,7 +146,7 @@ public class BringContainer implements ObjectFactory {
     }
 
     if (beanDefinitionByType.size() == 1) {
-      return getBean(beanDefinitionByType.get(0).getName());
+      return beanDefinitionByType.get(0);
     }
 
     List<BeanDefinition> primaryBeans = beanDefinitionByType.stream()
@@ -154,7 +154,7 @@ public class BringContainer implements ObjectFactory {
         .toList();
 
     if (primaryBeans.size() == 1) {
-      return getBean(primaryBeans.get(0).getName());
+      return primaryBeans.get(0);
     }
 
     log.error("Multiple qualifying beans found for type {}", type);

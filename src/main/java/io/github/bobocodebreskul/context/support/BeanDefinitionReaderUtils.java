@@ -35,16 +35,15 @@ public class BeanDefinitionReaderUtils {
   static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found.";
   static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
   static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
+  static final String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
-  final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
 
   /**
    * Extract bean name from component annotation or generate a unique bean name for
    * the given bean definition
    *
    * @param beanClass the bean to generate a bean name for
-   * @param registry       the storage of previously registered bean definition instances (to check
-   *                       for existing bean names)
+   *
    * @return the generated bean name
    */
   public String getBeanName(Class<?> beanClass) {
@@ -78,17 +77,6 @@ public class BeanDefinitionReaderUtils {
     return beanName;
   }
 
-//  /**
-//   * Generate bean name for the given class type.
-//   *
-//   * @param beanClass bean class to generate bean name for
-//   * @return the generated bean name
-//   */
-//  public static String generateClassBeanName(Class<?> beanClass) {
-//    validateBeanClassNonNull(beanClass);
-//    return uncapitalize(beanClass);
-//  }
-
   /**
    * Returns a list of bean constructor dependencies (as {@link BeanDependency}) this bean depends
    * on by reading constructor argument types.
@@ -96,13 +84,12 @@ public class BeanDefinitionReaderUtils {
    * @param beanConstructor the constructor of the bean to analyze for dependencies
    * @return a list of bean constructor dependency types
    */
-  public static List<BeanDependency> getConstructorBeanDependencies(Constructor<?> beanConstructor, BeanDefinitionRegistry registry) {
+  public static List<BeanDependency> getConstructorBeanDependencies(Constructor<?> beanConstructor) {
     Objects.requireNonNull(beanConstructor, () -> {
       log.error("Failed to get bean constructor dependencies for nullable constructor");
       return "Bean constructor has not been specified";
     });
     log.trace("Scanning class {} for @Autowire candidates", beanConstructor.getDeclaringClass());
-    // todo solve conflicts between Primary and Qualifier
     Map<Integer, String> qualifierValues = ReflectionUtils.extractMethodAnnotationValues(
       beanConstructor.getParameterAnnotations(), Qualifier.class, "value", String.class);
     List<BeanDependency> result = new LinkedList<>();
@@ -211,11 +198,10 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
-  public static void validateBeanName(String name,
-      BeanDefinitionRegistry registry) {
+  public static void validateBeanName(String name, BeanDefinitionRegistry registry) {
 
     if (registry.isBeanNameInUse(name)) {
-      log.error("Bean definition with name {} already existed", name);
+      log.error("Bean definition with name {} already exists", name);
       throw new BeanDefinitionDuplicateException(
           "Bean definition %s already exist".formatted(name));
     }

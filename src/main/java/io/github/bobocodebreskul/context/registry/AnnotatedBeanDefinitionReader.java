@@ -112,7 +112,7 @@ public class AnnotatedBeanDefinitionReader {
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
     annotatedBeanDefinition.setInitConstructor(beanConstructor);
-    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor, beanDefinitionRegistry);
+    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);

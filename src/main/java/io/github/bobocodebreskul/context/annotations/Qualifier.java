@@ -13,5 +13,5 @@ public @interface Qualifier {
    *
    * @return the filled component name if a value has been specified
    */
-  String value() default "";
+  String value();
 }

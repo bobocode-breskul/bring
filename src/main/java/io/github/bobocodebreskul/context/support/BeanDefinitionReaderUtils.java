@@ -10,11 +10,9 @@ import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
-import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility methods that are useful for bean definition reader implementations.
@@ -37,6 +34,7 @@ public class BeanDefinitionReaderUtils {
   static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
   static final String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
+  private final static String QUALIFIER_NAME_FIELD = "value";
 
   /**
    * Extract bean name from component annotation or generate a unique bean name for
@@ -47,14 +45,13 @@ public class BeanDefinitionReaderUtils {
    * @return the generated bean name
    */
   public String getBeanName(Class<?> beanClass) {
-
     validateBeanClassNonNull(beanClass);
-
     Set<String> namesFromAnnotations = extractBeanNamesFromAnnotations(beanClass);
 
     if (namesFromAnnotations.isEmpty()) {
       return generateBeanName(beanClass);
     }
+
     if (namesFromAnnotations.size() == 1) {
       return namesFromAnnotations.stream().findFirst().get();
     }
@@ -65,16 +62,6 @@ public class BeanDefinitionReaderUtils {
       beanClass.getName(), beanNames);
     throw new IllegalStateException(
       UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
-  }
-
-  private static String generateBeanName(Class<?> beanClass) {
-
-    String beanName = uncapitalize(beanClass);
-
-    log.trace("Generated bean name: {} for class {}", beanName,
-        beanClass.getName());
-
-    return beanName;
   }
 
   /**
@@ -90,16 +77,14 @@ public class BeanDefinitionReaderUtils {
       return "Bean constructor has not been specified";
     });
     log.trace("Scanning class {} for @Autowire candidates", beanConstructor.getDeclaringClass());
-    Map<Integer, String> qualifierValues = ReflectionUtils.extractMethodAnnotationValues(
-      beanConstructor.getParameterAnnotations(), Qualifier.class, "value", String.class);
-    List<BeanDependency> result = new LinkedList<>();
-    Class<?>[] parameterTypes = beanConstructor.getParameterTypes();
-    for (int i = 0; i < parameterTypes.length; i++) {
-      String beanName = getBeanName(parameterTypes[i]);
-      // TODO: check for qualifier value size
-      result.add(new BeanDependency(beanName, qualifierValues.get(i) , parameterTypes[i]));
-    }
-    return result;
+
+    Map<String, String> parameterNameByAnnotationValue =
+      ReflectionUtils.extractMethodAnnotationValues(beanConstructor, Qualifier.class,
+        QUALIFIER_NAME_FIELD, String.class);
+
+    return Arrays.stream(beanConstructor.getParameters())
+      .map(parameter -> new BeanDependency(getBeanName(parameter.getType()), parameterNameByAnnotationValue.get(parameter.getName()), parameter.getType()))
+      .collect(Collectors.toList());
   }
 
 
@@ -116,7 +101,6 @@ public class BeanDefinitionReaderUtils {
    *                                         {@link Autowired} annotation or multiple constructors
    *                                         marked with {@link Autowired}.
    */
-  // TODO: need to discuss: remove beanName
   public static Constructor<?> findBeanInitConstructor(Class<?> beanClass, String beanName) {
     Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
 
@@ -199,15 +183,6 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
-  public static void validateBeanName(String name, BeanDefinitionRegistry registry) {
-
-    if (registry.isBeanNameInUse(name)) {
-      log.error("Bean definition with name {} already exists", name);
-      throw new BeanDefinitionDuplicateException(
-          "Bean definition %s already exist".formatted(name));
-    }
-  }
-
   private static Set<String> extractBeanNamesFromAnnotations(Class<?> beanClass) {
     return Arrays.stream(beanClass.getAnnotations())
       .filter(ReflectionUtils::isComponentAnnotation)
@@ -217,16 +192,11 @@ public class BeanDefinitionReaderUtils {
       .collect(Collectors.toSet());
   }
 
-  private static String uncapitalize(Class<?> beanClass) {
-    return StringUtils.uncapitalize(beanClass.getSimpleName());
+  private static String generateBeanName(Class<?> beanClass) {
+   String beanName = beanClass.getName();
+    log.trace("Generated bean name: {} for class {}", beanName,
+      beanClass.getSimpleName());
+    return beanName;
   }
 
-  private static boolean isSameBeanNameFromAnotherPackage(BeanDefinitionRegistry registry,
-      Class<?> beanClass,
-      String beanName) {
-    return registry.isBeanNameInUse(beanName)
-        && !Objects.equals(beanClass.getPackageName(),
-        registry.getBeanDefinition(beanName).getBeanClass().getPackageName());
-
-  }
 }

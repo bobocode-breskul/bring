@@ -14,15 +14,16 @@ import java.util.Set;
  * registers a super servlet named "dispatcherServlet" and maps it to "/*" in the servlet context.
  * <p>
  * The initialization process involves collecting paths and controllers from a
- * {@link BringContainer} using {@link WebPathScanner} and creating an instance of {@link DispatcherServlet} to handle incoming
- * requests.
+ * {@link BringContainer} using {@link WebPathScanner} and creating an instance of
+ * {@link DispatcherServlet} to handle incoming requests.
  */
 public class WebContainerInitializer implements ServletContainerInitializer {
 
   private final WebPathScanner webPathScanner;
 
   /**
-   * Constructs a new instance of {@code WebContainerInitializer} with the specified webPathScanner.
+   * Constructs a new instance of {@code WebContainerInitializer} with the specified
+   * webPathScanner.
    *
    * @param webPathScanner The webPathScanner is used for retrieving paths.
    */
@@ -46,7 +47,8 @@ public class WebContainerInitializer implements ServletContainerInitializer {
       ctx.addServlet("dispatcherServlet", new DispatcherServlet(webPathScanner.getAllPaths()))
           .addMapping("/*");
     } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-      throw new ServletException("Error occurs during servlet registration due to %s".formatted(ex.getMessage()), ex);
+      throw new ServletException(
+          "Error occurs during servlet registration due to %s".formatted(ex.getMessage()), ex);
     }
   }
 }

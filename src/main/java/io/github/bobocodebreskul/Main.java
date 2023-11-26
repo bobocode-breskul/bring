@@ -8,25 +8,25 @@ import java.lang.reflect.Constructor;
 @BringComponent
 public class Main {
 
-    private final TestClass testClass1;
+  private final TestClass testClass1;
 
-    public Main(TestClass testClass1) {
-        this.testClass1 = testClass1;
-    }
+  public Main(TestClass testClass1) {
+    this.testClass1 = testClass1;
+  }
 
-    public static void main(String[] args) {
-        Constructor<?>[] constructors = Main.class.getConstructors();
-        System.out.println("constructors.length = " + constructors.length);
+  public static void main(String[] args) {
+    Constructor<?>[] constructors = Main.class.getConstructors();
+    System.out.println("constructors.length = " + constructors.length);
 
-        BringContainer run = BringContainer.run("io.github.bobocodebreskul");
-        Main bean = (Main) run.getBean("main");
+    BringContainer run = BringContainer.run("io.github.bobocodebreskul");
+    Main bean = (Main) run.getBean("main");
 
-        System.out.println(bean.hello());
+    System.out.println(bean.hello());
 
-    }
+  }
 
-    public String hello() {
-        testClass1.doWork();
-        return "Hello Breskul";
-    }
+  public String hello() {
+    testClass1.doWork();
+    return "Hello Breskul";
+  }
 }

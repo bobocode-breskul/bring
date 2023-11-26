@@ -7,14 +7,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for mapping web requests onto methods in request-handling classes
- * with flexible method signatures.
+ * Annotation for mapping web requests onto methods in request-handling classes with flexible method
+ * signatures.
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestMapping {
 
-	String value() default "";
-	RequestMethod[] method() default {};
+  String value() default "";
+
+  RequestMethod[] method() default {};
 
 }

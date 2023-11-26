@@ -7,19 +7,16 @@ import static io.github.bobocodebreskul.server.enums.RequestMethod.POST;
 import static io.github.bobocodebreskul.server.enums.RequestMethod.PUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
+import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
 import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.context.exception.WebPathValidationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.context.utils.TestUtil;
-import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.context.exception.WebPathValidationException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class WebPathScannerTest {
+
   @InjectMocks
   private WebPathScanner webPathScanner;
   @Mock
@@ -49,7 +47,8 @@ public class WebPathScannerTest {
   @Order(2)
   public void given_BringContainerHasControllerBeanButWithOutHTTPAnnotatedMethods_When_GetAllPaths_Then_PathMapShouldBeEmpty()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    given(bringContainer.getAllBeans()).willReturn(List.of(TestUtil.retrieveControllerWithoutHttpAnnotationsMethod()));
+    given(bringContainer.getAllBeans()).willReturn(
+        List.of(TestUtil.retrieveControllerWithoutHttpAnnotationsMethod()));
 
     Map<String, Map<String, ControllerMethod>> allPaths = webPathScanner.getAllPaths();
 
@@ -60,7 +59,8 @@ public class WebPathScannerTest {
   @Order(3)
   public void given_BringContainerHasControllerBeanWithSeveralHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    given(bringContainer.getAllBeans()).willReturn(List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
+    given(bringContainer.getAllBeans()).willReturn(
+        List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
 
     Exception actualException = catchException(() -> webPathScanner.getAllPaths());
 
@@ -72,7 +72,8 @@ public class WebPathScannerTest {
   @Test
   @Order(4)
   public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedAndRequestMappingAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty() {
-    given(bringContainer.getAllBeans()).willReturn(List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
+    given(bringContainer.getAllBeans()).willReturn(
+        List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
 
     Exception actualException = catchException(() -> webPathScanner.getAllPaths());
 
@@ -123,30 +124,36 @@ public class WebPathScannerTest {
 
     ControllerMethod controllerMethodGet = httpMethodControllerMethodMap.get(GET.name());
     assertThat(controllerMethodGet.controller()).isEqualTo(testController);
-    assertThat(controllerMethodGet.method()).isEqualTo(testController.getClass().getMethod("helloGet"));
+    assertThat(controllerMethodGet.method()).isEqualTo(
+        testController.getClass().getMethod("helloGet"));
 
     ControllerMethod controllerMethodPut = httpMethodControllerMethodMap.get(PUT.name());
     assertThat(controllerMethodPut.controller()).isEqualTo(testController);
-    assertThat(controllerMethodPut.method()).isEqualTo(testController.getClass().getMethod("helloPut"));
+    assertThat(controllerMethodPut.method()).isEqualTo(
+        testController.getClass().getMethod("helloPut"));
 
     ControllerMethod controllerMethodDelete = httpMethodControllerMethodMap.get(DELETE.name());
     assertThat(controllerMethodDelete.controller()).isEqualTo(testController);
-    assertThat(controllerMethodDelete.method()).isEqualTo(testController.getClass().getMethod("helloDelete"));
+    assertThat(controllerMethodDelete.method()).isEqualTo(
+        testController.getClass().getMethod("helloDelete"));
 
     ControllerMethod controllerMethodPost = httpMethodControllerMethodMap.get(POST.name());
     assertThat(controllerMethodPost.controller()).isEqualTo(testController);
-    assertThat(controllerMethodPost.method()).isEqualTo(testController.getClass().getMethod("helloPost"));
+    assertThat(controllerMethodPost.method()).isEqualTo(
+        testController.getClass().getMethod("helloPost"));
 
     ControllerMethod controllerMethodHead = httpMethodControllerMethodMap.get(HEAD.name());
     assertThat(controllerMethodHead.controller()).isEqualTo(testController);
-    assertThat(controllerMethodHead.method()).isEqualTo(testController.getClass().getMethod("helloHead"));
+    assertThat(controllerMethodHead.method()).isEqualTo(
+        testController.getClass().getMethod("helloHead"));
   }
 
   @Test
   @Order(7)
   public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    given(bringContainer.getAllBeans()).willReturn(List.of(TestUtil.retrieveControllerWithInvalidPathAnnotationsMethod()));
+    given(bringContainer.getAllBeans()).willReturn(
+        List.of(TestUtil.retrieveControllerWithInvalidPathAnnotationsMethod()));
 
     Exception actualException = catchException(() -> webPathScanner.getAllPaths());
 
@@ -173,7 +180,8 @@ public class WebPathScannerTest {
 
     ControllerMethod controllerMethodGet = httpMethodControllerMethodMap.get(GET.name());
     assertThat(controllerMethodGet.controller()).isEqualTo(testController);
-    assertThat(controllerMethodGet.method()).isEqualTo(testController.getClass().getMethod("hello"));
+    assertThat(controllerMethodGet.method()).isEqualTo(
+        testController.getClass().getMethod("hello"));
   }
 
   @Test
@@ -194,7 +202,8 @@ public class WebPathScannerTest {
 
     ControllerMethod controllerMethodGet = httpMethodControllerMethodMap.get(POST.name());
     assertThat(controllerMethodGet.controller()).isEqualTo(testController);
-    assertThat(controllerMethodGet.method()).isEqualTo(testController.getClass().getMethod("hello"));
+    assertThat(controllerMethodGet.method()).isEqualTo(
+        testController.getClass().getMethod("hello"));
   }
 
   @Test
@@ -215,7 +224,8 @@ public class WebPathScannerTest {
 
     ControllerMethod controllerMethodGet = httpMethodControllerMethodMap.get(GET.name());
     assertThat(controllerMethodGet.controller()).isEqualTo(testController);
-    assertThat(controllerMethodGet.method()).isEqualTo(testController.getClass().getMethod("hello"));
+    assertThat(controllerMethodGet.method()).isEqualTo(
+        testController.getClass().getMethod("hello"));
   }
 
   @Test

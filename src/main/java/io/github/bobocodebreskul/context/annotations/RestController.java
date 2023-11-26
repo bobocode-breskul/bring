@@ -6,10 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated class is a RestController, allowing it to be scanned by the ApplicationContext.
- * A required request mapping value must be specified. Additionally, HTTP Request Method annotations such as
- * {@link Get} or {@link Post} should be added to the methods within the controller. The response from these
- * methods will be automatically converted to JSON and sent as the client's response.
+ * Indicates that the annotated class is a RestController, allowing it to be scanned by the
+ * ApplicationContext. A required request mapping value must be specified. Additionally, HTTP
+ * Request Method annotations such as {@link Get} or {@link Post} should be added to the methods
+ * within the controller. The response from these methods will be automatically converted to JSON
+ * and sent as the client's response.
  *
  * <p>Usage:</p>
  * <pre>

@@ -38,7 +38,8 @@ public class WebPathValidator {
 
     if (path.matches(".*/{2,}.*")) {
       log.error(PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY.formatted(path));
-      throw new WebPathValidationException(PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY.formatted(path));
+      throw new WebPathValidationException(
+          PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY.formatted(path));
     }
   }
 }

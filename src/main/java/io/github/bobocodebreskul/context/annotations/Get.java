@@ -7,8 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated method serves as a GET request handler within a corresponding Controller.
- * This annotation is intended for use in combination with the {@link RestController @RestController} annotation.
+ * Indicates that the annotated method serves as a GET request handler within a corresponding
+ * Controller. This annotation is intended for use in combination with the
+ * {@link RestController @RestController} annotation.
  *
  * <p>Usage:</p>
  * <pre>

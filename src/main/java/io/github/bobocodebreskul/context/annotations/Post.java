@@ -7,8 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated method serves as a POST request handler within a corresponding Controller.
- * This annotation is designed for use in conjunction with the {@link RestController @RestController} annotation.
+ * Indicates that the annotated method serves as a POST request handler within a corresponding
+ * Controller. This annotation is designed for use in conjunction with the
+ * {@link RestController @RestController} annotation.
  *
  * <p>Usage:</p>
  * <pre>

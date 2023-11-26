@@ -42,18 +42,28 @@ class WebContainerInitializerTest {
   @Mock
   private ServletContext mockServletContext;
 
+  private static Stream<Arguments> provideExceptionsForWebPathScannerTest() {
+    return Stream.of(
+        Arguments.of(new InvocationTargetException(new RuntimeException(), ERROR_MESSAGE)),
+        Arguments.of(new NoSuchMethodException(ERROR_MESSAGE)),
+        Arguments.of(new IllegalAccessException(ERROR_MESSAGE))
+    );
+  }
+
   @Test
   @Order(1)
   public void given_WebPathScannerReturnPaths_When_OnStartup_Then_DispatcherServletConfigured()
       throws ServletException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    given(webPathScanner.getAllPaths()).willReturn(Map.of("/test", Map.of("GET", controllerMethod)));
+    given(webPathScanner.getAllPaths()).willReturn(
+        Map.of("/test", Map.of("GET", controllerMethod)));
 
     given(mockServletContext.addServlet(eq("dispatcherServlet"), any(DispatcherServlet.class)))
         .willReturn(mockServletRegistration);
 
     initializer.onStartup(Collections.emptySet(), mockServletContext);
 
-    then(mockServletContext).should().addServlet(eq("dispatcherServlet"), any(DispatcherServlet.class));
+    then(mockServletContext).should()
+        .addServlet(eq("dispatcherServlet"), any(DispatcherServlet.class));
     then(mockServletRegistration).should().addMapping("/*");
     verify(webPathScanner, times(1)).getAllPaths();
   }
@@ -61,22 +71,16 @@ class WebContainerInitializerTest {
   @Order(2)
   @ParameterizedTest
   @MethodSource("provideExceptionsForWebPathScannerTest")
-  public void given_WebPathScannerThrowsInvocationTargetException_When_OnStartup_Then_ShouldThrowServletException(Exception exception)
+  public void given_WebPathScannerThrowsInvocationTargetException_When_OnStartup_Then_ShouldThrowServletException(
+      Exception exception)
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     given(webPathScanner.getAllPaths()).willThrow(exception);
 
-    Exception actualException = catchException(() -> initializer.onStartup(Collections.emptySet(), mockServletContext));
+    Exception actualException = catchException(
+        () -> initializer.onStartup(Collections.emptySet(), mockServletContext));
 
     assertThat(actualException)
         .isInstanceOf(ServletException.class)
         .hasMessage("Error occurs during servlet registration due to %s".formatted(ERROR_MESSAGE));
-  }
-
-  private static Stream<Arguments> provideExceptionsForWebPathScannerTest() {
-    return Stream.of(
-        Arguments.of(new InvocationTargetException(new RuntimeException(), ERROR_MESSAGE)),
-        Arguments.of(new NoSuchMethodException(ERROR_MESSAGE)),
-        Arguments.of(new IllegalAccessException(ERROR_MESSAGE))
-    );
   }
 }

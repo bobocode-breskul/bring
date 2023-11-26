@@ -5,6 +5,6 @@ package io.github.bobocodebreskul.server.enums;
  */
 public enum RequestMethod {
 
-	GET, HEAD, POST, PUT, DELETE
+  GET, HEAD, POST, PUT, DELETE
 
 }

@@ -18,15 +18,15 @@ public class WebPathValidatorTest {
 
   @Order(1)
   @ParameterizedTest
-  @ValueSource(strings = { "/", "/test", "/test/test", "/test/test/test" })
+  @ValueSource(strings = {"/", "/test", "/test/test", "/test/test/test"})
   public void whenPathIsValid_thenDoNothing(String path) {
-    assertThatCode(() ->  validatePath(path))
+    assertThatCode(() -> validatePath(path))
         .doesNotThrowAnyException();
   }
 
   @ParameterizedTest
   @Order(2)
-  @ValueSource(strings = { "test", "test/test", "test/test/test" })
+  @ValueSource(strings = {"test", "test/test", "test/test/test"})
   public void whenPathNotStartsWithSlash_thenThrowWebPathValidationException(String path) {
     Exception actualException = catchException(
         () -> validatePath(path));
@@ -38,7 +38,7 @@ public class WebPathValidatorTest {
 
   @ParameterizedTest
   @Order(3)
-  @ValueSource(strings = { "//te st", "/ test/test", "/test/test " })
+  @ValueSource(strings = {"//te st", "/ test/test", "/test/test "})
   public void whenPathContainsWhitespaces_thenThrowWebPathValidationException(String path) {
     Exception actualException = catchException(
         () -> validatePath(path));
@@ -50,8 +50,9 @@ public class WebPathValidatorTest {
 
   @ParameterizedTest
   @Order(4)
-  @ValueSource(strings = { "//test", "/test//test", "/test///test" })
-  public void whenPathContainsMoreThanOneSlashSequentially_thenThrowWebPathValidationException(String path) {
+  @ValueSource(strings = {"//test", "/test//test", "/test///test"})
+  public void whenPathContainsMoreThanOneSlashSequentially_thenThrowWebPathValidationException(
+      String path) {
     Exception actualException = catchException(
         () -> validatePath(path));
 
@@ -62,7 +63,7 @@ public class WebPathValidatorTest {
 
   @ParameterizedTest
   @Order(5)
-  @ValueSource(strings = { "/test*", "/test/*", "/*" })
+  @ValueSource(strings = {"/test*", "/test/*", "/*"})
   public void whenPathContainsAsterisk_thenThrowWebPathValidationException(String path) {
     Exception actualException = catchException(
         () -> validatePath(path));

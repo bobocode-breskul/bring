@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
+import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.generateBeanName;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
@@ -9,9 +11,10 @@ import static java.util.Objects.nonNull;
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
+import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
@@ -53,10 +56,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
+
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
-
 
   /**
    * Create a new AnnotatedBeanDefinitionReader for the given registry.
@@ -76,7 +79,7 @@ public class AnnotatedBeanDefinitionReader {
    */
   public void register(Class<?>... componentClasses) {
     Arrays.stream(componentClasses)
-      .forEach(this::registerBean);
+        .forEach(this::registerBean);
   }
 
   /**
@@ -100,11 +103,11 @@ public class AnnotatedBeanDefinitionReader {
 
   private Optional<String> extractBeanName(Class<?> beanClass) {
     Set<String> componentAnnotations = Arrays.stream(beanClass.getAnnotations())
-      .filter(ReflectionUtils::isComponentAnnotation)
-      .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
-        annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
-      .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
-      .collect(Collectors.toSet());
+        .filter(ReflectionUtils::isComponentAnnotation)
+        .map(annotation -> ReflectionUtils.getClassAnnotationValue(beanClass,
+            annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
+        .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
+        .collect(Collectors.toSet());
     if (componentAnnotations.isEmpty()) {
       return Optional.empty();
     } else if (componentAnnotations.size() == 1) {
@@ -112,46 +115,73 @@ public class AnnotatedBeanDefinitionReader {
     }
     String beanNames = String.join(", ", componentAnnotations);
     log.error(
-      "For bean {} was found several different names definitions: [{}]. Please choose one.",
-      beanClass.getName(), beanNames);
+        "For bean {} was found several different names definitions: [{}]. Please choose one.",
+        beanClass.getName(), beanNames);
     throw new IllegalStateException(
-      UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
+        UNCERTAIN_BEAN_NAME_EXCEPTION_MSG.formatted(beanClass.getName(), beanNames));
   }
 
-  private <T> void doRegisterBean(Class<T> beanClass, String name) {
-    log.debug("doRegisterBean method invoked: beanClass={}, name={}", beanClass.getName(), name);
+  private <T> void doRegisterBean(Class<T> beanClass, String beanName) {
+    log.debug("doRegisterBean method invoked: beanClass={}, name={}",
+        beanClass.getName(),
+        beanName);
     log.info("Registering the bean definition of class {}", beanClass.getName());
     // todo: create beanDefinitionValidator that validate things such as:
     //  bean name validity (not allowed characters), check for circular dependency
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
-    name = name != null ? name : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
-    annotatedBeanDefinition.setName(name);
+    beanName = beanName != null ?
+        beanName : generateBeanName(annotatedBeanDefinition, beanDefinitionRegistry);
+    annotatedBeanDefinition.setName(beanName);
 
-    if (beanDefinitionRegistry.isBeanNameInUse(name)) {
+    if (beanDefinitionRegistry.isBeanNameInUse(beanName)) {
       log.error("The specified bean name is already in use");
       throw new DuplicateBeanDefinitionException(
-        "The bean definition with specified name %s already exists".formatted(name));
+          "The bean definition with specified name %s already exists".formatted(beanName));
     }
 
-    annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
-
     if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
-      log.trace("Found @Primary annotation on the beanName={}", name);
+      log.trace("Found @Primary annotation on the beanName={}", beanName);
       annotatedBeanDefinition.setPrimary(true);
     }
 
-    Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
+    annotatedBeanDefinition.setScope(getBeanDefinitionScope(beanClass, beanName));
+
+    Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, beanName);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
     annotatedBeanDefinition.setInitConstructor(beanConstructor);
     List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
-        dependencies.size(), beanClass.getName(), name);
+        dependencies.size(), beanClass.getName(), beanName);
     annotatedBeanDefinition.setDependencies(dependencies);
     annotatedBeanDefinition.setAutowireCandidate(
-      isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
+        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
-    beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
+    beanDefinitionRegistry.registerBeanDefinition(beanName, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
+  }
+
+  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName) {
+    if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
+      String scopeName = beanClass.getAnnotation(Scope.class).value();
+      log.trace("Found @Scope annotation on the beanName={}", beanName);
+      if (PROTOTYPE_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve prototype scope for bean: {}", beanName);
+        return PROTOTYPE_SCOPE;
+      } else if (SINGLETON_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else if ("".equals(scopeName)) {
+        log.trace("Retrieve default singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else {
+        log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
+        throw new BeanDefinitionCreationException(
+            "Invalid scope name provided %s".formatted(scopeName));
+      }
+    }
+
+    log.trace("Retrieve default singleton scope for bean: {}", beanName);
+    return SINGLETON_SCOPE;
   }
 }

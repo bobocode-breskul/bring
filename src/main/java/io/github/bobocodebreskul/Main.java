@@ -1,11 +1,11 @@
 package io.github.bobocodebreskul;
 
-import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.demo.TestClass;
 import java.lang.reflect.Constructor;
 
-@BringComponent
+@BringComponentScan
 public class Main {
 
   private final TestClass testClass1;
@@ -15,10 +15,9 @@ public class Main {
   }
 
   public static void main(String[] args) {
+    BringContainer run = BringContainer.run(Main.class);
     Constructor<?>[] constructors = Main.class.getConstructors();
     System.out.println("constructors.length = " + constructors.length);
-
-    BringContainer run = BringContainer.run("io.github.bobocodebreskul");
     Main bean = (Main) run.getBean("main");
 
     System.out.println(bean.hello());

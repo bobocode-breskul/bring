@@ -3,11 +3,14 @@ package io.github.bobocodebreskul.context.registry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
+import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
@@ -33,6 +36,7 @@ class BringContainerTest {
   private static final String TEST_BEAN_NAME_2 = "TEST_BEAN_NAME_2";
   private static final String TEST_BEAN_NAME_3 = "TEST_BEAN_NAME_3";
   public static final String TEST_BEAN_NAME_4 = "TEST_BEAN_NAME_4";
+  public static final String TEST_BEAN_NAME_5 = "TEST_BEAN_NAME_5";
 
   @InjectMocks
   private BringContainer objectFactory;
@@ -244,6 +248,31 @@ class BringContainerTest {
 
   }
 
+  @Test
+  @DisplayName("Create prototype bean by bean name")
+  @Order(9)
+  void given_BeanName_When_BeanScopeIsPrototype_Then_BeanShouldNotBeenStored() {
+    // data
+    String inputBeanName = TEST_BEAN_NAME_5;
+    // given
+    BeanClass5 expectedBean = new BeanClass5();
+    var beanDefinition = new AnnotatedGenericBeanDefinition(BeanClass5.class);
+    beanDefinition.setName(inputBeanName);
+    beanDefinition.setScope(BeanDefinition.PROTOTYPE_SCOPE);
+    beanDefinition.setInitConstructor(ReflectionUtils.getDefaultConstructor(BeanClass5.class));
+
+    given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition);
+    // when
+    Object actualBean = objectFactory.getBean(inputBeanName);
+
+    // then
+    assertAll(
+        () -> assertThat(objectFactory.getAllBeans()).isEmpty(),
+        () -> assertThat(actualBean).isInstanceOf(BeanClass5.class),
+        () -> assertThat(actualBean).usingRecursiveComparison().isEqualTo(expectedBean)
+    );
+  }
+
   @RequiredArgsConstructor
   static class BeanClass2 {
     private final BeanClass1 beanClass;
@@ -261,6 +290,11 @@ class BringContainerTest {
   }
 
   static abstract class AbstractBeanClass {
+
+  }
+
+  @Scope(BeanDefinition.PROTOTYPE_SCOPE)
+  static class BeanClass5 {
 
   }
 }

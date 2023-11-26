@@ -3,7 +3,9 @@ package io.github.bobocodebreskul.context.scan.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.github.bobocodebreskul.context.exception.BringComponentScanNotFoundException;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.flat.FlatClass2;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree.TreeClass1;
@@ -14,6 +16,8 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.Ty
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type.TypeInterface;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClass;
+import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClassWithEmptyAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestAnnotationWithComponent;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.cyclic.CyclicCandidate2;
@@ -21,6 +25,8 @@ import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.parent.ParentCandidate;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.single.SingleCandidate;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -59,9 +65,8 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.tree";
     // given
-    List<Class<?>> expectedResult = List.of(
-        TreeClass1.class, TreeClass2.class,
-        TreeClass1L2.class, TreeClass2L2.class);
+    List<Class<?>> expectedResult = List.of(TreeClass1.class, TreeClass2.class, TreeClass1L2.class,
+        TreeClass2L2.class);
     // when
     Set<Class<?>> actualResult = scanUtils.searchAllClasses(inputPackage);
     // verify
@@ -75,10 +80,8 @@ class ScanUtilsImplTest {
     // data
     String inputPackage = "io.github.bobocodebreskul.context.scan.utils.scantestsclasses.all.type";
     // given
-    List<Class<?>> expectedResult = List.of(
-        TypeAbstractClass.class, TypeAnnotation.class,
-        TypeClass.class, TypeInterface.class
-    );
+    List<Class<?>> expectedResult = List.of(TypeAbstractClass.class, TypeAnnotation.class,
+        TypeClass.class, TypeInterface.class);
     // when
     var actualResult = scanUtils.searchAllClasses(inputPackage);
     // verify
@@ -182,8 +185,8 @@ class ScanUtilsImplTest {
   @NullAndEmptySource
   @DisplayName("Throws exception when null or empty package name was provided")
   void given_ThrowsException_When_Packages_NullOrEmpty(String packageName) {
-    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
-        .isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName)).isInstanceOf(
+            IllegalArgumentException.class)
         .hasMessage("Argument [packagesToScan] must not contain null or empty element");
   }
 
@@ -191,10 +194,9 @@ class ScanUtilsImplTest {
   @Test
   @DisplayName("Throws exception when no package was provided")
   void given_ThrowsException_When_NoPackages() {
-    assertThatThrownBy(scanUtils::validatePackagesToScan)
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-            "Argument [packagesToScan] must contain at least one not null and not empty element");
+    assertThatThrownBy(scanUtils::validatePackagesToScan).isInstanceOf(
+        IllegalArgumentException.class).hasMessage(
+        "Argument [packagesToScan] must contain at least one not null and not empty element");
   }
 
   @Order(12)
@@ -203,11 +205,10 @@ class ScanUtilsImplTest {
       "<", ">", "/", ","})
   @DisplayName("Throws exception when package names contain")
   void given_ThrowsException_When_InvalidPackageName(String packageName) {
-    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-            "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]"
-                .formatted(packageName));
+    assertThatThrownBy(() -> scanUtils.validatePackagesToScan(packageName)).isInstanceOf(
+        IllegalArgumentException.class).hasMessage(
+        "Argument [packagesToScan='%s'] must contain only letters, numbers and symbol [.]".formatted(
+            packageName));
   }
 
   @Test
@@ -229,5 +230,38 @@ class ScanUtilsImplTest {
     String thirdInputPackage = "io.github.bobocodebreskul";
     assertDoesNotThrow(() -> scanUtils.validatePackagesToScan(firstInputPackage, secondInputPackage,
         thirdInputPackage));
+  }
+
+  @Test
+  @Order(15)
+  @DisplayName("Read base packages from class with annotation @BringComponentScan")
+  void given_BasePackages_When_Class_Has_BringComponentScanAnnotation() {
+    Class<?> annotatedClass = ConfigTestClass.class;
+    Set<String> basePackages = scanUtils.readBasePackages(annotatedClass);
+
+    var expectedPackages = new HashSet<>(
+        Arrays.asList("com.example.package1", "com.example.package2"));
+    assertEquals(expectedPackages, basePackages, "Base packages should match the annotated values");
+  }
+
+  @Test
+  @Order(16)
+  @DisplayName("Read base package from class if @BringComponentScan is empty")
+  void given_BasePackage_When_Class_BringComponentScanAnnotation_Is_Empty() {
+    Class<?> annotatedClass = ConfigTestClassWithEmptyAnnotation.class;
+    var basePackage = scanUtils.readBasePackages(annotatedClass);
+
+    var expectedPackage = new HashSet<>(
+        List.of("io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations"));
+    assertEquals(expectedPackage, basePackage, "Base packages should match the annotated values");
+  }
+
+  @Order(17)
+  @Test
+  @DisplayName("Throws exception when class has not annotation @BringComponentScan")
+  void given_ThrowsException_When_ClassHasNotAnnotation() {
+    assertThatThrownBy(() -> scanUtils.readBasePackages(SingleCandidate.class)).isInstanceOf(
+            BringComponentScanNotFoundException.class)
+        .hasMessage("No @BringComponentScan annotation found on class: SingleCandidate.class");
   }
 }

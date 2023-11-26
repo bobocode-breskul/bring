@@ -98,12 +98,6 @@ public class AnnotatedBeanDefinitionReader {
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     annotatedBeanDefinition.setName(name);
 
-    if (beanDefinitionRegistry.isBeanNameInUse(name)) {
-      log.error("The specified bean name is already in use");
-      throw new BeanDefinitionDuplicateException(
-          "The bean definition with specified name %s already exists".formatted(name));
-    }
-
     if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
       log.trace("Found @Primary annotation on the beanName={}", name);
       annotatedBeanDefinition.setPrimary(true);

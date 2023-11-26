@@ -541,7 +541,6 @@ public class ReflectionUtilsTest {
   @DisplayName("When executable with annotated parameter and no annotation value specified then return parameter name by annotation default value map")
   @Order(33)
   void given_ExecutableWithAnnotatedParameterAndNoAnnotationValue_When_extractMethodAnnotationValues_Then_ReturnParameterNameByDefaultAnnotationValueMap(){
-    // TODO: 4.when executable with annotated parameter and no annotation value specified return map with default annotation value
     //given
     var executable = ConstructorWithAnnotatedParamsComponent.class.getDeclaredConstructors()[1];
     var firstParamName = executable.getParameters()[0].getName();

@@ -150,8 +150,7 @@ public class WebPathScannerTest {
 
   @Test
   @Order(7)
-  public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty()
-      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+  public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty() {
     given(bringContainer.getAllBeans()).willReturn(
         List.of(TestUtil.retrieveControllerWithInvalidPathAnnotationsMethod()));
 

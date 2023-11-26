@@ -1,8 +1,11 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
+import io.github.bobocodebreskul.context.annotations.BringComponentScan;
+import io.github.bobocodebreskul.context.exception.BringComponentScanNotFoundException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -25,11 +28,12 @@ public class ScanUtilsImpl implements ScanUtils {
 
   @Override
   public Set<Class<?>> searchClassesByAnnotationRecursively(String packagePath,
-    Class<? extends Annotation> filterByAnnotation) {
+      Class<? extends Annotation> filterByAnnotation) {
     log.trace("Search all classes for {} package which has @{} annotation",
-      packagePath, filterByAnnotation);
-    Predicate<Class<?>> filter = clazz -> ReflectionUtils.checkIfClassHasAnnotationRecursively(clazz,
-      filterByAnnotation);
+        packagePath, filterByAnnotation);
+    Predicate<Class<?>> filter = clazz -> ReflectionUtils.checkIfClassHasAnnotationRecursively(
+        clazz,
+        filterByAnnotation);
 
     return searchClassesByFilter(packagePath, filter);
   }
@@ -37,10 +41,34 @@ public class ScanUtilsImpl implements ScanUtils {
   @Override
   public Set<Class<?>> searchClassesByFilter(String packagePath, Predicate<Class<?>> filter) {
     return searchAllClasses(packagePath)
-      .stream()
-      .filter(filter)
-      .collect(Collectors.toSet());
+        .stream()
+        .filter(filter)
+        .collect(Collectors.toSet());
   }
+
+
+  @Override
+  public Set<String> readBasePackages(Class<?> annotatedClass) {
+    BringComponentScan bringComponentScan = annotatedClass.getAnnotation(BringComponentScan.class);
+    if (!ReflectionUtils.isAnnotationPresentForClass(BringComponentScan.class, annotatedClass)) {
+      String errorMessage =
+          "No @BringComponentScan annotation found on class: " + annotatedClass.getSimpleName()
+              + ".class";
+      log.warn(errorMessage);
+      throw new BringComponentScanNotFoundException(errorMessage);
+    }
+    if (bringComponentScan.basePackages().length != 0) {
+      String[] basePackages = bringComponentScan.basePackages();
+      log.info("Base packages read from @BringComponentScan annotation: " + String.join(", ",
+          basePackages));
+      return new HashSet<>(Arrays.asList(basePackages));
+    } else {
+      String basePackage = annotatedClass.getPackage().getName();
+      log.info("Using default base package: " + basePackage);
+      return Collections.singleton(basePackage);
+    }
+  }
+
 
   /**
    * Valid incoming packages for not existing package, null input, not valid symbols

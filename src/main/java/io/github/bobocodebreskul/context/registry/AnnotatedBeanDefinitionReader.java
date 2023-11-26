@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.context.registry;
 
+import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
+import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
@@ -7,9 +9,10 @@ import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtil
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
+import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
-import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
@@ -50,8 +53,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AnnotatedBeanDefinitionReader {
 
+  final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
+  private final static String COMPONENT_NAME_FIELD = "value";
   private final BeanDefinitionRegistry beanDefinitionRegistry;
-
 
   /**
    * Create a new AnnotatedBeanDefinitionReader for the given registry.
@@ -94,12 +98,18 @@ public class AnnotatedBeanDefinitionReader {
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     annotatedBeanDefinition.setName(name);
 
-    annotatedBeanDefinition.setScope(BeanDefinition.SINGLETON_SCOPE);
+    if (beanDefinitionRegistry.isBeanNameInUse(name)) {
+      log.error("The specified bean name is already in use");
+      throw new BeanDefinitionDuplicateException(
+          "The bean definition with specified name %s already exists".formatted(name));
+    }
 
     if (ReflectionUtils.isAnnotationPresentForClass(Primary.class, beanClass)) {
       log.trace("Found @Primary annotation on the beanName={}", name);
       annotatedBeanDefinition.setPrimary(true);
     }
+
+    annotatedBeanDefinition.setScope(getBeanDefinitionScope(beanClass, name));
 
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
@@ -113,5 +123,29 @@ public class AnnotatedBeanDefinitionReader {
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
+  }
+
+  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName) {
+    if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
+      String scopeName = beanClass.getAnnotation(Scope.class).value();
+      log.trace("Found @Scope annotation on the beanName={}", beanName);
+      if (PROTOTYPE_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve prototype scope for bean: {}", beanName);
+        return PROTOTYPE_SCOPE;
+      } else if (SINGLETON_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else if ("".equals(scopeName)) {
+        log.trace("Retrieve default singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else {
+        log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
+        throw new BeanDefinitionCreationException(
+            "Invalid scope name provided %s".formatted(scopeName));
+      }
+    }
+
+    log.trace("Retrieve default singleton scope for bean: {}", beanName);
+    return SINGLETON_SCOPE;
   }
 }

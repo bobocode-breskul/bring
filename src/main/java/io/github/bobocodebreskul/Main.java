@@ -1,24 +1,22 @@
 package io.github.bobocodebreskul;
 
-import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.annotations.Qualifier;
+import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.lang.reflect.Constructor;
 
-@BringComponent
+@BringComponentScan
 public class Main {
 
-    private final TestInterface testClass1;
+    private final TestClass testClass1;
 
-    public Main(@Qualifier("bean2") TestInterface testClass1, TestInterface testClass2) {
+    public Main(TestClass testClass1) {
         this.testClass1 = testClass1;
     }
 
     public static void main(String[] args) {
+        BringContainer run = BringContainer.run(Main.class);
         Constructor<?>[] constructors = Main.class.getConstructors();
         System.out.println("constructors.length = " + constructors.length);
-
-        BringContainer run = BringContainer.run("io.github.bobocodebreskul");
         Main bean = (Main) run.getBean("main");
 
         System.out.println(bean.hello());

@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.context.registry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atMostOnce;
@@ -10,9 +11,11 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Primary;
+import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -173,6 +176,98 @@ class AnnotatedBeanDefinitionReaderTest {
   }
 
   @Test
+  @Order(7)
+  @DisplayName("Test when scope singleton when no scope provided")
+  void given_SingletonBeanClass_When_No_Scope_Provided_Then_BeanDefinitionIsSingletonTrue(){
+    //data
+    var beanClass = DefaultSingletonComponent.class;
+
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    //when
+    annotatedBeanDefinitionReader.registerBean(beanClass);
+
+    //then
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition.isSingleton()).isTrue();
+    assertThat(actualBeanDefinition.isPrototype()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Test when scope singleton provided")
+  @Order(8)
+  void given_BeanClassWithSingletonScope_When_RegisterBean_Then_BeanDefinitionIsSingletonTrue() {
+    var beanClass = MySingletonComponent.class;
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    //when
+    annotatedBeanDefinitionReader.registerBean(beanClass);
+
+    //then
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition.isSingleton()).isTrue();
+    assertThat(actualBeanDefinition.isPrototype()).isFalse();
+  }
+
+  @Test
+  @Order(9)
+  @DisplayName("Test scope prototype when prototype scope provided")
+  void given_PrototypeBeanClass_When_RegisterBean_Then_BeanDefinitionIsPrototypeTrue(){
+    //data
+    var beanClass = PrototypeComponent.class;
+
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    //when
+    annotatedBeanDefinitionReader.registerBean(beanClass);
+
+    //then
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition.isSingleton()).isFalse();
+    assertThat(actualBeanDefinition.isPrototype()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Test when default scope provided")
+  @Order(10)
+  void given_BeanClassWithDefaultScope_When_RegisterBean_Then_BeanDefinitionIsSingletonTrue() {
+    var beanClass = MyDefaultScopeComponent.class;
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    //when
+    annotatedBeanDefinitionReader.registerBean(beanClass);
+
+    //then
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition.isSingleton()).isTrue();
+    assertThat(actualBeanDefinition.isPrototype()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Test when non existing scope provided")
+  @Order(11)
+  void given_BeanClassWithNonExistingScope_When_RegisterBean_Then_ThrowBeanDefinitionCreationException() {
+    //given
+    var beanClass = MyNonExistingScopeComponent.class;
+    String scopeName = beanClass.getAnnotation(Scope.class).value();
+
+    //when
+    //then
+    assertThatThrownBy(() ->
+        annotatedBeanDefinitionReader.registerBean(beanClass))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessageContaining("Invalid scope name provided %s".formatted(scopeName));
+  }
+
+  @Test
   @DisplayName("Test bean name gets from TestAnnotation with BringComponent annotation.")
   @Order(6)
   void given_ClassWithNamedComponentAnnotationAsParent_When_RegisterBean_Then_BeanDefinitionCreatedWithCorrectName() {
@@ -262,7 +357,24 @@ class AnnotatedBeanDefinitionReaderTest {
 
   @Primary
   @BringComponent
-  static class PrimaryComponent {
+  static class PrimaryComponent {}
 
-  }
+  @BringComponent
+  @Scope(BeanDefinition.SINGLETON_SCOPE)
+  static class MySingletonComponent {}
+
+  @BringComponent
+  @Scope()
+  static class MyDefaultScopeComponent {}
+
+  @BringComponent
+  @Scope("non existing")
+  static class MyNonExistingScopeComponent {}
+
+  @BringComponent
+  static class DefaultSingletonComponent {}
+
+  @BringComponent
+  @Scope(BeanDefinition.PROTOTYPE_SCOPE)
+  static class PrototypeComponent {}
 }

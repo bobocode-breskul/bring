@@ -10,7 +10,7 @@ public class Main {
 
     private final TestInterface testClass1;
 
-    public Main(@Qualifier("bean2") TestInterface testClass1) {
+    public Main(@Qualifier("bean2") TestInterface testClass1, TestInterface testClass2) {
         this.testClass1 = testClass1;
     }
 

@@ -96,6 +96,7 @@ public class BeanDefinitionReaderUtils {
     Class<?>[] parameterTypes = beanConstructor.getParameterTypes();
     for (int i = 0; i < parameterTypes.length; i++) {
       String beanName = getBeanName(parameterTypes[i]);
+      // TODO: check for qualifier value size
       result.add(new BeanDependency(beanName, qualifierValues.get(i) , parameterTypes[i]));
     }
     return result;

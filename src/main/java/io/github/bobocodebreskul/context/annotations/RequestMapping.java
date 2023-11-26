@@ -7,12 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Head annotation marks our method as a Head handler of a corresponding Controller
- *  @see Controller
+ * Annotation for mapping web requests onto methods in request-handling classes
+ * with flexible method signatures.
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = RequestMethod.HEAD)
-public @interface Head {
-  String value() default "";
+public @interface RequestMapping {
+
+	String value() default "";
+	RequestMethod[] method() default {};
+
 }

@@ -14,10 +14,10 @@ import java.lang.annotation.Target;
  * <p>Usage:</p>
  * <pre>
  * {@code
- * @RestController("/sample")
+ * @RestController("restCotroller")
  * public class SampleController {
  *
- *   @Get
+ *   @Get("/test")
  *   public YourClass doGet() {
  *     return new YourClass();
  *   }

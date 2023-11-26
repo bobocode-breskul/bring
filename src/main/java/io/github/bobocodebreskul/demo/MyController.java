@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul;
+package io.github.bobocodebreskul.demo;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Controller;
@@ -7,17 +7,20 @@ import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
+import io.github.bobocodebreskul.context.annotations.RequestMapping;
 
-@Controller("/pictures/yours")
+//TODO: remove
+@RequestMapping("/pictures")
+@Controller("/pictures")
 @BringComponent
-public class YourController {
+public class MyController {
 
   @Get("/first")
   public Greet getFirst() {
-    return new Greet("Your controller, first");
+    return new Greet("My controller, first");
   }
 
-  @Get("/second")
+  @Get("/second2")
   public Greet getSecond() {
     return new Greet("Hello, second");
   }

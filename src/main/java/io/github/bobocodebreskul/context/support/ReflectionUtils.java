@@ -5,6 +5,7 @@ import static java.util.function.Predicate.not;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -187,5 +188,26 @@ public class ReflectionUtils {
     return annotation.annotationType().equals(BringComponent.class)
       || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
       BringComponent.class);
+  }
+
+  /**
+   * Check if annotation has annotation type
+   * @param annotation provided annotation
+   * @param annotationType provided annotation type
+   * @return true - if annotation has annotation type.
+   */
+  public static boolean checkIfAnnotationHasAnnotationType(Annotation annotation, Class<? extends Annotation> annotationType) {
+    return annotation.annotationType().isAnnotationPresent(annotationType);
+  }
+
+  /**
+   * Invokes annotation's method
+   * @param annotation provided annotation
+   * @param methodName provided method name
+   * @throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+   */
+  public static Object invokeAnnotationMethod(Annotation annotation, String methodName)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    return annotation.annotationType().getMethod(methodName).invoke(annotation);
   }
 }

@@ -3,11 +3,7 @@ package io.github.bobocodebreskul.server;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bobocodebreskul.context.annotations.Delete;
 import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.Head;
-import io.github.bobocodebreskul.context.annotations.Post;
-import io.github.bobocodebreskul.context.annotations.Put;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletException;
@@ -31,35 +27,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
-  private final BringContainer container;
-
-  private final Map<String, Map<Class<?>, ControllerMethod>> pathToControllerMethod;
+  private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
 
   /**
    * Constructs a new instance of {@code DispatcherServlet} with the specified container and
    * path-to-controller mapping.
    *
-   * @param container              The container providing information about controllers.
    * @param pathToControllerMethod A mapping of paths to controller instances.
    */
-  public DispatcherServlet(BringContainer container,
-      Map<String, Map<Class<?>, ControllerMethod>> pathToControllerMethod) {
-    this.container = container;
+  public DispatcherServlet(Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
     this.pathToControllerMethod = pathToControllerMethod;
   }
 
-  private void processRequest(HttpServletRequest req, HttpServletResponse resp,
-      Class<?> methodType) {
+  private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
     PrintWriter writer;
     try {
       ObjectMapper mapper = new ObjectMapper();
       String pathInfo = req.getPathInfo();
-      Map<Class<?>, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
+      Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
       if (isNull(controllerMethodMap)) {
         return404(resp, mapper);
         return;
       }
-      ControllerMethod controllerMethod = controllerMethodMap.get(methodType);
+      ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
       if (isNull(controllerMethod)) {
         return404(resp, mapper);
         return;
@@ -102,27 +92,27 @@ public class DispatcherServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp, Get.class);
+    this.processRequest(req, resp);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp, Post.class);
+    this.processRequest(req, resp);
   }
 
   @Override
   protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp, Put.class);
+    this.processRequest(req, resp);
   }
 
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp, Delete.class);
+    this.processRequest(req, resp);
   }
 
   @Override
   protected void doHead(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp, Head.class);
+    this.processRequest(req, resp);
   }
 
   /**

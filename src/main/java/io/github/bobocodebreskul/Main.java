@@ -2,6 +2,7 @@ package io.github.bobocodebreskul;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import io.github.bobocodebreskul.demo.TestClass;
 import java.lang.reflect.Constructor;
 
 @BringComponent

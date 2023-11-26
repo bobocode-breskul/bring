@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul;
+package io.github.bobocodebreskul.demo;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 

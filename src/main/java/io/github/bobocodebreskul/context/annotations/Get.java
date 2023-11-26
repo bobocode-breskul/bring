@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.context.annotations;
 
+import io.github.bobocodebreskul.server.enums.RequestMethod;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,10 +13,10 @@ import java.lang.annotation.Target;
  * <p>Usage:</p>
  * <pre>
  * {@code
- * @RestController("/sample")
+ * @RestController("controller")
  * public class SampleController {
  *
- *   @Get
+ *   @Get("/test")
  *   public YourClass doGet() {
  *     return new YourClass();
  *   }
@@ -26,6 +27,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@RequestMapping(method = RequestMethod.GET)
 public @interface Get {
 
   String value() default "";

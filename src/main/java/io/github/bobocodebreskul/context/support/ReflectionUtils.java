@@ -204,7 +204,21 @@ public class ReflectionUtils {
    * Invokes annotation's method
    * @param annotation provided annotation
    * @param methodName provided method name
-   * @throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+   * @throws    IllegalAccessException    if this {@code Method} object
+   *              is enforcing Java language access control and the underlying
+   *              method is inaccessible.
+   * @throws    IllegalArgumentException  if the method is an
+   *              instance method and the specified object argument
+   *              is not an instance of the class or interface
+   *              declaring the underlying method (or of a subclass
+   *              or implementor thereof); if the number of actual
+   *              and formal parameters differ; if an unwrapping
+   *              conversion for primitive arguments fails; or if,
+   *              after possible unwrapping, a parameter value
+   *              cannot be converted to the corresponding formal
+   *              parameter type by a method invocation conversion.
+   * @throws    InvocationTargetException if the underlying method
+   *              throws an exception.
    */
   public static Object invokeAnnotationMethod(Annotation annotation, String methodName)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

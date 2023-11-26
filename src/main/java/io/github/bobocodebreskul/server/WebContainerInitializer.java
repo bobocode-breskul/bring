@@ -40,11 +40,7 @@ public class WebContainerInitializer implements ServletContainerInitializer {
    * @param ctx The servlet context of the web application.
    * @throws ServletException If an error occurs during servlet registration.
    */
-  //TODO: Revisit current tests
-  //TODO: Add test when webPathScanner throws InvocationTargetException
-  //TODO: Add test when webPathScanner throws NoSuchMethodException
-  //TODO: Add test when webPathScanner throws IllegalAccessException
-  public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException{
+  public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
     // Register your super servlet
     try {
       ctx.addServlet("dispatcherServlet", new DispatcherServlet(webPathScanner.getAllPaths()))

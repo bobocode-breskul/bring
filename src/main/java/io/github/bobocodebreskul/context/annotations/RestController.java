@@ -33,6 +33,6 @@ public @interface RestController {
    *
    * @return the filled controller path
    */
-  String value();
+  String value() default "";
 }
 

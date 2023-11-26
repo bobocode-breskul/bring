@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
+import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -39,49 +40,22 @@ public class DispatcherServlet extends HttpServlet {
     this.pathToControllerMethod = pathToControllerMethod;
   }
 
-  private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-    PrintWriter writer;
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      String pathInfo = req.getPathInfo();
-      Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
-      if (isNull(controllerMethodMap)) {
-        return404(resp, mapper);
-        return;
-      }
-      ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
-      if (isNull(controllerMethod)) {
-        return404(resp, mapper);
-        return;
-      }
-      Method method = controllerMethod.method();
-      if (isNull(method)) {
-        return404(resp, mapper);
-        return;
-      }
-      writer = resp.getWriter();
-      Object result = method.invoke(controllerMethod.controller());
-      writer.println(mapper.writeValueAsString(result));
-      writer.flush();
-      resp.setStatus(HttpServletResponse.SC_OK);
-    } catch (IOException ex) {
-      throw new RuntimeException(ex);
-    } catch (InvocationTargetException ex) {
-      throw new MethodInvocationException("Method ", ex);
-    } catch (IllegalAccessException ex) {
-      throw new RuntimeException(ex);
-    }
-  }
+  /**
+   * Custom service method that logs information before and after the request processing.
+   *
+   * @param request  The HTTP servlet request.
+   * @param response The HTTP servlet response.
+   */
+  @Override
+  protected void service(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    // Your interception logic before the request is processed
+    log.info("Start request for %s".formatted(request.getPathInfo()));
+    // Continue the request processing
+    super.service(request, response);
 
-  private void return404(HttpServletResponse resp, ObjectMapper mapper) {
-    try {
-      PrintWriter writer = resp.getWriter();
-      writer.println(mapper.writeValueAsString("Page not found!"));
-      writer.flush();
-      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    // Your interception logic after the request is processed
+    log.info("Finish request for %s".formatted(request.getPathInfo()));
   }
 
   /**
@@ -115,21 +89,46 @@ public class DispatcherServlet extends HttpServlet {
     this.processRequest(req, resp);
   }
 
-  /**
-   * Custom service method that logs information before and after the request processing.
-   *
-   * @param request  The HTTP servlet request.
-   * @param response The HTTP servlet response.
-   */
-  @Override
-  protected void service(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-    // Your interception logic before the request is processed
-    log.info("Start request for %s".formatted(request.getPathInfo()));
-    // Continue the request processing
-    super.service(request, response);
+  private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
+    PrintWriter writer;
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String pathInfo = req.getPathInfo();
+      Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
+      if (isNull(controllerMethodMap)) {
+        return404(resp, mapper);
+        return;
+      }
+      ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
+      if (isNull(controllerMethod)) {
+        return404(resp, mapper);
+        return;
+      }
+      Method method = controllerMethod.method();
+      if (isNull(method)) {
+        return404(resp, mapper);
+        return;
+      }
+      writer = resp.getWriter();
+      Object result = method.invoke(controllerMethod.controller());
+      writer.println(mapper.writeValueAsString(result));
+      writer.flush();
+      resp.setStatus(HttpServletResponse.SC_OK);
+    } catch (IOException | IllegalAccessException ex) {
+      throw new DispatcherServletException(ex);
+    } catch (InvocationTargetException ex) {
+      throw new MethodInvocationException("Method ", ex);
+    }
+  }
 
-    // Your interception logic after the request is processed
-    log.info("Finish request for %s".formatted(request.getPathInfo()));
+  private void return404(HttpServletResponse resp, ObjectMapper mapper) {
+    try {
+      PrintWriter writer = resp.getWriter();
+      writer.println(mapper.writeValueAsString("Page not found!"));
+      writer.flush();
+      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    } catch (IOException e) {
+      throw new DispatcherServletException(e);
+    }
   }
 }

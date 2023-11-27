@@ -12,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionValidationException;
+import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;

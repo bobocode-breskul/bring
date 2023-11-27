@@ -1,15 +1,9 @@
 package io.github.bobocodebreskul.context.registry;
 
-import static io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader.UNCERTAIN_BEAN_NAME_EXCEPTION_MSG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchException;
-import static org.assertj.core.api.Assertions.catchException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -21,13 +15,11 @@ import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
-import io.github.bobocodebreskul.context.exception.DuplicateBeanDefinitionException;
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -64,11 +56,9 @@ class AnnotatedBeanDefinitionReaderTest {
     annotatedBeanDefinitionReader.registerBean(beanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
-    assertThat(nameCaptor.getValue()).isEqualTo(
-        StringUtils.uncapitalize(beanClass.getSimpleName()));
+    assertThat(nameCaptor.getValue()).isEqualTo(beanClass.getName());
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
@@ -92,11 +82,10 @@ class AnnotatedBeanDefinitionReaderTest {
     annotatedBeanDefinitionReader.register(beanClass, beanClassWithDependency);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, times(2)).registerBeanDefinition(nameCaptor.capture(),
         definitionCaptor.capture());
     assertThat(nameCaptor.getValue()).isEqualTo(
-        StringUtils.uncapitalize(beanClassWithDependency.getSimpleName()));
+        StringUtils.uncapitalize(beanClassWithDependency.getName()));
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClassWithDependency);
@@ -116,7 +105,7 @@ class AnnotatedBeanDefinitionReaderTest {
     var beanClass = MyComponent.class;
     var beanClassWithDependency = AnotherComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(beanClassWithDependency);
-    abd.setDependencies(List.of(new BeanDependency(beanClass.getSimpleName(), beanClass)));
+    abd.setDependencies(List.of(new BeanDependency(beanClass.getSimpleName(), null, beanClass)));
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
     doReturn(Collections.singletonList(abd)).when(registry).getBeanDefinitions();
@@ -125,11 +114,9 @@ class AnnotatedBeanDefinitionReaderTest {
     annotatedBeanDefinitionReader.register(beanClassWithDependency, beanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, times(2)).registerBeanDefinition(nameCaptor.capture(),
         definitionCaptor.capture());
-    assertThat(nameCaptor.getValue()).isEqualTo(
-        StringUtils.uncapitalize(beanClass.getSimpleName()));
+    assertThat(nameCaptor.getValue()).isEqualTo(beanClass.getName());
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
@@ -151,7 +138,6 @@ class AnnotatedBeanDefinitionReaderTest {
     annotatedBeanDefinitionReader.register(primaryBeanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(),
         definitionCaptor.capture());
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
@@ -162,7 +148,6 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isPrimary()).isTrue();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
-
   @Test
   @DisplayName("Test bean name gets from BringComponent annotation.")
   @Order(5)
@@ -173,18 +158,13 @@ class AnnotatedBeanDefinitionReaderTest {
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
 
-    // given
-    given(registry.isBeanNameInUse(beanName)).willReturn(false);
-
     //when
     annotatedBeanDefinitionReader.registerBean(beanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
     assertThat(nameCaptor.getValue()).isEqualTo(beanName);
-    assertThat(nameCaptor.getValue()).isEqualTo(StringUtils.uncapitalize(beanName));
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
@@ -297,14 +277,10 @@ class AnnotatedBeanDefinitionReaderTest {
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
 
-    // given
-    given(registry.isBeanNameInUse(beanName)).willReturn(false);
-
     //when
     annotatedBeanDefinitionReader.registerBean(beanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
     assertThat(nameCaptor.getValue()).isEqualTo(StringUtils.uncapitalize(beanName));
@@ -317,30 +293,8 @@ class AnnotatedBeanDefinitionReaderTest {
   }
 
   @Test
-  @DisplayName("When class have two component annotation with different names then throw exception.")
-  @Order(7)
-  void given_TwoComponentAnnotationsWithDifferentNames_When_RegisterBean_Then_ThrowException() {
-    // data
-    var beanClass = UncertainNameComponent.class;
-    var expectedMessage = UNCERTAIN_BEAN_NAME_EXCEPTION_MSG
-      .formatted(beanClass.getName(), "firstName, secondName");
-
-    // given
-
-    //when
-    Exception actualException = catchException(
-      () -> annotatedBeanDefinitionReader.registerBean(beanClass));
-
-    //then
-    assertThat(actualException)
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessage(expectedMessage);
-    then(registry).shouldHaveNoInteractions();
-  }
-
-  @Test
   @DisplayName("Test bean name gets from TestAnnotation with BringComponent annotation.")
-  @Order(8)
+  @Order(7)
   void given_TwoComponentAnnotationsWithTheSameName_When_RegisterBean_Then_BeanDefinitionCreatedWithSetName() {
     // data
     var beanClass = TwoComponentAnnotationBean.class;
@@ -348,14 +302,10 @@ class AnnotatedBeanDefinitionReaderTest {
     ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
 
-    // given
-    given(registry.isBeanNameInUse(beanName)).willReturn(false);
-
     //when
     annotatedBeanDefinitionReader.registerBean(beanClass);
 
     //then
-    verify(registry, atLeastOnce()).isBeanNameInUse(anyString());
     verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
     verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
     assertThat(nameCaptor.getValue()).isEqualTo(StringUtils.uncapitalize(beanName));
@@ -382,12 +332,6 @@ class AnnotatedBeanDefinitionReaderTest {
 
   @BringComponent("singleName")
   static class NamedComponent1 {
-
-  }
-
-  @BringComponent("firstName")
-  @AnnotationWithComponent("secondName")
-  static class UncertainNameComponent {
 
   }
 

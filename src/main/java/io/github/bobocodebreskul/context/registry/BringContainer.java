@@ -1,11 +1,11 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
-import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
+import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -28,12 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BringContainer implements ObjectFactory {
 
-  private final Map<Class<?>, Object> storageByClass = new ConcurrentHashMap<>();
   private final Map<String, Object> storageByName = new ConcurrentHashMap<>();
-  private final BeanDefinitionRegistry definitionRegistry;
 
-  public BringContainer(BeanDefinitionRegistry definitionRegistry) {
+  private final BeanDefinitionRegistry definitionRegistry;
+  private final BeanDependencyUtils dependencyUtils;
+
+  public BringContainer(BeanDefinitionRegistry definitionRegistry, BeanDependencyUtils dependencyUtils) {
     this.definitionRegistry = definitionRegistry;
+    this.dependencyUtils = dependencyUtils;
   }
 
   /**
@@ -52,7 +54,7 @@ public class BringContainer implements ObjectFactory {
         new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(configClass);
 
-    BringContainer container = new BringContainer(definitionRegistry);
+    BringContainer container = new BringContainer(definitionRegistry, new BeanDependencyUtils());
 
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
@@ -77,12 +79,11 @@ public class BringContainer implements ObjectFactory {
           "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(
               name));
     }
-    Class<?> beanClass = beanDefinition.getBeanClass();
     try {
       Constructor<?> declaredConstructor = beanDefinition.getInitConstructor();
-      Object[] dependentBeans = beanDefinition.getDependencies().stream()
-          .map(BeanDependency::name)
-          .map(this::getBean)
+      List<BeanDefinition> dependentDefinitions = dependencyUtils.prepareDependencies(beanDefinition, definitionRegistry);
+      Object[] dependentBeans = dependentDefinitions.stream()
+          .map(dependentDefinition -> getBean(dependentDefinition.getName()))
           .toArray();
       Object newInstance = declaredConstructor.newInstance(dependentBeans);
 
@@ -90,7 +91,6 @@ public class BringContainer implements ObjectFactory {
         return newInstance;
       }
 
-      storageByClass.put(beanClass, newInstance);
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException
@@ -99,11 +99,6 @@ public class BringContainer implements ObjectFactory {
       throw new InstanceCreationException(
           "Could not create an instance of \"%s\" class!".formatted(name), e);
     }
-  }
-
-  @Override
-  public Object getBean(Class<?> clazz) {
-    throw new UnsupportedOperationException();
   }
 
   public List<Object> getAllBeans() {

@@ -12,13 +12,5 @@ public interface ObjectFactory {
    * @return the instance of the requested bean
    */
   Object getBean(String name);
-
-  /**
-   * Get a bean instance by its class type.
-   *
-   * @param clazz the class type of the bean to retrieve
-   * @return the instance of the requested bean
-   */
-  Object getBean(Class<?> clazz);
 }
 

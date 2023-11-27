@@ -30,7 +30,7 @@ public class BeanDependencyUtils {
         .toList();
   }
 
-  public BeanDefinition getDependency(BeanDependency dependency, BeanDefinitionRegistry registry) {
+  private BeanDefinition getDependency(BeanDependency dependency, BeanDefinitionRegistry registry) {
     String qualifier = dependency.qualifier();
 
     if (qualifier != null) {

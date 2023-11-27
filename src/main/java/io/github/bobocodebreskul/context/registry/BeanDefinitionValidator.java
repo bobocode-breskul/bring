@@ -1,24 +1,17 @@
 package io.github.bobocodebreskul.context.registry;
 
-import static io.github.bobocodebreskul.context.support.GeneralConstants.BACKSPACE;
-import static io.github.bobocodebreskul.context.support.GeneralConstants.FORM_FEED;
-import static io.github.bobocodebreskul.context.support.GeneralConstants.HORIZONTAL_TAB;
-import static org.apache.commons.lang3.StringUtils.CR;
-import static org.apache.commons.lang3.StringUtils.LF;
-import static org.apache.commons.lang3.StringUtils.SPACE;
-import static org.apache.commons.lang3.StringUtils.containsAny;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.github.bobocodebreskul.context.config.BeanDefinition;
-import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionValidationException;
 import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 // TODO: tests
 
@@ -29,9 +22,9 @@ import java.util.Set;
  */
 public class BeanDefinitionValidator {
 
-  static final String DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE = "Bean candidate [%s] has invalid bean name: must not be blank or contain disallowed characters";
-  private static final CharSequence[] DISALLOWED_BEAN_NAME_CHARACTERS =
-      {SPACE, LF, CR, BACKSPACE, FORM_FEED, HORIZONTAL_TAB};
+  static final String DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE = "Bean candidate [%s] "
+      + "has invalid bean name: must not be blank or contain disallowed characters";
+  private static final Pattern DISALLOWED_BEAN_NAME_CHARS_PATTERN = Pattern.compile("[\\s\b]");
 
   private final BeanDefinitionRegistry definitionRegistry;
   private final BeanDependencyUtils beanDependencyUtils;
@@ -72,6 +65,7 @@ public class BeanDefinitionValidator {
   // TODO: 8. When bean definition with circular dependency of format a -> b (interface with qualified b1, b2 impl) then nothing thrown
   // TODO: 9. When bean definition with circular dependency of format a -> b (interface with primary b1, b2 impl) then nothing thrown
   // TODO: 10. When bean definition with circular dependency of format a -> b -> c -> d -> b then exception thrown and only cycle participants present in the error message
+  // TODO: 11. When bean definition with circular dependency of format a -> a then exception thrown
   private void validateForCircularDependency(BeanDefinition beanDefinition) {
     if (beanDefinition.getDependencies().isEmpty()) {
       return;
@@ -79,47 +73,46 @@ public class BeanDefinitionValidator {
 
     if (!visitedBeanNames.add(beanDefinition.getName())) {
       removeNonCycleParticipants(beanDefinition);
-      throw new BeanDefinitionValidationException(buildErrorMessage(beanDefinitionChain));
+      throw new BeanDefinitionValidationException(buildErrorMessage());
     }
     beanDefinitionChain.push(beanDefinition);
 
-    List<BeanDependency> dependencies = beanDefinition.getDependencies();
-    for (BeanDependency dependency : dependencies) {
-      BeanDefinition dependencyDefinition =
-          beanDependencyUtils.getDependency(dependency, definitionRegistry);
-      validateForCircularDependency(dependencyDefinition);
-    }
+    beanDependencyUtils.prepareDependencies(beanDefinition, definitionRegistry)
+        .forEach(this::validateForCircularDependency);
+
     visitedBeanNames.remove(beanDefinition.getName());
     beanDefinitionChain.pop();
   }
 
-
+  // TODO: IMPLEMENTATION - move to it's own validator class and use in
+  //  BeanDefinitionReaderUtils.getBeanName and for Qualifier logic too
   // TODO: 1. when bean definition without illegal characters then nothing thrown
   // TODO: 2. when bean definition with blank name then throw exception
   // TODO: 3. when bean definition contains illegal character then throw exception (parameterized test)
   private void validateBeanName(Class<?> beanClass, String beanName) {
-    if (isBlank(beanName) || containsAny(beanName, DISALLOWED_BEAN_NAME_CHARACTERS)) {
+    if (isBlank(beanName) || DISALLOWED_BEAN_NAME_CHARS_PATTERN.matcher(beanName).find()) {
       throw new BeanDefinitionValidationException(
           DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE.formatted(beanClass));
     }
   }
 
 
-  private String buildErrorMessage(Deque<BeanDefinition> circularDependencies) {
+  private String buildErrorMessage() {
     StringBuilder errorMessage =
-        new StringBuilder("The dependencies of some of the beans form a cycle:\n");
+        new StringBuilder("The dependencies of some of the beans form a cycle:")
+            .append(System.lineSeparator());
 
-    BeanDefinition firstBean = circularDependencies.pollLast();
-    errorMessage.append(String.format("┌─────┐\n|  %s defined in file [%s]\n", firstBean.getName(),
+    BeanDefinition firstBean = Objects.requireNonNull(beanDefinitionChain.pollLast());
+    errorMessage.append("┌─────┐").append(System.lineSeparator());
+    errorMessage.append("|  %s defined in file [%s]%n".formatted(firstBean.getName(),
         getFileLocation(firstBean.getBeanClass())));
-    while (!circularDependencies.isEmpty()) {
-      BeanDefinition currentBean = circularDependencies.pollLast();
-      errorMessage.append("↑     ↓\n");
-      errorMessage.append(
-          String.format("|  %s defined in file [%s]\n", currentBean.getName(),
-              getFileLocation(currentBean.getBeanClass())));
+    while (!beanDefinitionChain.isEmpty()) {
+      BeanDefinition currentBean = beanDefinitionChain.pollLast();
+      errorMessage.append("↑     ↓").append(System.lineSeparator());
+      errorMessage.append("|  %s defined in file [%s]%n".formatted(currentBean.getName(),
+          getFileLocation(currentBean.getBeanClass())));
     }
-    errorMessage.append("└─────┘\n");
+    errorMessage.append("└─────┘").append(System.lineSeparator());
 
     return errorMessage.toString();
   }

@@ -33,6 +33,7 @@ public class BeanDefinitionValidator {
       {SPACE, LF, CR, BACKSPACE, FORM_FEED, HORIZONTAL_TAB};
 
   private final BeanDefinitionRegistry definitionRegistry;
+  private final BeanDependencyUtils beanDependencyUtils;
 
   /**
    * Set to keep track of visited bean names during circular dependency validation.
@@ -44,8 +45,10 @@ public class BeanDefinitionValidator {
    */
   private final Deque<BeanDefinition> beanDefinitionChain = new ArrayDeque<>();
 
-  public BeanDefinitionValidator(BeanDefinitionRegistry definitionRegistry) {
+  public BeanDefinitionValidator(BeanDefinitionRegistry definitionRegistry,
+      BeanDependencyUtils beanDependencyUtils) {
     this.definitionRegistry = definitionRegistry;
+    this.beanDependencyUtils = beanDependencyUtils;
   }
 
   /**
@@ -59,33 +62,47 @@ public class BeanDefinitionValidator {
     }
   }
 
-  // TODO: revisit for better improved logic
+  // TODO: 1. When bean definition with empty dependencies then nothing thrown
+  // TODO: 2. When bean definition with dependencies without circular dependency then nothing thrown
+  // TODO: 3. When bean definition with circular dependency of format: a -> b -> c -> a then exception thrown and check error message
+  // TODO: 4. When bean definition with circular dependency of format a -> b (interface, b1 impl) -> c -> a
+  // TODO: 5. When bean definition with circular dependency of format a -> b (interface with b1, qualified b2 impl) -> c -> a  then exception thrown
+  // TODO: 7. When bean definition with circular dependency of format a -> b (interface with b1, primary b2 impl) -> c -> a  then exception thrown
+  // TODO: 8. When bean definition with circular dependency of format a -> b (interface with qualified b1, b2 impl) then nothing thrown
+  // TODO: 9. When bean definition with circular dependency of format a -> b (interface with primary b1, b2 impl) then nothing thrown
+  // TODO: 10. When bean definition with circular dependency of format a -> b -> c -> d -> b then exception thrown and only cycle participants present in the error message
   private void validateForCircularDependency(BeanDefinition beanDefinition) {
     if (beanDefinition.getDependencies().isEmpty()) {
       return;
     }
 
     if (!visitedBeanNames.add(beanDefinition.getName())) {
+      removeNonCycleParticipants(beanDefinition);
       throw new BeanDefinitionValidationException(buildErrorMessage(beanDefinitionChain));
     }
     beanDefinitionChain.push(beanDefinition);
 
     List<BeanDependency> dependencies = beanDefinition.getDependencies();
     for (BeanDependency dependency : dependencies) {
-      String dependencyName = dependency.name();
-      BeanDefinition dependencyDefinition = definitionRegistry.getBeanDefinition(dependencyName);
+      BeanDefinition dependencyDefinition =
+          beanDependencyUtils.getDependency(dependency, definitionRegistry);
       validateForCircularDependency(dependencyDefinition);
     }
     visitedBeanNames.remove(beanDefinition.getName());
     beanDefinitionChain.pop();
   }
 
+
+  // TODO: 1. when bean definition without illegal characters then nothing thrown
+  // TODO: 2. when bean definition with blank name then throw exception
+  // TODO: 3. when bean definition contains illegal character then throw exception (parameterized test)
   private void validateBeanName(Class<?> beanClass, String beanName) {
     if (isBlank(beanName) || containsAny(beanName, DISALLOWED_BEAN_NAME_CHARACTERS)) {
       throw new BeanDefinitionValidationException(
           DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE.formatted(beanClass));
     }
   }
+
 
   private String buildErrorMessage(Deque<BeanDefinition> circularDependencies) {
     StringBuilder errorMessage =
@@ -99,11 +116,17 @@ public class BeanDefinitionValidator {
       errorMessage.append("↑     ↓\n");
       errorMessage.append(
           String.format("|  %s defined in file [%s]\n", currentBean.getName(),
-              getFileLocation(firstBean.getBeanClass())));
+              getFileLocation(currentBean.getBeanClass())));
     }
     errorMessage.append("└─────┘\n");
 
     return errorMessage.toString();
+  }
+
+  private void removeNonCycleParticipants(BeanDefinition beanDefinition) {
+    while (!beanDefinition.getName().equals(beanDefinitionChain.getLast().getName())) {
+      beanDefinitionChain.pollLast();
+    }
   }
 
   private String getFileLocation(Class<?> beanClass) {

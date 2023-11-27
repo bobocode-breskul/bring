@@ -14,6 +14,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
+import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,9 @@ class BringContainerTest {
 
   @Mock
   private BeanDefinitionRegistry beanDefinitionRegistry;
+
+  @Mock
+  private BeanDependencyUtils beanDependencyUtils;
 
   @Test
   @DisplayName("Create single bean by bean name")
@@ -111,16 +115,16 @@ class BringContainerTest {
         BeanClass3.class);
     beanDefinition3.setName(inputBeanName);
     beanDefinition3.setDependencies(List.of(
-        new BeanDependency(TEST_BEAN_NAME_2, BeanClass2.class),
-        new BeanDependency(TEST_BEAN_NAME_1, BeanClass1.class)
+        new BeanDependency(TEST_BEAN_NAME_2, null, BeanClass2.class),
+        new BeanDependency(TEST_BEAN_NAME_1, null, BeanClass1.class)
     ));
     beanDefinition3.setInitConstructor(BeanClass3.class.getDeclaredConstructors()[0]);
     AnnotatedGenericBeanDefinition beanDefinition2 = new AnnotatedGenericBeanDefinition(
         BeanClass2.class);
     beanDefinition2.setName(TEST_BEAN_NAME_2);
     beanDefinition2.setDependencies(List.of(
-        new BeanDependency(TEST_BEAN_NAME_1, BeanClass1.class),
-        new BeanDependency(TEST_BEAN_NAME_4, BeanClass4.class)
+        new BeanDependency(TEST_BEAN_NAME_1, null, BeanClass1.class),
+        new BeanDependency(TEST_BEAN_NAME_4, null, BeanClass4.class)
     ));
     beanDefinition2.setInitConstructor(BeanClass2.class.getDeclaredConstructors()[0]);
     AnnotatedGenericBeanDefinition beanDefinition1 = new AnnotatedGenericBeanDefinition(
@@ -136,6 +140,9 @@ class BringContainerTest {
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2)).willReturn(beanDefinition2);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1)).willReturn(beanDefinition1);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_4)).willReturn(beanDefinition4);
+
+    given(beanDependencyUtils.prepareDependencies(beanDefinition3, beanDefinitionRegistry)).willReturn(List.of(beanDefinition2, beanDefinition1));
+    given(beanDependencyUtils.prepareDependencies(beanDefinition2, beanDefinitionRegistry)).willReturn(List.of(beanDefinition1, beanDefinition4));
     // when
     Object actualBean = objectFactory.getBean(inputBeanName);
     // then
@@ -169,10 +176,11 @@ class BringContainerTest {
     var mainBeanDefinition = new AnnotatedGenericBeanDefinition(BeanClass2.class);
     mainBeanDefinition.setName(inputBeanName);
     mainBeanDefinition.setDependencies(
-        List.of(new BeanDependency(firstDependencyBeanName, secondDependencyBeanClass),
-            new BeanDependency(secondDependencyBeanName, secondDependencyBeanClass)));
+        List.of(new BeanDependency(firstDependencyBeanName, null, secondDependencyBeanClass),
+            new BeanDependency(secondDependencyBeanName, null, secondDependencyBeanClass)));
     mainBeanDefinition.setInitConstructor(BeanClass2.class.getDeclaredConstructors()[0]);
 
+    given(beanDependencyUtils.prepareDependencies(mainBeanDefinition, beanDefinitionRegistry)).willReturn(List.of(firstDependencyBeanDefinition, secondDependencyBeanDefinition));
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(mainBeanDefinition);
     given(beanDefinitionRegistry.getBeanDefinition(firstDependencyBeanName)).willReturn(
         firstDependencyBeanDefinition);
@@ -196,21 +204,24 @@ class BringContainerTest {
   @Order(6)
   void given_BeanWithDependencyWithoutBeanDefinition_When_GetBeanByName_Then_ShouldTrowNoSuchBeanDefinitionException() {
     //given
-    var beanDependency = new BeanDependency(TEST_BEAN_NAME_1, BeanClass2.class);
-
     var beanDefinition = new AnnotatedGenericBeanDefinition(BeanClass2.class);
-    beanDefinition.setName(TEST_BEAN_NAME_2);
-    beanDefinition.setDependencies(List.of(beanDependency));
+    beanDefinition.setName(TEST_BEAN_NAME_1);
 
-    given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2)).willReturn(beanDefinition);
+    var dependencyDefinition1 = new AnnotatedGenericBeanDefinition(BeanClass1.class);
+    dependencyDefinition1.setName(TEST_BEAN_NAME_2);
+    var dependencyDefinition2 = new AnnotatedGenericBeanDefinition(BeanClass4.class);
+    dependencyDefinition2.setName(TEST_BEAN_NAME_3);
+    given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1)).willReturn(beanDefinition);
+    given(beanDependencyUtils.prepareDependencies(beanDefinition, beanDefinitionRegistry))
+        .willReturn(List.of(dependencyDefinition1, dependencyDefinition2));
 
     //when
     //then
-    assertThatThrownBy(() -> objectFactory.getBean(TEST_BEAN_NAME_2))
+    assertThatThrownBy(() -> objectFactory.getBean(TEST_BEAN_NAME_1))
         .isInstanceOf(NoSuchBeanDefinitionException.class)
         .hasMessage(
             "BeanDefinition for bean with name %s is not found! Check configuration and register this bean",
-            TEST_BEAN_NAME_1);
+            TEST_BEAN_NAME_2);
   }
 
   @Test
@@ -233,15 +244,6 @@ class BringContainerTest {
     assertThatThrownBy(() -> objectFactory.getBean(inputBeanName))
         .isInstanceOf(InstanceCreationException.class)
         .hasMessage("Could not create an instance of \"%s\" class!".formatted(inputBeanName));
-  }
-
-  @Test
-  @DisplayName("Throw UnsupportedOperationException when take bean without bean definition by class")
-  @Order(8)
-  void given_BeanClass_When_BeanIsRegistered_Then_ThrowUnsupportedOperationException() {
-    // when
-    assertThatThrownBy(() -> objectFactory.getBean(Object.class))
-        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   static class BeanClass1 {

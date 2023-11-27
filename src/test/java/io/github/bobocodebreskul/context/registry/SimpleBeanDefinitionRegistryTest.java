@@ -502,7 +502,28 @@ class SimpleBeanDefinitionRegistryTest {
         .hasMessage(BEAN_NAME_SHOULD_NOT_BE_NULL);
   }
 
-  public static class BeanClass1 {
+  @Test
+  @DisplayName("Find all assignable bean definition by Type")
+  @Order(36)
+  void given_BeanType_When_twoBeanDefinitionsOfSameInterfaceRegistered_Then_returnAllAssignableBeanDefinition() {
+    BeanDefinition beanDefinition1 = new AnnotatedGenericBeanDefinition(BeanClass1.class);
+    BeanDefinition beanDefinition2 = new AnnotatedGenericBeanDefinition(BeanClass2.class);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_1, beanDefinition1);
+    simpleBeanDefinitionRegistry.registerBeanDefinition(TEST_BEAN_NAME_2, beanDefinition2);
+
+    assertThat(simpleBeanDefinitionRegistry.getBeanDefinitionByType(BeanInterface.class))
+        .containsExactly(beanDefinition1, beanDefinition2);
+  }
+
+  public static class BeanClass1 implements BeanInterface {
+
+  }
+
+  public static class BeanClass2 implements BeanInterface {
+
+  }
+
+  public interface BeanInterface {
 
   }
 }

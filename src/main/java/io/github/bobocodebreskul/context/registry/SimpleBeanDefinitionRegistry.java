@@ -7,6 +7,7 @@ import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -222,5 +223,12 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
             BEAN_DEFINITION_FOR_CLASS_NOT_FOUND.formatted(beanClass.getName())));
     log.trace("Bean definition for class '{}' retrieved successfully.", beanClass);
     return beanDefinition;
+  }
+
+  @Override
+  public List<BeanDefinition> getBeanDefinitionByType(Class<?> type) {
+    return beanDefinitionMap.values().stream()
+        .filter(beanDefinition -> type.isAssignableFrom(beanDefinition.getBeanClass()))
+        .toList();
   }
 }

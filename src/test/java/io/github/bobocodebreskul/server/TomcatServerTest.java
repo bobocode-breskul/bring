@@ -9,6 +9,7 @@ import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.context.registry.SimpleBeanDefinitionRegistry;
+import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -29,7 +30,7 @@ class TomcatServerIntegrationTest {
         definitionRegistry);
 
     beanDefinitionReader.registerBean(Controller.class);
-    BringContainer container = new BringContainer(definitionRegistry);
+    BringContainer container = new BringContainer(definitionRegistry, new BeanDependencyUtils());
 
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));

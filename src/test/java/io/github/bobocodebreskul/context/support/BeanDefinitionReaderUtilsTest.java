@@ -1,25 +1,27 @@
 package io.github.bobocodebreskul.context.support;
 
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.UNCERTAIN_BEAN_NAME_EXCEPTION_MSG;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
-import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -33,6 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(MockitoExtension.class)
 class BeanDefinitionReaderUtilsTest {
@@ -40,112 +43,84 @@ class BeanDefinitionReaderUtilsTest {
   @Mock
   private BeanDefinitionRegistry registry;
 
+
   @Test
-  @DisplayName("Generate bean name for bean definition based on bean class")
+  @DisplayName("Throw NullPointerException when provided class type is null")
   @Order(1)
-  void given_ValidBeanDefinition_When_GenerateBeanName_Then_ReturnValidBeanName() {
-    //given
-    var abd = new AnnotatedGenericBeanDefinition(MyComponent.class);
-    String expectedBeanName = "myComponent";
-
-    //when
-    String generatedBeanName = BeanDefinitionReaderUtils.generateBeanName(abd, registry);
-
-    //then
-    assertThat(generatedBeanName)
-        .isNotBlank()
-        .isEqualTo(expectedBeanName);
+  void given_NullClassType_When_GetBeanName_Then_ThrowNullPointerException() {
+    // when
+    // then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanName(null))
+      .isInstanceOf(NullPointerException.class)
+      .hasMessage("Bean class has not been specified");
   }
 
+
   @Test
-  @DisplayName("Generate bean names for bean classes with equal name")
+  @DisplayName("Get bean name based on bean class when no bean name specified")
   @Order(2)
-  void given_ClassNameInRegistry_When_GenerateBeanNames_Then_NoDuplicateExceptionIsThrown() {
-    //given
-    var abd1 = new AnnotatedGenericBeanDefinition(MyComponent.class);
-    when(registry.isBeanNameInUse(any())).thenReturn(true);
-    when(registry.getBeanDefinition(any())).thenReturn(abd1);
-
-    //when
-    //then
-    assertThatNoException()
-        .isThrownBy(() -> BeanDefinitionReaderUtils.generateBeanName(abd1, registry));
-  }
-
-  @Test
-  @DisplayName("Generate bean names for bean classes with equal name")
-  @Order(3)
-  void given_EqualClassNames_When_GenerateBeanNames_Then_ThrowBeanDefinitionDuplicateException() {
-    //given
-    var abd1 = new AnnotatedGenericBeanDefinition(MyComponent.class);
-    var abd2 = new AnnotatedGenericBeanDefinition(
-        io.github.bobocodebreskul.context.support.test.data.MyComponent.class);
-    when(registry.isBeanNameInUse(any())).thenReturn(true);
-    when(registry.getBeanDefinition(any())).thenReturn(abd1);
-
-    //when
-    //then
-    String expectedMessage = "Bean definition %s already exist".formatted(
-        abd2.getBeanClass().getName());
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateBeanName(abd2, registry))
-        .isInstanceOf(BeanDefinitionDuplicateException.class)
-        .hasMessage(expectedMessage);
-  }
-
-  @Test
-  @DisplayName("Throw exception when nullable bean definition specified")
-  @Order(4)
-  void given_NullBeanDefinition_When_GenerateBeanName_Then_ThrowException() {
-    //given
-    //when
-    //then
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateBeanName(null, registry))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Null bean definition specified");
-  }
-
-  @Test
-  @DisplayName("Throw NullPointerException when bean class is not specified in bean definition")
-  @Order(5)
-  void givenNullBeanClass_WhenGenerateBeanName_ThenThrowNullPointerException() {
-    //given
-    var abd = new AnnotatedGenericBeanDefinition(null);
-    //when
-    //then
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateBeanName(abd, registry))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Bean class has not been specified");
-  }
-
-  @Test
-  @DisplayName("Generate bean name based on specified bean class")
-  @Order(6)
-  void given_BeanClass_When_GenerateClassBeanName_Then_ReturnValidBeanName() {
+  void given_BeanClassWithoutBeanNameSpecified_When_GetBeanName_Then_ReturnBeanClassName() {
     //given
     var beanClass = MyComponent.class;
-    var expectedBeanName = StringUtils.uncapitalize(beanClass.getSimpleName());
+    var expectedBeanName = beanClass.getName();
 
     //when
-    var actualBeanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var actualBeanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //then
     assertThat(actualBeanName).isEqualTo(expectedBeanName);
   }
 
   @Test
-  @DisplayName("Throw NullPointerException when provided class type is null")
-  @Order(7)
-  void given_NullClassType_When_GenerateClassBeanName_Then_ThrowNullPointerException() {
-    // when
-    // then
-    assertThatThrownBy(() -> BeanDefinitionReaderUtils.generateClassBeanName(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Bean class has not been specified");
+  @DisplayName("Get bean name from annotation when bean name specified")
+  @Order(3)
+  void given_BeanClassWithSpecifiedBeanName_When_GetBeanName_Then_ReturnSpecifiedBeanName(){
+    //given
+    var beanClass = NamedComponent.class;
+    var expectedBeanName = "singleName";
+
+    //when
+    var result = BeanDefinitionReaderUtils.getBeanName(beanClass);
+
+    //then
+    assertThat(result).isEqualTo(expectedBeanName);
+  }
+
+
+  @Test
+  @DisplayName("Class have two component annotations with similar names then return name")
+  @Order(4)
+  void given_BeanClassWithTwoSimilarBeanNameDeclaration_When_GetBeanName_Then_ReturnValidBeanName() {
+    //given
+    var beanClass = TwoComponentAnnotationBean.class;
+    String expectedName = "similarName";
+
+    //when
+    var actualBeanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
+
+    //then
+    assertThat(actualBeanName).isEqualTo(expectedName);
+  }
+
+  @Test
+  @DisplayName("Class have two component annotations with different names then throw exception")
+  @Order(5)
+  void given_BeanClassWithTwoDifferentBeanNameDeclaration_When_GetBeanName_Then_ThrowException() {
+    //given
+    var beanClass = UncertainNameComponent.class;
+
+    var expectedMessage = UNCERTAIN_BEAN_NAME_EXCEPTION_MSG
+      .formatted(beanClass.getName(), "firstName, secondName");
+
+    //then
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanName(beanClass))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage(expectedMessage);
   }
 
   @Test
   @DisplayName("Get bean dependencies from the default constructor")
-  @Order(8)
+  @Order(6)
   void given_BeanClassWithDefaultConstructor_When_GetConstructorBeanDependencies_Then_ReturnEmptyList() {
     //given
     var beanDefaultConstructor = MyComponent.class.getDeclaredConstructors()[0];
@@ -161,10 +136,10 @@ class BeanDefinitionReaderUtilsTest {
   @ParameterizedTest
   @MethodSource("getConstructors")
   @DisplayName("Get bean dependencies for constructor with n parameters")
-  @Order(9)
+  @Order(7)
   void given_ConstructorsWithNArguments_When_GetConstructorBeanDependencies_Then_ReturnAllConstructorArgumentTypes(
       Constructor<?> constructor, int result) {
-    //when
+   // when
     var dependencies = BeanDefinitionReaderUtils.getConstructorBeanDependencies(constructor);
 
     //then
@@ -175,8 +150,28 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @Test
+  @DisplayName("Get bean dependencies for constructor parameters with qualifiers annotations")
+  @Order(8)
+  void given_BeanClassWithConstructorWithQualifiers_When_GetConstructorBeanDependencies_Then_ReturnDependenciesWithQualifiers() {
+    //given
+    String firstQualifierName = "first";
+    String secondQualifierName = "second";
+    var beanDefaultConstructor = ComponentWithQualifiedConstructor.class.getDeclaredConstructors()[0];
+
+    //when
+    var dependencies =
+      BeanDefinitionReaderUtils.getConstructorBeanDependencies(beanDefaultConstructor);
+
+    //then
+    assertThat(dependencies).hasSize(3);
+    assertThat(dependencies.get(0).qualifier()).isEqualTo(firstQualifierName);
+    assertThat(dependencies.get(2).qualifier()).isEqualTo(secondQualifierName);
+  }
+
+
+  @Test
   @DisplayName("Throw NullPointerException with meaningful description for nullable constructor")
-  @Order(10)
+  @Order(9)
   void given_NullableConstructor_When_GetConstructorBeanDependencies_Then_ThrowNullPointerException() {
     // when
     // then
@@ -191,7 +186,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithSingleDefaultConstructor_When_FindBeanInitConstructor_Then_ReturnDefaultConstructor() {
     //given
     var beanClass = MyComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //when
     var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
@@ -206,7 +201,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithSingleMultiParamsConstructor_When_FindBeanInitConstructor_Then_ReturnConstructor() {
     //given
     var beanClass = MultipleArgumentDependentComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //when
     var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
@@ -222,7 +217,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithMultiConstructorAndOneOfThemAutowired_When_FindBeanInitConstructor_Then_ReturnConstructor() {
     //given
     var beanClass = MultipleConstructorDependentComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //when
     var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
@@ -239,7 +234,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithMultiConstructorIncludingDefault_When_FindBeanInitConstructor_Then_ReturnValidConstructor() {
     //given
     var beanClass = MultipleConstructorIncludingDefaultComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //when
     var result = BeanDefinitionReaderUtils.findBeanInitConstructor(beanClass, beanName);
@@ -255,7 +250,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithMultipleConstructorsAnnotatedWithAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     //given
     var beanClass = MultipleAutowiredConstructorComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
     var declaredConstructors = beanClass.getDeclaredConstructors();
 
     //when
@@ -275,7 +270,7 @@ class BeanDefinitionReaderUtilsTest {
   void given_BeanClassWithMultiConstructorAndWithoutDefaultConstructorAndWithoutAutowired_When_FindBeanInitConstructor_Then_ThrowException() {
     //given
     var beanClass = MultipleConstructorWithoutAutowiredAndDefaultComponent.class;
-    var beanName = BeanDefinitionReaderUtils.generateClassBeanName(beanClass);
+    var beanName = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     //when
     //then
@@ -327,7 +322,7 @@ class BeanDefinitionReaderUtilsTest {
     var componentClass = AnotherComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(componentClass);
     abd.setDependencies(
-        List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
+        List.of(new BeanDependency(autowiredBeanClass.getSimpleName(), null, autowiredBeanClass)));
     when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
 
     //when
@@ -346,7 +341,7 @@ class BeanDefinitionReaderUtilsTest {
     var autowiredBeanClass = MyComponent.class;
     var abd = new AnnotatedGenericBeanDefinition(autowiredBeanClass);
     abd.setDependencies(Collections.singletonList(
-        new BeanDependency(autowiredBeanClass.getSimpleName(), autowiredBeanClass)));
+        new BeanDependency(autowiredBeanClass.getSimpleName(), null, autowiredBeanClass)));
     when(registry.getBeanDefinitions()).thenReturn(List.of(abd));
 
     //when
@@ -375,6 +370,27 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @BringComponent
+  static class ComponentWithQualifiedConstructor {
+    QualifiedComponent component1;
+    String string;
+
+    public ComponentWithQualifiedConstructor(@Qualifier("first") QualifiedComponent component1,
+      String string, @Qualifier("second") QualifiedComponent component2) {
+      this.component1 = component1;
+      this.string = string;
+      this.component2 = component2;
+    }
+
+    QualifiedComponent component2;
+
+  }
+
+  static class QualifiedComponent {
+
+  }
+
+
+  @BringComponent
   @RequiredArgsConstructor
   static class AnotherComponent {
 
@@ -387,6 +403,30 @@ class BeanDefinitionReaderUtilsTest {
 
     private final MyComponent component;
     private final AnotherComponent anotherComponent;
+  }
+
+  @BringComponent("singleName")
+  static class NamedComponent {
+
+  }
+
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @BringComponent
+  public @interface AnnotationWithComponent {
+
+    String value() default "";
+  }
+  @BringComponent("firstName")
+  @AnnotationWithComponent("secondName")
+  static class UncertainNameComponent {
+
+  }
+
+  @BringComponent("similarName")
+  @AnnotationWithComponent("similarName")
+  static class TwoComponentAnnotationBean {
+
   }
 
   @BringComponent

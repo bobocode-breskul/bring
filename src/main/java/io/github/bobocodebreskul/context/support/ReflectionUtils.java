@@ -5,14 +5,18 @@ import static java.util.function.Predicate.not;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UtilityClass
 public class ReflectionUtils {
-  final static String ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Class [%s] ";
+
+  final static String CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Class [%s] ";
+  final static String METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Method [%s] ";
 
   /**
    * Checks if a specified annotation is present on the given class.
@@ -46,7 +52,6 @@ public class ReflectionUtils {
     log.trace("Scanning class {} for@ @{} existence", clazz.getName(), annotation.getSimpleName());
     return clazz.isAnnotationPresent(annotation);
   }
-
 
   /**
    * Checks if a specified annotation is present on the given constructor.
@@ -85,7 +90,6 @@ public class ReflectionUtils {
         .toList();
   }
 
-
   /**
    * Retrieves the default constructor for a given class
    *
@@ -103,7 +107,6 @@ public class ReflectionUtils {
             "Not found a default constructor for class [%s]".formatted(clazz.getName())));
   }
 
-
   /**
    * Checks if a given class has a default constructor
    *
@@ -120,14 +123,13 @@ public class ReflectionUtils {
   /**
    * Check if provided class has provided annotation.
    *
-   * @param clazz target class
+   * @param clazz              target class
    * @param searchedAnnotation searched annotation.
-   *
    * @return true even if class have the searched annotation or if any of it annotations have the
    * searched annotation inside.
    */
   public static boolean checkIfClassHasAnnotationRecursively(Class<?> clazz,
-    Class<? extends Annotation> searchedAnnotation) {
+      Class<? extends Annotation> searchedAnnotation) {
     Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
     Set<Annotation> processedAnnotations = new HashSet<>(annotations);
     while (!annotations.isEmpty()) {
@@ -137,8 +139,8 @@ public class ReflectionUtils {
         return true;
       }
       Arrays.stream(annotation.annotationType().getAnnotations())
-        .filter(not(processedAnnotations::contains))
-        .forEach(annotations::add);
+          .filter(not(processedAnnotations::contains))
+          .forEach(annotations::add);
     }
     return false;
   }
@@ -146,79 +148,119 @@ public class ReflectionUtils {
   /**
    * Extract annotation field value.
    *
-   * @param classType target class
+   * @param classType      target class
    * @param annotationType target annotation defined in provided class
-   * @param fieldName annotation field name
-   * @param fieldType class of the target field.
+   * @param fieldName      annotation field name
+   * @param fieldType      class of the target field.
    * @return provided annotation field value.
-   *
-   * @throws IllegalStateException if class don't have provided annotation or if annotation don't
-   *                               have fieldName.
+   * @throws IllegalStateException    if class don't have provided annotation or if annotation don't
+   *                                  have fieldName.
    * @throws IllegalArgumentException if annotation field value is not matches provided fieldType
    */
   public static <T> T getClassAnnotationValue(Class<?> classType,
-    Class<? extends Annotation> annotationType, String fieldName, Class<T> fieldType) {
+      Class<? extends Annotation> annotationType, String fieldName, Class<T> fieldType) {
     if (classType.isAnnotationPresent(annotationType)) {
       Annotation annotation = classType.getAnnotation(annotationType);
       try {
         return fieldType.cast(annotation.annotationType().getMethod(fieldName)
-          .invoke(annotation));
+            .invoke(annotation));
       } catch (ClassCastException castException) {
         throw new IllegalArgumentException(
-          ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-            classType.getName()) + "Got unexpected value type.", castException);
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+                classType.getName()) + "Got unexpected value type.", castException);
       } catch (Exception exception) {
         throw new IllegalStateException(
-          ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-            classType.getName()), exception);
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+                classType.getName()), exception);
       }
     }
 
     throw new IllegalStateException(
-      ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-        classType.getName()) + "Provided class don't have such annotation.");
+        CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+            classType.getName()) + "Provided class don't have such annotation.");
   }
 
   /**
-   * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent} annotation
+   * Method for extracting values from parameter annotations.
+   *
+   * @param executable            method or constructor for searching annotation.
+   * @param targetAnnotation      searched annotation.
+   * @param annotationTargetField annotation field name which will be extracted.
+   * @param valueType             class type of extracted value
+   * @return map of param names and extracted values.
+   */
+  public static <T> Map<String, T> extractMethodAnnotationValues(Executable executable,
+      Class<? extends Annotation> targetAnnotation, String annotationTargetField,
+      Class<T> valueType) {
+    Parameter[] parameters = executable.getParameters();
+    return Arrays.stream(parameters)
+        .filter(parameter -> parameter.isAnnotationPresent(targetAnnotation))
+        .collect(Collectors.toMap(Parameter::getName,
+            parameter -> extractParameterAnnotationValue(parameter, annotationTargetField,
+                targetAnnotation, valueType)));
+  }
+
+  private static <T> T extractParameterAnnotationValue(Parameter parameter, String targetField,
+      Class<? extends Annotation> targetAnnotation, Class<T> valueType) {
+    Annotation annotation = parameter.getAnnotation(targetAnnotation);
+    try {
+      return valueType.cast(annotation.annotationType().getMethod(targetField).invoke(annotation));
+    } catch (ClassCastException | NoSuchMethodException e) {
+      String methodName = parameter.getDeclaringExecutable().getName();
+      throw new IllegalArgumentException(
+          METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(),
+              targetField,
+              methodName), e);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      String methodName = parameter.getDeclaringExecutable().getName();
+      throw new IllegalStateException(
+          METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(),
+              targetField,
+              methodName), e);
+    }
+  }
+
+  /**
+   * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent}
+   * annotation
+   *
    * @param annotation provided annotation
    * @return true - if annotation is {@link BringComponent} or has it inside on any depth level.
    */
   public static boolean isComponentAnnotation(Annotation annotation) {
     return annotation.annotationType().equals(BringComponent.class)
-      || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
-      BringComponent.class);
+        || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
+        BringComponent.class);
   }
 
   /**
    * Check if annotation has annotation type
-   * @param annotation provided annotation
+   *
+   * @param annotation     provided annotation
    * @param annotationType provided annotation type
    * @return true - if annotation has annotation type.
    */
-  public static boolean checkIfAnnotationHasAnnotationType(Annotation annotation, Class<? extends Annotation> annotationType) {
+  public static boolean checkIfAnnotationHasAnnotationType(Annotation annotation,
+      Class<? extends Annotation> annotationType) {
     return annotation.annotationType().isAnnotationPresent(annotationType);
   }
 
   /**
    * Invokes annotation's method
+   *
    * @param annotation provided annotation
    * @param methodName provided method name
-   * @throws    IllegalAccessException    if this {@code Method} object
-   *              is enforcing Java language access control and the underlying
-   *              method is inaccessible.
-   * @throws    IllegalArgumentException  if the method is an
-   *              instance method and the specified object argument
-   *              is not an instance of the class or interface
-   *              declaring the underlying method (or of a subclass
-   *              or implementor thereof); if the number of actual
-   *              and formal parameters differ; if an unwrapping
-   *              conversion for primitive arguments fails; or if,
-   *              after possible unwrapping, a parameter value
-   *              cannot be converted to the corresponding formal
-   *              parameter type by a method invocation conversion.
-   * @throws    InvocationTargetException if the underlying method
-   *              throws an exception.
+   * @throws IllegalAccessException    if this {@code Method} object is enforcing Java language
+   *                                   access control and the underlying method is inaccessible.
+   * @throws IllegalArgumentException  if the method is an instance method and the specified object
+   *                                   argument is not an instance of the class or interface
+   *                                   declaring the underlying method (or of a subclass or
+   *                                   implementor thereof); if the number of actual and formal
+   *                                   parameters differ; if an unwrapping conversion for primitive
+   *                                   arguments fails; or if, after possible unwrapping, a
+   *                                   parameter value cannot be converted to the corresponding
+   *                                   formal parameter type by a method invocation conversion.
+   * @throws InvocationTargetException if the underlying method throws an exception.
    */
   public static Object invokeAnnotationMethod(Annotation annotation, String methodName)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

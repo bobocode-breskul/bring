@@ -4,6 +4,7 @@ import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -92,4 +93,20 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    *                                       specified bean class
    */
   BeanDefinition getBeanDefinitionByClass(Class<?> beanClass);
+
+  /**
+   * Retrieves a list of {@link BeanDefinition} instances that match the specified type.
+   *
+   * <p>This method returns all registered bean definitions that are assignable to the given type.
+   * The returned list may include primary and non-primary beans, depending on their availability.
+   *
+   * <p>If no bean definitions are found for the specified type, an empty list is returned.
+   *
+   * @param type The target type to match against bean definitions.
+   * @return A list of {@link BeanDefinition} instances matching the specified type.
+   *         An empty list if no matching bean definitions are found.
+   *
+   * @see BeanDefinition
+   */
+  List<BeanDefinition> getBeanDefinitionByType(Class<?> type);
 }

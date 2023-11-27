@@ -44,64 +44,6 @@ public class WebPathScanner {
     this.container = container;
   }
 
-  private static String getPrefixPath(Class<?> controllerClass) {
-    return controllerClass.isAnnotationPresent(RequestMapping.class) ?
-        controllerClass.getAnnotation(RequestMapping.class).value() : "";
-  }
-
-  private static Annotation getHttpAnnotation(Method method) {
-    var annotationList = Arrays.stream(method.getAnnotations())
-        .filter(
-            annotation -> checkIfAnnotationHasAnnotationType(annotation, RequestMapping.class))
-        .toList();
-
-    if (annotationList.isEmpty()) {
-      return null;
-    }
-
-    if (annotationList.size() > 1) {
-      throw new AmbiguousHttpAnnotationException(
-          "Method %s has more then 1 http annotation".formatted(method.getName()));
-    }
-
-    return annotationList.get(0);
-  }
-
-  private static void validateIfMethodHasOnlyRequestMappingOrHttpMethodMapping(Method method,
-      Annotation annotation) {
-    if (method.isAnnotationPresent(RequestMapping.class) && annotation != null) {
-      throw new AmbiguousHttpAnnotationException(
-          "Method %s has RequestMapping annotation and %s annotation".formatted(method.getName(),
-              annotation.annotationType().getName()));
-    }
-  }
-
-  private static String getHttpMethodName(RequestMapping requestMapping) {
-    return requestMapping.method().length == 0 ?
-        GET.name() :
-        requestMapping.method()[0].name();
-  }
-
-  private static String getHttpMethodName(Annotation annotation) {
-    RequestMapping requestMapping = annotation.annotationType().getAnnotation(RequestMapping.class);
-    return getHttpMethodName(requestMapping);
-  }
-
-  private static void addPath(Map<String, Map<String, ControllerMethod>> allPath, String path,
-      String httpMethodName, ControllerMethod controllerMethod) {
-
-    if (allPath.containsKey(path)) {
-      Map<String, ControllerMethod> httpMethodControllerMethodMap = allPath.get(path);
-      if (httpMethodControllerMethodMap.containsKey(httpMethodName)) {
-        throw new DuplicatePathException(
-            "Duplicate path %s for http method %s detected".formatted(path, httpMethodName));
-      } else {
-        httpMethodControllerMethodMap.put(httpMethodName, controllerMethod);
-      }
-    } else {
-      allPath.put(path, new HashMap<>(Map.of(httpMethodName, controllerMethod)));
-    }
-  }
 
   /**
    * This method is responsible for scanning and creating web paths. It uses bring container to
@@ -129,11 +71,9 @@ public class WebPathScanner {
     for (Object controllerBean : getControllerBeans()) {
       var controllerClass = controllerBean.getClass();
       String prefixPath = getPrefixPath(controllerClass);
-
+      log.info("Processing controller class: [{}]", controllerClass.getSimpleName());
       for (Method method : controllerClass.getMethods()) {
         Annotation httpMethodAnnotation = getHttpAnnotation(method);
-
-        validateIfMethodHasOnlyRequestMappingOrHttpMethodMapping(method, httpMethodAnnotation);
 
         if (method.isAnnotationPresent(RequestMapping.class)) {
           RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
@@ -141,8 +81,10 @@ public class WebPathScanner {
           validatePath(path);
           String httpMethodName = getHttpMethodName(requestMapping);
           addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
+          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
+              path, httpMethodName, method.getName());
         } else if (httpMethodAnnotation == null) {
-          log.debug("Skip scanning method, because method {} of {} class don't has http mapping",
+          log.debug("Skip scanning method, because method [{}] of class [{}]  has no http mapping",
               method.getName(), controllerBean.getClass().getName());
         } else {
           String path = prefixPath.concat(
@@ -150,6 +92,8 @@ public class WebPathScanner {
           validatePath(path);
           String httpMethodName = getHttpMethodName(httpMethodAnnotation);
           addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
+          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
+              path, httpMethodName, method.getName());
         }
       }
     }
@@ -157,11 +101,100 @@ public class WebPathScanner {
     return pathMap;
   }
 
+  private static String getPrefixPath(Class<?> controllerClass) {
+    if (controllerClass.isAnnotationPresent(RequestMapping.class)) {
+      String value = controllerClass.getAnnotation(RequestMapping.class).value();
+      log.info("Controller class [{}] has RequestMapping annotation with value: [{}]",
+          controllerClass.getSimpleName(), value);
+      log.debug("Prefix path for controller class [{}]: [{}]", controllerClass.getSimpleName(),
+          value);
+      return value;
+    } else {
+      log.info("Controller class [{}] does not have RequestMapping annotation",
+          controllerClass.getSimpleName());
+      log.debug("No prefix path for controller class [{}]", controllerClass.getSimpleName());
+      return "";
+    }
+  }
+
+  private static Annotation getHttpAnnotation(Method method) {
+    var annotationList = Arrays.stream(method.getAnnotations())
+        .filter(
+            annotation -> checkIfAnnotationHasAnnotationType(annotation, RequestMapping.class))
+        .toList();
+
+    if (annotationList.isEmpty()) {
+      log.info("Method [{}] does not have any HTTP annotations.", method.getName());
+      return null;
+    }
+
+    if (annotationList.size() > 1) {
+      log.error("Method [{}] has more than 1 HTTP annotation", method.getName());
+      throw new AmbiguousHttpAnnotationException(
+          "Method %s has more then 1 http annotation".formatted(method.getName()));
+    }
+
+    Annotation httpAnnotation = annotationList.get(0);
+    log.debug("Method [{}] has HTTP annotation: [{}]", method.getName(),
+        httpAnnotation.annotationType().getSimpleName());
+
+    validateIfMethodHasOnlyRequestMappingOrHttpMethodMapping(method, httpAnnotation);
+    return httpAnnotation;
+  }
+
+  private static void validateIfMethodHasOnlyRequestMappingOrHttpMethodMapping(Method method,
+      Annotation annotation) {
+    if (method.isAnnotationPresent(RequestMapping.class) && annotation != null) {
+      log.error("Method [{}] has both RequestMapping and [{}] annotations",
+          method.getName(), annotation.annotationType().getSimpleName());
+      throw new AmbiguousHttpAnnotationException(
+          "Method %s has RequestMapping annotation and %s annotation".formatted(method.getName(),
+              annotation.annotationType().getName()));
+    }
+  }
+
+  private static String getHttpMethodName(RequestMapping requestMapping) {
+    String httpMethodName = requestMapping.method().length == 0 ?
+        GET.name() : requestMapping.method()[0].name();
+    log.debug("HTTP method name for RequestMapping: [{}]", httpMethodName);
+    return httpMethodName;
+  }
+
+  private static String getHttpMethodName(Annotation annotation) {
+    RequestMapping requestMapping = annotation.annotationType().getAnnotation(RequestMapping.class);
+    String httpMethodName = getHttpMethodName(requestMapping);
+    log.debug("HTTP method name for annotation [{}]: [{}]",
+        annotation.annotationType().getSimpleName(), httpMethodName);
+    return httpMethodName;
+  }
+
+  private static void addPath(Map<String, Map<String, ControllerMethod>> allPath, String path,
+      String httpMethodName, ControllerMethod controllerMethod) {
+    if (allPath.containsKey(path)) {
+      Map<String, ControllerMethod> httpMethodControllerMethodMap = allPath.get(path);
+      if (httpMethodControllerMethodMap.containsKey(httpMethodName)) {
+        log.error("Duplicate path [{}] for http method [{}] detected", path, httpMethodName);
+        throw new DuplicatePathException(
+            "Duplicate path %s for http method %s detected".formatted(path, httpMethodName));
+      } else {
+        httpMethodControllerMethodMap.put(httpMethodName, controllerMethod);
+        log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
+            path, httpMethodName, controllerMethod.method().getName());
+      }
+    } else {
+      allPath.put(path, new HashMap<>(Map.of(httpMethodName, controllerMethod)));
+      log.debug("Added new path: [{}] for HTTP method: [{}] for controller method: [{}]",
+          path, httpMethodName, controllerMethod.method().getName());
+    }
+  }
+
   private List<Object> getControllerBeans() {
-    return container.getAllBeans()
+    List<Object> controllerBeans = container.getAllBeans()
         .stream()
         .filter(bean -> bean.getClass().isAnnotationPresent(RestController.class))
         .toList();
+    log.debug("Retrieved [{}] controller beans", controllerBeans.size());
+    return controllerBeans;
   }
 
 }

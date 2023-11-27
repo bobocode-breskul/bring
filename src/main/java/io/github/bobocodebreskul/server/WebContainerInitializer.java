@@ -6,6 +6,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Initializes the web container by registering a super servlet.
@@ -17,6 +18,7 @@ import java.util.Set;
  * {@link BringContainer} using {@link WebPathScanner} and creating an instance of
  * {@link DispatcherServlet} to handle incoming requests.
  */
+@Slf4j
 public class WebContainerInitializer implements ServletContainerInitializer {
 
   private final WebPathScanner webPathScanner;
@@ -46,9 +48,13 @@ public class WebContainerInitializer implements ServletContainerInitializer {
     try {
       ctx.addServlet("dispatcherServlet", new DispatcherServlet(webPathScanner.getAllPaths()))
           .addMapping("/*");
+      log.info("DispatcherServlet registered and mapped to '/*'.");
     } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+      log.error("Error occurs during servlet registration: {}", ex.getMessage());
       throw new ServletException(
           "Error occurs during servlet registration due to %s".formatted(ex.getMessage()), ex);
     }
+    log.info("Web application initialization completed.");
   }
+
 }

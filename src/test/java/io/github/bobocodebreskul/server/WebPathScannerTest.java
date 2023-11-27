@@ -104,7 +104,7 @@ public class WebPathScannerTest {
 
   @Test
   @Order(6)
-  public void given_given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsWithMultiMapping_When_GetAllPaths_Then_ShouldReturnPaths()
+  public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsWithMultiMapping_When_GetAllPaths_Then_ShouldReturnPaths()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveValidControllerWithValidMethods();
     given(bringContainer.getAllBeans()).willReturn(List.of(testController));

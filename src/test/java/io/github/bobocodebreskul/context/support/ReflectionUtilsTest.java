@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.catchException;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none.NoneCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.parent.ParentCandidate;
@@ -17,7 +18,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
@@ -481,6 +485,52 @@ public class ReflectionUtilsTest {
     assertThat(actualResult).isFalse();
   }
 
+  @Test
+  @DisplayName("Check if @BringComponent is annotated above parent @AnnotationWithComponent annotation then return true")
+  @Order(30)
+  void given_AnnotationWithAnnotationWithComponent_When_checkIfAnnotationHasAnnotationType_Then_True() {
+    // data
+    Annotation annotation = AnnotatedClass2.class.getAnnotation(AnnotationWithComponent.class);
+
+    // when
+    boolean actualResult = ReflectionUtils.checkIfAnnotationHasAnnotationType(annotation, BringComponent.class);
+
+    // then
+    assertThat(actualResult).isTrue();
+  }
+  @Test
+  @DisplayName("Check if @BringComponent is not annotated above parent @TestAnnotation annotation then return false")
+  @Order(31)
+  void given_AnnotationWithOutAnnotation_When_checkIfAnnotationHasAnnotationType_Then_False() {
+    // data
+    Annotation annotation = AnnotatedClass.class.getAnnotation(TestAnnotation.class);
+
+    // when
+    boolean actualResult = ReflectionUtils.checkIfAnnotationHasAnnotationType(annotation, BringComponent.class);
+
+    // then
+    assertThat(actualResult).isFalse();
+  }
+
+  @Test
+  @DisplayName("Check that invokeAnnotationMethod invokes value method on Get annotation and returns valid string value")
+  @Order(32)
+  void given_MethodWithAnnotationWithValue_When_invokeAnnotationMethod_Then_ReturnObject()
+      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    // data
+    Optional<Method> methodWithAnnotation = Arrays.stream(MyClass.class.getMethods())
+        .filter(method -> method.isAnnotationPresent(Get.class))
+        .findFirst();
+
+    Annotation annotation = methodWithAnnotation.get().getAnnotation(Get.class);
+
+    // when
+    Object actualResult = ReflectionUtils.invokeAnnotationMethod(annotation, "value");
+
+    // then
+    assertThat(actualResult).isEqualTo("/someValue");
+  }
+
   private static Stream<Arguments> testAnnotationFieldArgs() {
     return Stream.of(
       arguments("value", "stringValue", String.class),
@@ -494,6 +544,10 @@ public class ReflectionUtilsTest {
 
     @MyAnnotation
     public MyClass() {
+    }
+
+    @Get("/someValue")
+    public void getMethod() {
     }
   }
 

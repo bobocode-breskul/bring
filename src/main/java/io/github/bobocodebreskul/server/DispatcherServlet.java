@@ -50,13 +50,21 @@ public class DispatcherServlet extends HttpServlet {
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    // Your interception logic before the request is processed
-    log.info("Start request for %s".formatted(request.getPathInfo()));
-    // Continue the request processing
-    super.service(request, response);
+    String pathInfo = request.getPathInfo().toLowerCase();
 
-    // Your interception logic after the request is processed
-    log.info("Finish request for %s".formatted(request.getPathInfo()));
+    // Log general information about the servlet
+    log.debug("DispatcherServlet is processing request for path: {}", pathInfo);
+
+    // Log the start of the request
+    log.info("Start processing request for path: {}", pathInfo);
+
+    try {
+      // Continue the request processing
+      super.service(request, response);
+    } finally {
+      // Log the completion of the request
+      log.info("Finish processing request for path: {}", pathInfo);
+    }
   }
 
   /**
@@ -67,68 +75,81 @@ public class DispatcherServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp);
+    processRequest(req, resp);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp);
+    processRequest(req, resp);
   }
 
   @Override
   protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp);
+    processRequest(req, resp);
   }
 
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp);
+    processRequest(req, resp);
   }
 
   @Override
   protected void doHead(HttpServletRequest req, HttpServletResponse resp) {
-    this.processRequest(req, resp);
+    processRequest(req, resp);
   }
 
   private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-    PrintWriter writer;
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      String pathInfo = req.getPathInfo();
-      Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
-      if (isNull(controllerMethodMap)) {
-        return404(resp, mapper);
-        return;
-      }
-      ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
-      if (isNull(controllerMethod)) {
-        return404(resp, mapper);
-        return;
-      }
-      Method method = controllerMethod.method();
-      if (isNull(method)) {
-        return404(resp, mapper);
-        return;
-      }
-      writer = resp.getWriter();
+    ObjectMapper mapper = new ObjectMapper();
+    String pathInfo = req.getPathInfo().toLowerCase();
+
+    // Log debug-level information for request processing details
+    log.debug("Processing request for path: {}", pathInfo);
+
+    Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
+
+    if (isNull(controllerMethodMap)) {
+      log.warn("No controller methods found for path: {}", pathInfo);
+      return404(resp, mapper);
+      return;
+    }
+
+    ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
+
+    if (isNull(controllerMethod)) {
+      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo, req.getMethod());
+      return404(resp, mapper);
+      return;
+    }
+
+    Method method = controllerMethod.method();
+
+    if (isNull(method)) {
+      log.warn("No method found for controller method: {}", controllerMethod);
+      return404(resp, mapper);
+      return;
+    }
+
+    try (PrintWriter writer = resp.getWriter()) {
       Object result = method.invoke(controllerMethod.controller());
       writer.println(mapper.writeValueAsString(result));
       writer.flush();
       resp.setStatus(HttpServletResponse.SC_OK);
     } catch (IOException | IllegalAccessException ex) {
+      log.error("Error processing request for path: {}", pathInfo, ex);
       throw new DispatcherServletException(ex);
     } catch (InvocationTargetException ex) {
+      log.error("Error invoking method for controller method: {}", controllerMethod, ex);
       throw new MethodInvocationException("Method ", ex);
     }
   }
 
   private void return404(HttpServletResponse resp, ObjectMapper mapper) {
-    try {
-      PrintWriter writer = resp.getWriter();
+    try (PrintWriter writer = resp.getWriter()) {
       writer.println(mapper.writeValueAsString("Page not found!"));
       writer.flush();
       resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
     } catch (IOException e) {
+      log.error("Error returning 404 response", e);
       throw new DispatcherServletException(e);
     }
   }

@@ -7,7 +7,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Head annotation marks our method as a Head handler of a corresponding Controller
+ * Head annotation marks our method as a Head handler of a corresponding Controller. This annotation
+ * is designed for use in conjunction with the {@link RestController @RestController} annotation.
+ *
+ * <p>Usage:</p>
+ * <pre>
+ * {@code
+ * @RestController("controller")
+ * public class SampleController {
+ *
+ *   @Head("/test")
+ *   public ResponseEntity doHead() {
+ *     return new ResponseEntity().ok();
+ *   }
+ * }}
+ * </pre>
  *
  * @see RestController
  */

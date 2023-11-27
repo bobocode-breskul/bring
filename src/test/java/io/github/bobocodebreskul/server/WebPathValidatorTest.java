@@ -38,7 +38,7 @@ public class WebPathValidatorTest {
 
   @ParameterizedTest
   @Order(3)
-  @ValueSource(strings = {"//te st", "/ test/test", "/test/test "})
+  @ValueSource(strings = {"//te st", "/ test/test", "/test/test ", "/test/test\n", "/test/test\r"})
   public void whenPathContainsWhitespaces_thenThrowWebPathValidationException(String path) {
     Exception actualException = catchException(
         () -> validatePath(path));

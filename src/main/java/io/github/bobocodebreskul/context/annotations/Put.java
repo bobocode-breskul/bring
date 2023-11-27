@@ -7,7 +7,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Put annotation marks our method as a Put handler of a corresponding Controller
+ * Put annotation marks our method as a Put handler of a corresponding Controller. This annotation
+ * is designed for use in conjunction with the {@link RestController @RestController} annotation.
+ *
+ * <p>Usage:</p>
+ * <pre>
+ * {@code
+ * @RestController("controller")
+ * public class SampleController {
+ *
+ *   @Put("/test")
+ *   public ResponseEntity doPut() {
+ *     return new ResponseEntity().ok();
+ *   }
+ * }}
+ * </pre>
  *
  * @see RestController
  */

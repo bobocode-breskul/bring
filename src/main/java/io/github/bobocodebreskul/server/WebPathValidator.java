@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.server;
 
 import io.github.bobocodebreskul.context.exception.WebPathValidationException;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -11,10 +12,12 @@ public class WebPathValidator {
   static final String PATH_SHOULD_NOT_CONTAIN_ASTERISKS = "Path '%s' validation failed. Path should not contain *.";
   static final String PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY = "Path '%s' validation failed. Path should not contain more than one '/' sequentially.";
 
+  private static final Pattern WHITESPACE_SEARCH_PATTERN = Pattern.compile("\\s");
+
   /**
    * The method verifies that the provided path is valid.
    *
-   * @param path
+   * @param path web path for validation
    * @throws WebPathValidationException when path does not start from /
    * @throws WebPathValidationException when path has white space
    * @throws WebPathValidationException when path has asterisk
@@ -26,7 +29,7 @@ public class WebPathValidator {
       throw new WebPathValidationException(PATH_SHOULD_START_WITH_SLASH.formatted(path));
     }
 
-    if (path.contains(" ")) {
+    if (WHITESPACE_SEARCH_PATTERN.matcher(path).find()) {
       log.error(PATH_SHOULD_NOT_CONTAIN_WHITESPACES.formatted(path));
       throw new WebPathValidationException(PATH_SHOULD_NOT_CONTAIN_WHITESPACES.formatted(path));
     }

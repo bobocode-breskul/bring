@@ -1,21 +1,23 @@
 package io.github.bobocodebreskul.context.annotations;
 
+import io.github.bobocodebreskul.server.enums.RequestMethod;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated method serves as a GET request handler within a corresponding Controller.
- * This annotation is intended for use in combination with the {@link RestController @RestController} annotation.
+ * Indicates that the annotated method serves as a GET request handler within a corresponding
+ * Controller. This annotation is intended for use in combination with the
+ * {@link RestController @RestController} annotation.
  *
  * <p>Usage:</p>
  * <pre>
  * {@code
- * @RestController("/sample")
+ * @RestController("controller")
  * public class SampleController {
  *
- *   @Get
+ *   @Get("/test")
  *   public YourClass doGet() {
  *     return new YourClass();
  *   }
@@ -26,6 +28,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@RequestMapping(method = RequestMethod.GET)
 public @interface Get {
 
+  String value() default "";
 }

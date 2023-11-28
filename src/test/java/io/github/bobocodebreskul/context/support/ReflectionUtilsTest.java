@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.catchException;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none.NoneCandidate1;
@@ -19,8 +20,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +65,7 @@ public class ReflectionUtilsTest {
 
     //when
     boolean result = ReflectionUtils.isAnnotationPresentForClass(annotation,
-      clazz);
+        clazz);
 
     //then
     assertThat(result).isFalse();
@@ -75,9 +79,9 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.isAnnotationPresentForClass(null, MyClass.class))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The annotation parameter cannot be null!");
+        () -> ReflectionUtils.isAnnotationPresentForClass(null, MyClass.class))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The annotation parameter cannot be null!");
   }
 
   @Test
@@ -88,9 +92,9 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.isAnnotationPresentForClass(MyAnnotation.class, null))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The class parameter cannot be null!");
+        () -> ReflectionUtils.isAnnotationPresentForClass(MyAnnotation.class, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The class parameter cannot be null!");
   }
 
   @Test
@@ -131,10 +135,10 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.isAnnotationPresentForConstructor(null,
-        MyClass.class.getDeclaredConstructors()[0]))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The annotation parameter cannot be null!");
+        () -> ReflectionUtils.isAnnotationPresentForConstructor(null,
+            MyClass.class.getDeclaredConstructors()[0]))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The annotation parameter cannot be null!");
   }
 
   @Test
@@ -145,9 +149,9 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.isAnnotationPresentForConstructor(MyAnnotation.class, null))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The constructor parameter cannot be null!");
+        () -> ReflectionUtils.isAnnotationPresentForConstructor(MyAnnotation.class, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The constructor parameter cannot be null!");
   }
 
   @Test
@@ -163,13 +167,13 @@ public class ReflectionUtilsTest {
 
     //then
     var expectedResult = Arrays.stream(constructors)
-      .filter(constructor -> constructor.isAnnotationPresent(MyAnnotation.class))
-      .toArray(Constructor[]::new);
+        .filter(constructor -> constructor.isAnnotationPresent(MyAnnotation.class))
+        .toArray(Constructor[]::new);
 
     assertThat(result.size()).isNotEqualTo(constructors.length);
     assertThat(result)
-      .hasSize(2)
-      .containsExactlyInAnyOrder(expectedResult);
+        .hasSize(2)
+        .containsExactlyInAnyOrder(expectedResult);
   }
 
   @Test
@@ -185,8 +189,8 @@ public class ReflectionUtilsTest {
 
     //then
     assertThat(result.size())
-      .isZero()
-      .isNotEqualTo(constructors.length);
+        .isZero()
+        .isNotEqualTo(constructors.length);
   }
 
   @Test
@@ -212,7 +216,7 @@ public class ReflectionUtilsTest {
     var expectedConstructor = MultipleConstructorWithDefaultClass.class.getDeclaredConstructor();
     // when
     var actualConstructor = ReflectionUtils.getDefaultConstructor(
-      MultipleConstructorWithDefaultClass.class);
+        MultipleConstructorWithDefaultClass.class);
     // verify
     assertThat(availableConstructors).hasSizeGreaterThan(1);
     assertThat(actualConstructor).isEqualTo(expectedConstructor);
@@ -229,8 +233,8 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(() -> ReflectionUtils.getDefaultConstructor(clazz))
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessage("Not found a default constructor for class [%s]".formatted(clazz.getName()));
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Not found a default constructor for class [%s]".formatted(clazz.getName()));
   }
 
   @Test
@@ -241,9 +245,9 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.getDefaultConstructor(null))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The class parameter cannot be null!");
+        () -> ReflectionUtils.getDefaultConstructor(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The class parameter cannot be null!");
   }
 
   @Test
@@ -296,9 +300,9 @@ public class ReflectionUtilsTest {
     //when
     //then
     assertThatThrownBy(
-      () -> ReflectionUtils.hasDefaultConstructor(null))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("The class parameter cannot be null!");
+        () -> ReflectionUtils.hasDefaultConstructor(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("The class parameter cannot be null!");
   }
 
   @Test
@@ -310,7 +314,7 @@ public class ReflectionUtilsTest {
     Class<TestComponentAnnotation> searchedAnnotation = TestComponentAnnotation.class;
     // when
     var actualResult = ReflectionUtils.checkIfClassHasAnnotationRecursively(
-      classForCheck, searchedAnnotation
+        classForCheck, searchedAnnotation
     );
     // verify
     assertThat(actualResult).isTrue();
@@ -325,7 +329,7 @@ public class ReflectionUtilsTest {
     Class<AnnotationWithComponent> searchedAnnotation = AnnotationWithComponent.class;
     // when
     var actualResult = ReflectionUtils.checkIfClassHasAnnotationRecursively(
-      classForCheck, searchedAnnotation
+        classForCheck, searchedAnnotation
     );
     // verify
     assertThat(actualResult).isTrue();
@@ -340,7 +344,7 @@ public class ReflectionUtilsTest {
     Class<AnnotationWithComponent> searchedAnnotation = AnnotationWithComponent.class;
     // when
     var actualResult = ReflectionUtils.checkIfClassHasAnnotationRecursively(
-      classForCheck, searchedAnnotation
+        classForCheck, searchedAnnotation
     );
     // verify
     assertThat(actualResult).isFalse();
@@ -351,7 +355,7 @@ public class ReflectionUtilsTest {
   @DisplayName("Successfully retrieve field values from class annotation")
   @Order(22)
   void given_ClassWithAnnotationAndFieldValue_When_GetClassAnnotationValue_Then_ReturnCorrectValue(
-    String fieldName, Object expectedValue, Class<?> fieldType
+      String fieldName, Object expectedValue, Class<?> fieldType
   ) {
     // data
     Class<?> testedClass = AnnotatedClass.class;
@@ -359,7 +363,7 @@ public class ReflectionUtilsTest {
 
     // when
     var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass,
-      fieldName, fieldType);
+        fieldName, fieldType);
 
     // then
     assertThat(actualResult).isEqualTo(expectedValue);
@@ -375,7 +379,7 @@ public class ReflectionUtilsTest {
 
     // when
     var actualResult = ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass,
-      "enumValue", TestEnum.class);
+        "enumValue", TestEnum.class);
 
     // then
     assertThat(actualResult).isEqualTo(SECOND_VALUE);
@@ -392,15 +396,15 @@ public class ReflectionUtilsTest {
 
     // when
     Exception actualException = catchException(() ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, fieldName,
-        Integer.class));
+        ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, fieldName,
+            Integer.class));
 
     // then
     assertThat(actualException).
-      isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), fieldName,
-          testedClass.getName()) + "Got unexpected value type.");
+        isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), fieldName,
+                testedClass.getName()) + "Got unexpected value type.");
   }
 
   @Test
@@ -414,15 +418,15 @@ public class ReflectionUtilsTest {
 
     // when
     Exception actualException = catchException(() ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
-        Object.class));
+        ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
+            Object.class));
 
     // then
     assertThat(actualException).
-      isInstanceOf(IllegalStateException.class)
-      .hasMessage(
-        CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), wrongField,
-          testedClass.getName()));
+        isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), wrongField,
+                testedClass.getName()));
   }
 
   @Test
@@ -436,15 +440,15 @@ public class ReflectionUtilsTest {
 
     // when
     Exception actualException = catchException(() ->
-      ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
-        Object.class));
+        ReflectionUtils.getClassAnnotationValue(testedClass, annotationClass, wrongField,
+            Object.class));
 
     // then
     assertThat(actualException).
-      isInstanceOf(IllegalStateException.class)
-      .hasMessage(
-        CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), wrongField,
-          testedClass.getName()) + "Provided class don't have such annotation.");
+        isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationClass.getName(), wrongField,
+                testedClass.getName()) + "Provided class don't have such annotation.");
   }
 
   @Test
@@ -490,8 +494,57 @@ public class ReflectionUtilsTest {
   }
 
   @Test
-  @DisplayName("When executable with multiple parameters and 2 of them has annotation return parameter name by annotation value map")
+  @DisplayName("Check if @BringComponent is annotated above parent @AnnotationWithComponent annotation then return true")
   @Order(30)
+  void given_AnnotationWithAnnotationWithComponent_When_checkIfAnnotationHasAnnotationType_Then_True() {
+    // data
+    Annotation annotation = AnnotatedClass2.class.getAnnotation(AnnotationWithComponent.class);
+
+    // when
+    boolean actualResult = ReflectionUtils.checkIfAnnotationHasAnnotationType(annotation,
+        BringComponent.class);
+
+    // then
+    assertThat(actualResult).isTrue();
+  }
+
+  @Test
+  @DisplayName("Check if @BringComponent is not annotated above parent @TestAnnotation annotation then return false")
+  @Order(31)
+  void given_AnnotationWithOutAnnotation_When_checkIfAnnotationHasAnnotationType_Then_False() {
+    // data
+    Annotation annotation = AnnotatedClass.class.getAnnotation(TestAnnotation.class);
+
+    // when
+    boolean actualResult = ReflectionUtils.checkIfAnnotationHasAnnotationType(annotation,
+        BringComponent.class);
+
+    // then
+    assertThat(actualResult).isFalse();
+  }
+
+  @Test
+  @DisplayName("Check that invokeAnnotationMethod invokes value method on Get annotation and returns valid string value")
+  @Order(32)
+  void given_MethodWithAnnotationWithValue_When_invokeAnnotationMethod_Then_ReturnObject()
+      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    // data
+    Optional<Method> methodWithAnnotation = Arrays.stream(MyClass.class.getMethods())
+        .filter(method -> method.isAnnotationPresent(Get.class))
+        .findFirst();
+
+    Annotation annotation = methodWithAnnotation.get().getAnnotation(Get.class);
+
+    // when
+    Object actualResult = ReflectionUtils.invokeAnnotationMethod(annotation, "value");
+
+    // then
+    assertThat(actualResult).isEqualTo("/someValue");
+  }
+
+  @Test
+  @DisplayName("When executable with multiple parameters and 2 of them has annotation return parameter name by annotation value map")
+  @Order(33)
   void given_ExecutableWithMultipleParamsAndTwoAnnotatedParameters_When_ExtractMethodAnnotationValues_Then_ReturnParameterNameByAnnotationValueMap() {
     //given
     var executable = ConstructorWithAnnotatedParamsComponent.class.getDeclaredConstructors()[0];
@@ -502,110 +555,115 @@ public class ReflectionUtilsTest {
 
     //when
     var result =
-      ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value", String.class);
+        ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value",
+            String.class);
 
     //then
     assertThat(result).hasSize(2)
-      .containsExactlyInAnyOrderEntriesOf(expectedResult);
+        .containsExactlyInAnyOrderEntriesOf(expectedResult);
   }
 
   @Test
   @DisplayName("When executable with parameters and no annotation present then return empty map")
-  @Order(31)
+  @Order(34)
   void given_MethodWithParamsWithoutAnnotations_when_ExtractMethodAnnotationValues_Then_ReturnEmptyList()
-    throws NoSuchMethodException {
+      throws NoSuchMethodException {
     var executable = ConstructorWithAnnotatedParamsComponent.class.getMethod(
-      "methodWithoutAnnotations", String.class, Integer.class);
+        "methodWithoutAnnotations", String.class, Integer.class);
 
     var actual = ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value",
-      String.class);
+        String.class);
 
     assertThat(actual).isEmpty();
   }
 
   @Test
   @DisplayName("When executable without parameters then return empty map")
-  @Order(32)
+  @Order(35)
   void given_MethodWithWithoutParams_when_ExtractMethodAnnotationValues_Then_ReturnEmptyList()
-    throws NoSuchMethodException {
+      throws NoSuchMethodException {
     var executable = ConstructorWithAnnotatedParamsComponent.class.getMethod(
-      "methodWithoutParams");
+        "methodWithoutParams");
 
     var actual = ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value",
-      String.class);
+        String.class);
 
     assertThat(actual).isEmpty();
   }
 
   @Test
   @DisplayName("When executable with annotated parameter and no annotation value specified then return parameter name by annotation default value map")
-  @Order(33)
-  void given_ExecutableWithAnnotatedParameterAndNoAnnotationValue_When_extractMethodAnnotationValues_Then_ReturnParameterNameByDefaultAnnotationValueMap(){
+  @Order(36)
+  void given_ExecutableWithAnnotatedParameterAndNoAnnotationValue_When_extractMethodAnnotationValues_Then_ReturnParameterNameByDefaultAnnotationValueMap() {
     //given
     var executable = ConstructorWithAnnotatedParamsComponent.class.getDeclaredConstructors()[1];
     var firstParamName = executable.getParameters()[0].getName();
     var expectedResult = Map.of(firstParamName, "default");
 
     //when
-    var result = ReflectionUtils.extractMethodAnnotationValues(executable, AnnotationWithDefaultValue.class, "value", String.class);
+    var result = ReflectionUtils.extractMethodAnnotationValues(executable,
+        AnnotationWithDefaultValue.class, "value", String.class);
 
     //then
     assertThat(result)
-      .hasSize(1)
-      .containsExactlyInAnyOrderEntriesOf(expectedResult);
+        .hasSize(1)
+        .containsExactlyInAnyOrderEntriesOf(expectedResult);
   }
 
   @Test
   @DisplayName("When valueType specified doesn't match targetField return type then throw IllegalArgumentException")
-  @Order(34)
+  @Order(37)
   void given_WrongTargetFieldType_when_ExtractMethodAnnotationValues_Then_ThrowException()
-    throws NoSuchMethodException {
+      throws NoSuchMethodException {
     // data
     var executable = ConstructorWithAnnotatedParamsComponent.class.getMethod(
-      "methodWithQualifier", String.class, Integer.class);
-    String expectedErrMsg = METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(Qualifier.class.getName(),
-      "value",
-      executable.getName());
+        "methodWithQualifier", String.class, Integer.class);
+    String expectedErrMsg = METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(
+        Qualifier.class.getName(),
+        "value",
+        executable.getName());
 
     // when
     var actualException = catchException(
-      () -> ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value",
-        Integer.class));
+        () -> ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "value",
+            Integer.class));
 
     // then
     assertThat(actualException)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(expectedErrMsg);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(expectedErrMsg);
   }
 
   @Test
   @DisplayName("`When targetField specified doesn't match annotation target field then throw IllegalArgumentException")
-  @Order(35)
+  @Order(38)
   void given_WrongTargetFieldName_when_ExtractMethodAnnotationValues_Then_ThrowException()
-    throws NoSuchMethodException {
+      throws NoSuchMethodException {
     // data
     var executable = ConstructorWithAnnotatedParamsComponent.class.getMethod(
-      "methodWithQualifier", String.class, Integer.class);
-    String expectedErrMsg = METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(Qualifier.class.getName(),
-      "Wrong value",
-      executable.getName());
+        "methodWithQualifier", String.class, Integer.class);
+    String expectedErrMsg = METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(
+        Qualifier.class.getName(),
+        "Wrong value",
+        executable.getName());
 
     // when
     var actualException = catchException(
-      () -> ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class, "Wrong value",
-        String.class));
+        () -> ReflectionUtils.extractMethodAnnotationValues(executable, Qualifier.class,
+            "Wrong value",
+            String.class));
 
     // then
     assertThat(actualException)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(expectedErrMsg);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(expectedErrMsg);
   }
 
   private static Stream<Arguments> testAnnotationFieldArgs() {
     return Stream.of(
-      arguments("value", "stringValue", String.class),
-      arguments("intValue", 4, Integer.class),
-      arguments("boolValue", true, Boolean.class)
+        arguments("value", "stringValue", String.class),
+        arguments("intValue", 4, Integer.class),
+        arguments("boolValue", true, Boolean.class)
     );
   }
 
@@ -614,6 +672,10 @@ public class ReflectionUtilsTest {
 
     @MyAnnotation
     public MyClass() {
+    }
+
+    @Get("/someValue")
+    public void getMethod() {
     }
   }
 
@@ -662,7 +724,6 @@ public class ReflectionUtilsTest {
     }
   }
 
-
   static class MultipleConstructorMultipleAnnotationClass {
 
     private NoAnnotationClass noAnnotationClass;
@@ -682,7 +743,7 @@ public class ReflectionUtilsTest {
 
     @MyAnnotation
     public MultipleConstructorMultipleAnnotationClass(NoAnnotationClass noAnnotationClass,
-      MyClass myClass) {
+        MyClass myClass) {
       this.noAnnotationClass = noAnnotationClass;
       this.myClass = myClass;
     }
@@ -702,7 +763,7 @@ public class ReflectionUtilsTest {
     }
 
     public MultipleConstructorWithDefaultClass(NoAnnotationClass noAnnotationClass,
-      MyClass myClass) {
+        MyClass myClass) {
       this.noAnnotationClass = noAnnotationClass;
       this.myClass = myClass;
     }
@@ -750,7 +811,8 @@ public class ReflectionUtilsTest {
 
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.PARAMETER)
-  @interface AnnotationWithDefaultValue{
+  @interface AnnotationWithDefaultValue {
+
     String value() default "default";
   }
 
@@ -762,24 +824,27 @@ public class ReflectionUtilsTest {
 
 
     public ConstructorWithAnnotatedParamsComponent(
-      @Qualifier("value1") NoAnnotationClass noAnnotationClass,
-      @Qualifier("value2") MultipleConstructorClass multipleConstructorClass,
-      NoConstructorAnnotationClass noConstructorAnnotationClass) {
+        @Qualifier("value1") NoAnnotationClass noAnnotationClass,
+        @Qualifier("value2") MultipleConstructorClass multipleConstructorClass,
+        NoConstructorAnnotationClass noConstructorAnnotationClass) {
       this.noAnnotationClass = noAnnotationClass;
       this.multipleConstructorClass = multipleConstructorClass;
       this.noConstructorAnnotationClass = noConstructorAnnotationClass;
     }
 
-    public ConstructorWithAnnotatedParamsComponent(@AnnotationWithDefaultValue NoAnnotationClass noAnnotationClass) {
+    public ConstructorWithAnnotatedParamsComponent(
+        @AnnotationWithDefaultValue NoAnnotationClass noAnnotationClass) {
       this.noAnnotationClass = noAnnotationClass;
     }
 
     public void methodWithoutAnnotations(String firstParam, Integer secondParam) {
     }
 
-    public void methodWithoutParams() {}
+    public void methodWithoutParams() {
+    }
 
-    public void methodWithQualifier(@Qualifier("firstParam") String firstParam, Integer secondParam) {
+    public void methodWithQualifier(@Qualifier("firstParam") String firstParam,
+        Integer secondParam) {
     }
 
   }

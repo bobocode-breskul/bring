@@ -1,5 +1,5 @@
 # Bring ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
- Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
+Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
 
 ## Installation
 
@@ -7,9 +7,9 @@ Add Maven dependency to your project:
 
 ```xml
 <dependency>
-    <groupId>io.github.bobocode-breskul</groupId>
-    <artifactId>bring</artifactId>
-    <version>1.3</version>
+  <groupId>io.github.bobocode-breskul</groupId>
+  <artifactId>bring</artifactId>
+  <version>1.3</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ package org.example;
 
 public class Main {
   public static void main(String[] args) {
-    BringContainer.run("org.example");
+    BringContainer.run(Main.class);
   }
 }
 ```
@@ -43,14 +43,14 @@ import io.github.bobocodebreskul.context.annotations.Get;
 @BringComponent
 public class MyController {
 
-  @Get
+  @Get("/world")
   public String getHello() {
     return "Hello, world!";
   }
 }
 ```
 
-Now run the application and open http://localhost:8080/hello in your browser.
+Now run the application and open http://localhost:8080/hello/world in your browser.
 
 ## Features
 

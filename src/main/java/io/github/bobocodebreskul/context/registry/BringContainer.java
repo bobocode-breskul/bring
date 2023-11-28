@@ -12,8 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -63,8 +61,7 @@ public class BringContainer implements ObjectFactory {
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
-    executor.submit(() -> TomcatServer.run(container));
+    TomcatServer.run(container);
 
     return container;
   }

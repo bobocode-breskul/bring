@@ -6,16 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used in a custom Inversion of Control (IoC) container and Dependency Injection (DI) framework
- * to indicate that a dependency should be automatically injected at runtime.
+ * Annotation used in a custom Inversion of Control (IoC) container and Dependency Injection (DI)
+ * framework to indicate that a dependency should be automatically injected at runtime.
  *
- * <p>{@code @Autowired} can be applied to constructors, fields, or methods within a class, enabling
+ * <p>{@code @Autowired} can be applied to constructors, fields, or methods within a class,
+ * enabling
  * the IoC container to automatically resolve and inject the required dependencies during the
  * initialization of the annotated component.
  *
  * <p>This annotation is a key element in achieving loose coupling and promoting
- * the principles of dependency injection, allowing components to be more modular,
- * maintainable, and easily testable.
+ * the principles of dependency injection, allowing components to be more modular, maintainable, and
+ * easily testable.
  *
  * <p>Example usage:
  * <pre>

@@ -48,11 +48,15 @@ public class BringContainer implements ObjectFactory {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);
+    BeanDependencyUtils beanDependencyUtils = new BeanDependencyUtils();
+    BeanDefinitionValidator beanDefinitionValidator =
+        new BeanDefinitionValidator(definitionRegistry, beanDependencyUtils);
     RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
         new ScanUtilsImpl(), beanDefinitionReader);
     scanner.scan(configClass);
+    beanDefinitionValidator.validateBeanDefinitions();
 
-    BringContainer container = new BringContainer(definitionRegistry, new BeanDependencyUtils());
+    BringContainer container = new BringContainer(definitionRegistry, beanDependencyUtils);
 
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));

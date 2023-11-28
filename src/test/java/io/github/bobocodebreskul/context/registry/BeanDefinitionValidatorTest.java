@@ -19,25 +19,20 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BeanDefinitionValidatorTest {
 
   private BeanDefinitionRegistry definitionRegistry;
-  private BeanDependencyUtils dependencyUtils;
   private BeanDefinitionValidator beanDefinitionValidator;
 
   @BeforeEach
   public void setUp() {
     definitionRegistry = new SimpleBeanDefinitionRegistry();
-    dependencyUtils = new BeanDependencyUtils();
-    beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry, dependencyUtils);
+    beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry, new BeanDependencyUtils());
   }
 
   @Test
@@ -343,7 +338,6 @@ public class BeanDefinitionValidatorTest {
     var aBeanDefinition = new AnnotatedGenericBeanDefinition(A.class);
     aBeanDefinition.setName("a");
     aBeanDefinition.setDependencies(List.of(new BeanDependency("a", null, A.class)));
-
     definitionRegistry.registerBeanDefinition("a", aBeanDefinition);
 
     //when

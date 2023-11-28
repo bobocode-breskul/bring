@@ -46,13 +46,12 @@ public class ReflectionUtils {
    * method.
    */
   public static boolean isAnnotationPresentForClass(Class<? extends Annotation> annotation,
-    Class<?> clazz) {
+      Class<?> clazz) {
     Objects.requireNonNull(annotation, "The annotation parameter cannot be null!");
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     log.trace("Scanning class {} for@ @{} existence", clazz.getName(), annotation.getSimpleName());
     return clazz.isAnnotationPresent(annotation);
   }
-
 
   /**
    * Checks if a specified annotation is present on the given constructor.
@@ -66,7 +65,7 @@ public class ReflectionUtils {
    *                              is {@code null}.
    */
   public static boolean isAnnotationPresentForConstructor(Class<? extends Annotation> annotation,
-    Constructor<?> constructor) {
+      Constructor<?> constructor) {
     Objects.requireNonNull(annotation, "The annotation parameter cannot be null!");
     Objects.requireNonNull(constructor, "The constructor parameter cannot be null!");
     return constructor.isAnnotationPresent(annotation);
@@ -85,12 +84,11 @@ public class ReflectionUtils {
    * @see #isAnnotationPresentForConstructor
    */
   public static List<Constructor<?>> getConstructorsAnnotatedWith(
-    Class<? extends Annotation> annotation, Constructor<?>... constructors) {
+      Class<? extends Annotation> annotation, Constructor<?>... constructors) {
     return Arrays.stream(constructors)
-      .filter(constructor -> isAnnotationPresentForConstructor(annotation, constructor))
-      .toList();
+        .filter(constructor -> isAnnotationPresentForConstructor(annotation, constructor))
+        .toList();
   }
-
 
   /**
    * Retrieves the default constructor for a given class
@@ -103,12 +101,11 @@ public class ReflectionUtils {
   public static Constructor<?> getDefaultConstructor(Class<?> clazz) {
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     return Arrays.stream(clazz.getDeclaredConstructors())
-      .filter(constructor -> constructor.getParameterCount() == 0)
-      .findAny()
-      .orElseThrow(() -> new IllegalStateException(
-        "Not found a default constructor for class [%s]".formatted(clazz.getName())));
+        .filter(constructor -> constructor.getParameterCount() == 0)
+        .findAny()
+        .orElseThrow(() -> new IllegalStateException(
+            "Not found a default constructor for class [%s]".formatted(clazz.getName())));
   }
-
 
   /**
    * Checks if a given class has a default constructor
@@ -120,7 +117,7 @@ public class ReflectionUtils {
   public static boolean hasDefaultConstructor(Class<?> clazz) {
     Objects.requireNonNull(clazz, "The class parameter cannot be null!");
     return Arrays.stream(clazz.getDeclaredConstructors())
-      .anyMatch(constructor -> constructor.getParameterCount() == 0);
+        .anyMatch(constructor -> constructor.getParameterCount() == 0);
   }
 
   /**
@@ -132,7 +129,7 @@ public class ReflectionUtils {
    * searched annotation inside.
    */
   public static boolean checkIfClassHasAnnotationRecursively(Class<?> clazz,
-    Class<? extends Annotation> searchedAnnotation) {
+      Class<? extends Annotation> searchedAnnotation) {
     Queue<Annotation> annotations = new ArrayDeque<>(Arrays.asList(clazz.getAnnotations()));
     Set<Annotation> processedAnnotations = new HashSet<>(annotations);
     while (!annotations.isEmpty()) {
@@ -142,8 +139,8 @@ public class ReflectionUtils {
         return true;
       }
       Arrays.stream(annotation.annotationType().getAnnotations())
-        .filter(not(processedAnnotations::contains))
-        .forEach(annotations::add);
+          .filter(not(processedAnnotations::contains))
+          .forEach(annotations::add);
     }
     return false;
   }
@@ -161,65 +158,67 @@ public class ReflectionUtils {
    * @throws IllegalArgumentException if annotation field value is not matches provided fieldType
    */
   public static <T> T getClassAnnotationValue(Class<?> classType,
-    Class<? extends Annotation> annotationType, String fieldName, Class<T> fieldType) {
+      Class<? extends Annotation> annotationType, String fieldName, Class<T> fieldType) {
     if (classType.isAnnotationPresent(annotationType)) {
       Annotation annotation = classType.getAnnotation(annotationType);
       try {
         return fieldType.cast(annotation.annotationType().getMethod(fieldName)
-          .invoke(annotation));
+            .invoke(annotation));
       } catch (ClassCastException castException) {
         throw new IllegalArgumentException(
-          CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-            classType.getName()) + "Got unexpected value type.", castException);
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+                classType.getName()) + "Got unexpected value type.", castException);
       } catch (Exception exception) {
         throw new IllegalStateException(
-          CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-            classType.getName()), exception);
+            CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+                classType.getName()), exception);
       }
     }
 
     throw new IllegalStateException(
-      CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
-        classType.getName()) + "Provided class don't have such annotation.");
+        CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(annotationType.getName(), fieldName,
+            classType.getName()) + "Provided class don't have such annotation.");
   }
 
   /**
    * Method for extracting values from parameter annotations.
    *
-   * @param executable method or constructor for searching annotation.
-   * @param targetAnnotation searched annotation.
+   * @param executable            method or constructor for searching annotation.
+   * @param targetAnnotation      searched annotation.
    * @param annotationTargetField annotation field name which will be extracted.
-   * @param valueType class type of extracted value
-   *
+   * @param valueType             class type of extracted value
    * @return map of param names and extracted values.
    */
   public static <T> Map<String, T> extractMethodAnnotationValues(Executable executable,
-    Class<? extends Annotation> targetAnnotation, String annotationTargetField, Class<T> valueType) {
+      Class<? extends Annotation> targetAnnotation, String annotationTargetField,
+      Class<T> valueType) {
     Parameter[] parameters = executable.getParameters();
     return Arrays.stream(parameters)
-      .filter(parameter -> parameter.isAnnotationPresent(targetAnnotation))
-      .collect(Collectors.toMap(Parameter::getName,
-        parameter -> extractParameterAnnotationValue(parameter, annotationTargetField,targetAnnotation, valueType)));
+        .filter(parameter -> parameter.isAnnotationPresent(targetAnnotation))
+        .collect(Collectors.toMap(Parameter::getName,
+            parameter -> extractParameterAnnotationValue(parameter, annotationTargetField,
+                targetAnnotation, valueType)));
   }
 
   private static <T> T extractParameterAnnotationValue(Parameter parameter, String targetField,
-    Class<? extends Annotation> targetAnnotation, Class<T> valueType) {
+      Class<? extends Annotation> targetAnnotation, Class<T> valueType) {
     Annotation annotation = parameter.getAnnotation(targetAnnotation);
     try {
       return valueType.cast(annotation.annotationType().getMethod(targetField).invoke(annotation));
     } catch (ClassCastException | NoSuchMethodException e) {
       String methodName = parameter.getDeclaringExecutable().getName();
       throw new IllegalArgumentException(
-        METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(), targetField,
-          methodName), e);
+          METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(),
+              targetField,
+              methodName), e);
     } catch (IllegalAccessException | InvocationTargetException e) {
       String methodName = parameter.getDeclaringExecutable().getName();
       throw new IllegalStateException(
-        METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(), targetField,
-          methodName), e);
+          METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX.formatted(targetAnnotation.getName(),
+              targetField,
+              methodName), e);
     }
   }
-
 
   /**
    * Check if annotation is {@link BringComponent} or contains inside {@link BringComponent}
@@ -230,7 +229,41 @@ public class ReflectionUtils {
    */
   public static boolean isComponentAnnotation(Annotation annotation) {
     return annotation.annotationType().equals(BringComponent.class)
-      || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
-      BringComponent.class);
+        || checkIfClassHasAnnotationRecursively(annotation.annotationType(),
+        BringComponent.class);
+  }
+
+  /**
+   * Check if annotation has annotation type
+   *
+   * @param annotation     provided annotation
+   * @param annotationType provided annotation type
+   * @return true - if annotation has annotation type.
+   */
+  public static boolean checkIfAnnotationHasAnnotationType(Annotation annotation,
+      Class<? extends Annotation> annotationType) {
+    return annotation.annotationType().isAnnotationPresent(annotationType);
+  }
+
+  /**
+   * Invokes annotation's method
+   *
+   * @param annotation provided annotation
+   * @param methodName provided method name
+   * @throws IllegalAccessException    if this {@code Method} object is enforcing Java language
+   *                                   access control and the underlying method is inaccessible.
+   * @throws IllegalArgumentException  if the method is an instance method and the specified object
+   *                                   argument is not an instance of the class or interface
+   *                                   declaring the underlying method (or of a subclass or
+   *                                   implementor thereof); if the number of actual and formal
+   *                                   parameters differ; if an unwrapping conversion for primitive
+   *                                   arguments fails; or if, after possible unwrapping, a
+   *                                   parameter value cannot be converted to the corresponding
+   *                                   formal parameter type by a method invocation conversion.
+   * @throws InvocationTargetException if the underlying method throws an exception.
+   */
+  public static Object invokeAnnotationMethod(Annotation annotation, String methodName)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    return annotation.annotationType().getMethod(methodName).invoke(annotation);
   }
 }

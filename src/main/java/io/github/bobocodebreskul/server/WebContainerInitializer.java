@@ -1,15 +1,12 @@
 package io.github.bobocodebreskul.server;
 
-import io.github.bobocodebreskul.context.annotations.RestController;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Initializes the web container by registering a super servlet.
@@ -18,22 +15,23 @@ import java.util.stream.Collectors;
  * registers a super servlet named "dispatcherServlet" and maps it to "/*" in the servlet context.
  * <p>
  * The initialization process involves collecting paths and controllers from a
- * {@link BringContainer} and creating an instance of {@link DispatcherServlet} to handle incoming
- * requests.
+ * {@link BringContainer} using {@link WebPathScanner} and creating an instance of
+ * {@link DispatcherServlet} to handle incoming requests.
  */
+@Slf4j
 public class WebContainerInitializer implements ServletContainerInitializer {
 
-  private final BringContainer container;
+  private final WebPathScanner webPathScanner;
 
   /**
-   * Constructs a new instance of {@code WebContainerInitializer} with the specified container.
+   * Constructs a new instance of {@code WebContainerInitializer} with the specified
+   * webPathScanner.
    *
-   * @param container The container providing information about controllers.
+   * @param webPathScanner The webPathScanner is used for retrieving paths.
    */
-  public WebContainerInitializer(BringContainer container) {
-    this.container = container;
+  public WebContainerInitializer(WebPathScanner webPathScanner) {
+    this.webPathScanner = webPathScanner;
   }
-
 
   /**
    * Called when the web application starts.
@@ -46,17 +44,17 @@ public class WebContainerInitializer implements ServletContainerInitializer {
    * @throws ServletException If an error occurs during servlet registration.
    */
   public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
-    Map<String, Object> pathToController = getAllPaths();
     // Register your super servlet
-    ServletRegistration.Dynamic servlet = ctx.addServlet("dispatcherServlet",
-        new DispatcherServlet(this.container, pathToController));
-    servlet.addMapping("/*");
+    try {
+      ctx.addServlet("dispatcherServlet", new DispatcherServlet(webPathScanner.getAllPaths()))
+          .addMapping("/*");
+      log.info("DispatcherServlet registered and mapped to '/*'.");
+    } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+      log.error("Error occurs during servlet registration: {}", ex.getMessage());
+      throw new ServletException(
+          "Error occurs during servlet registration due to %s".formatted(ex.getMessage()), ex);
+    }
+    log.info("Web application initialization completed.");
   }
 
-  private Map<String, Object> getAllPaths() {
-    return container.getAllBeans().stream()
-        .filter(obj -> obj.getClass().isAnnotationPresent(RestController.class))
-        .collect(Collectors.toMap(obj -> obj.getClass().getAnnotation(RestController.class).value(),
-            Function.identity()));
-  }
 }

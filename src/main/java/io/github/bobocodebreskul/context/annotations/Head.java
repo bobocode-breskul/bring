@@ -7,9 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated method serves as a POST request handler within a corresponding
- * Controller. This annotation is designed for use in conjunction with the
- * {@link RestController @RestController} annotation.
+ * Head annotation marks our method as a Head handler of a corresponding Controller. This annotation
+ * is designed for use in conjunction with the {@link RestController @RestController} annotation.
  *
  * <p>Usage:</p>
  * <pre>
@@ -17,9 +16,9 @@ import java.lang.annotation.Target;
  * @RestController("controller")
  * public class SampleController {
  *
- *   @Post("/test")
- *   public YourClass doPost() {
- *     return new YourClass();
+ *   @Head("/test")
+ *   public ResponseEntity doHead() {
+ *     return new ResponseEntity().ok();
  *   }
  * }}
  * </pre>
@@ -28,9 +27,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = RequestMethod.POST)
-public @interface Post {
+@RequestMapping(method = RequestMethod.HEAD)
+public @interface Head {
 
   String value() default "";
-
 }

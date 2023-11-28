@@ -7,9 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the annotated method serves as a POST request handler within a corresponding
- * Controller. This annotation is designed for use in conjunction with the
- * {@link RestController @RestController} annotation.
+ * Delete annotation marks our method as a Delete handler of a corresponding Controller. This
+ * annotation is designed for use in conjunction with the {@link RestController @RestController}
+ * annotation.
  *
  * <p>Usage:</p>
  * <pre>
@@ -17,9 +17,9 @@ import java.lang.annotation.Target;
  * @RestController("controller")
  * public class SampleController {
  *
- *   @Post("/test")
- *   public YourClass doPost() {
- *     return new YourClass();
+ *   @Delete("/test")
+ *   public ResponseEntity doDelete() {
+ *     return new ResponseEntity().ok();
  *   }
  * }}
  * </pre>
@@ -28,9 +28,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = RequestMethod.POST)
-public @interface Post {
+@RequestMapping(method = RequestMethod.DELETE)
+public @interface Delete {
 
   String value() default "";
-
 }

@@ -17,6 +17,7 @@ import io.github.bobocodebreskul.context.utils.TestUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ public class WebPathScannerTest {
   private BringContainer bringContainer;
 
   @Test
+  @DisplayName("When no controller beans are available in BringContainer then path map should be empty")
   @Order(1)
   public void given_BringContainerDoesNotHaveControllerBeans_When_GetAllPaths_Then_PathMapShouldBeEmpty()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -44,6 +46,7 @@ public class WebPathScannerTest {
   }
 
   @Test
+  @DisplayName("When controller beans are available but without specified HTTP annotation method then path map should be empty")
   @Order(2)
   public void given_BringContainerHasControllerBeanButWithOutHTTPAnnotatedMethods_When_GetAllPaths_Then_PathMapShouldBeEmpty()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -57,8 +60,8 @@ public class WebPathScannerTest {
 
   @Test
   @Order(3)
-  public void given_BringContainerHasControllerBeanWithSeveralHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty()
-      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+  @DisplayName("When controller beans are available with several specified HTTP annotation on one method then path map should be empty and throw exception")
+  public void given_BringContainerHasControllerBeanWithSeveralHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty() {
     given(bringContainer.getAllBeans()).willReturn(
         List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
 
@@ -70,20 +73,8 @@ public class WebPathScannerTest {
   }
 
   @Test
+  @DisplayName("When controller beans are available with several method and specified with HTTP annotation and other part not annotated then path map should have only annotated methods")
   @Order(4)
-  public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedAndRequestMappingAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty() {
-    given(bringContainer.getAllBeans()).willReturn(
-        List.of(TestUtil.retrieveControllerWithSeveralHttpAnnotationsMethod()));
-
-    Exception actualException = catchException(() -> webPathScanner.getAllPaths());
-
-    assertThat(actualException)
-        .isInstanceOf(AmbiguousHttpAnnotationException.class)
-        .hasMessage("Method hello has more then 1 http annotation");
-  }
-
-  @Test
-  @Order(5)
   public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsAndNotAnnotated_When_GetAllPaths_Then_ShouldReturnPathOnlyForAnnotatedMethods()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveControllerWithBothHttpAnnotationsMethodAndNot();
@@ -103,7 +94,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(6)
+  @DisplayName("When controller beans are available with several method specified with HTTP annotation then path map should return multiple mappings on one path")
+  @Order(5)
   public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsWithMultiMapping_When_GetAllPaths_Then_ShouldReturnPaths()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveValidControllerWithValidMethods();
@@ -149,7 +141,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(7)
+  @DisplayName("When controller beans are available without \"/\" on start of path then throw invalid path exception")
+  @Order(6)
   public void given_BringContainerHasControllerBeanWithHTTPAnnotationAnnotatedMethod_When_GetAllPaths_Then_PathMapShouldBeEmpty() {
     given(bringContainer.getAllBeans()).willReturn(
         List.of(TestUtil.retrieveControllerWithInvalidPathAnnotationsMethod()));
@@ -162,8 +155,9 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(8)
-  public void given_given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsForPrivateMethods_When_GetAllPaths_Then_ShouldReturnPathsForPublicMethods()
+  @DisplayName("When controller beans are available with several method specified with HTTP annotation some is private then path map should return mappings only for public methods")
+  @Order(7)
+  public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsForPrivateMethods_When_GetAllPaths_Then_ShouldReturnPathsForPublicMethods()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveControllerWithAnnotatedPrivateMethods();
     given(bringContainer.getAllBeans()).willReturn(List.of(testController));
@@ -184,7 +178,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(9)
+  @DisplayName("When controller beans are available and method not specified with HTTP annotation but with @RequestMapping and specified method then should return paths")
+  @Order(8)
   public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsWithRequestMapping_When_GetAllPaths_Then_ShouldReturnPaths()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveValidControllerWithRequestMappingAnnotatedMethod();
@@ -206,7 +201,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(10)
+  @DisplayName("When controller beans are available and method not specified with HTTP annotation but with @RequestMapping and default get method then should return paths")
+  @Order(9)
   public void given_BringContainerHasControllerBeanHasHTTPAnnotatedMethodsWithRequestMappingWithoutHTTPMethod_When_GetAllPaths_Then_ShouldReturnPathsWithGetByDefault()
       throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
     Object testController = TestUtil.retrieveValidControllerWithRequestMappingAnnotatedMethodWithoutHTTPMethod();
@@ -228,7 +224,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(11)
+  @DisplayName("When controller beans are available with several specified HTTP annotation with same method and path then throw exception")
+  @Order(10)
   public void given_BringContainerHasControllerBeanHasMethodsWithSameHttpMethodAndPath_When_GetAllPaths_Then_ShouldThrowDuplicatePathException() {
     Object testController = TestUtil.retrieveControllerWithMethodsWithSameHttpMethodAndPath();
     given(bringContainer.getAllBeans()).willReturn(List.of(testController));
@@ -241,7 +238,8 @@ public class WebPathScannerTest {
   }
 
   @Test
-  @Order(12)
+  @DisplayName("When controller beans are available when one method specified with HTTP annotation and other one with @RequestMapping which with same method and path then throw exception")
+  @Order(11)
   public void given_BringContainerHasControllerBeanHasMethodsWithSameHttpMethodAndPathWhenUseRequestMapping_When_GetAllPaths_Then_ShouldThrowDuplicatePathException() {
     Object testController = TestUtil.retrieveControllerWithMethodsWithSameHttpMethodAndPathWhenUseRequestMapping();
     given(bringContainer.getAllBeans()).willReturn(List.of(testController));

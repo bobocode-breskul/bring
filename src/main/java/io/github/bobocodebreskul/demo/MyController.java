@@ -1,6 +1,7 @@
 package io.github.bobocodebreskul.demo;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.RequestBody;
 import io.github.bobocodebreskul.context.annotations.RestController;
 import io.github.bobocodebreskul.context.annotations.Delete;
 import io.github.bobocodebreskul.context.annotations.Get;
@@ -8,6 +9,7 @@ import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
 import io.github.bobocodebreskul.context.annotations.RequestMapping;
+import jakarta.servlet.http.HttpServletRequest;
 
 //TODO: remove
 @RequestMapping("/pictures")
@@ -26,8 +28,8 @@ public class MyController {
   }
 
   @Post("/second")
-  public Greet getPostSecond() {
-    return new Greet("Post, second");
+  public Greet getPostSecond(HttpServletRequest request, @RequestBody String greet) {
+    return new Greet("Post, second" + greet);
   }
 
   @Delete("/second")

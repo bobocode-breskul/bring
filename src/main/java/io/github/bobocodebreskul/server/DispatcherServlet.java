@@ -4,9 +4,11 @@ import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.Get;
+import io.github.bobocodebreskul.context.annotations.RequestBody;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +17,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -30,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DispatcherServlet extends HttpServlet {
 
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
+  private final ObjectMapper mapper;
 
   /**
    * Constructs a new instance of {@code DispatcherServlet} with the specified container and
@@ -39,6 +45,7 @@ public class DispatcherServlet extends HttpServlet {
    */
   public DispatcherServlet(Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
     this.pathToControllerMethod = pathToControllerMethod;
+    this.mapper = new ObjectMapper();
   }
 
   /**
@@ -99,7 +106,6 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-    ObjectMapper mapper = new ObjectMapper();
     String pathInfo = req.getPathInfo().toLowerCase();
 
     // Log debug-level information for request processing details
@@ -116,7 +122,8 @@ public class DispatcherServlet extends HttpServlet {
     ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
 
     if (isNull(controllerMethod)) {
-      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo, req.getMethod());
+      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo,
+          req.getMethod());
       return404(resp, mapper);
       return;
     }
@@ -129,9 +136,15 @@ public class DispatcherServlet extends HttpServlet {
       return;
     }
 
+    Object[] args = Arrays.stream(method.getParameters())
+        .map(parameter -> processMethodParameter(parameter, req, resp))
+        .toArray();
+
     try (PrintWriter writer = resp.getWriter()) {
-      Object result = method.invoke(controllerMethod.controller());
-      writer.println(mapper.writeValueAsString(result));
+      Object result = method.invoke(controllerMethod.controller(), args);
+      if (!method.getReturnType().equals(Void.class)) {
+        writer.println(mapper.writeValueAsString(result));
+      }
       writer.flush();
       resp.setStatus(HttpServletResponse.SC_OK);
     } catch (IOException | IllegalAccessException ex) {
@@ -140,6 +153,78 @@ public class DispatcherServlet extends HttpServlet {
     } catch (InvocationTargetException ex) {
       log.error("Error invoking method for controller method: {}", controllerMethod, ex);
       throw new MethodInvocationException("Method ", ex);
+    }
+  } /**
+   * Processes the method parameter.
+   *
+   * @param parameter The method parameter to be processed.
+   * @param req       The HttpServletRequest.
+   * @param resp      The HttpServletResponse.
+   * @return The processed parameter.
+   * @throws RuntimeException If an error occurs during processing.
+   */
+  private Object processMethodParameter(Parameter parameter, HttpServletRequest req,
+      HttpServletResponse resp) {
+    try {
+      log.debug("Processing method parameter: {}", parameter.getName());
+
+      if (isHttpRequest(parameter)) {
+        return req;
+      }
+
+      if (isHttpResponse(parameter)) {
+        return resp;
+      }
+
+      if (parameter.isAnnotationPresent(RequestBody.class)) {
+        validateRequestMethod(req);
+        return getBodyFromRequest(parameter.getType(), req);
+      }
+
+      throw new RuntimeException("Unsupported parameter type: " + parameter.getType());
+
+    } catch (Exception e) {
+      log.error("Error processing method parameter", e);
+      throw new RuntimeException("Error processing method parameter", e);
+    }
+  }
+
+  private boolean isHttpRequest(Parameter parameter) {
+    return HttpServletRequest.class.isAssignableFrom(parameter.getType());
+  }
+
+  private boolean isHttpResponse(Parameter parameter) {
+    return HttpServletResponse.class.isAssignableFrom(parameter.getType());
+  }
+
+  private void validateRequestMethod(HttpServletRequest req) {
+    if (RequestMethod.GET.name().equals(req.getMethod())) {
+      log.error("GET request not allowed for @RequestBody parameter.");
+      throw new RuntimeException("GET http method not support request body");
+    }
+  }
+
+  /**
+   * Retrieves the request body for the given type.
+   *
+   * @param bodyType The type of the expected request body.
+   * @param req      The HttpServletRequest.
+   * @return The request body object.
+   * @throws RuntimeException If an error occurs while retrieving or parsing the request body.
+   */
+  private Object getBodyFromRequest(Class<?> bodyType, HttpServletRequest req) {
+    try {
+      log.debug("Retrieving request body for type: {}", bodyType.getSimpleName());
+
+      String body = req.getReader()
+          .lines()
+          .collect(Collectors.joining(System.lineSeparator()));
+
+      return mapper.readValue(body, bodyType);
+
+    } catch (IOException e) {
+      log.error("Error reading request body", e);
+      throw new RuntimeException("Error reading request body", e);
     }
   }
 

@@ -2,7 +2,9 @@ package io.github.bobocodebreskul.config;
 
 import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.context.exception.ConfigurationFileNotFoundException;
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
+import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import java.io.InputStream;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PropertiesConfiguration {
 
-  private static final String CONFIG_FILE = "application.properties";
+  private static String CONFIG_FILE = "application.properties";
 
   private static Properties properties;
 
@@ -26,13 +28,17 @@ public class PropertiesConfiguration {
     try (InputStream input = PropertiesConfiguration.class.getClassLoader()
         .getResourceAsStream(CONFIG_FILE)) {
       if (input == null) {
-        log.info("Sorry, unable to find " + CONFIG_FILE);
+        log.info("Sorry, unable to find %s".formatted(CONFIG_FILE));
+        throw new ConfigurationFileNotFoundException(
+            "Sorry, unable to find %s".formatted(CONFIG_FILE));
       }
 
       properties.load(input);
       log.info("Properties from %s file was loaded.".formatted(CONFIG_FILE));
     } catch (Exception e) {
       log.error("Loading properties from %s file failed.".formatted(CONFIG_FILE), e);
+      throw new LoadingPropertiesFailedException(
+          "Loading properties from %s file failed.".formatted(CONFIG_FILE), e);
     }
     PropertiesConfiguration.properties = properties;
   }

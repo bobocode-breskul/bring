@@ -4,17 +4,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
+import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import java.lang.reflect.Field;
 import java.util.Properties;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 class PropertiesConfigurationTest {
 
-  @BeforeEach
-  private void init() {
+  @BeforeAll
+  public static void init() {
     PropertiesConfiguration.loadProperties();
   }
 
@@ -108,7 +109,7 @@ class PropertiesConfigurationTest {
         .hasMessage("\"server\" property value is not a number!");
   }
 
-  @Order(5)
+  @Order(8)
   @DisplayName("Verify that getPropertyOrDefault method returns default value if property does not exist.")
   @Test
   void given_PropertiesConfiguration_when_getPropertyOrDefaultAndPropertyDoesNotExist_then_ReturnDefaultPropertyString() {
@@ -122,7 +123,7 @@ class PropertiesConfigurationTest {
     assertEquals("Maria", name);
   }
 
-  @Order(6)
+  @Order(9)
   @DisplayName("Verify that getPropertyAsIntOrDefault method returns default value if property does not exist.")
   @Test
   void given_PropertiesConfiguration_when_getPropertyAsIntOrDefaultAndPropertyDoesNotExist_then_returnDefaultPropertyInteger() {
@@ -132,5 +133,23 @@ class PropertiesConfigurationTest {
 
     // then
     assertEquals(123, counter);
+  }
+
+  @Order(10)
+  @DisplayName("Throw a LoadingPropertiesFailedException when try to load from non existing file.")
+  @Test
+  void given_PropertiesConfiguration_when_loadPropertiesFromNonExistingPropertyFile_thenThrowLoadingPropertiesFailedException()
+      throws NoSuchFieldException, IllegalAccessException {
+
+    // given
+    String newConfigFile = "test.properties";
+    Field configFile = PropertiesConfiguration.class.getDeclaredField("CONFIG_FILE");
+    configFile.setAccessible(true);
+    configFile.set(null, newConfigFile);
+
+    // when
+    assertThatThrownBy(PropertiesConfiguration::loadProperties)
+        .isInstanceOf(LoadingPropertiesFailedException.class)
+        .hasMessage("Loading properties from %s file failed.".formatted(newConfigFile));
   }
 }

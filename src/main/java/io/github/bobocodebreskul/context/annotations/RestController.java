@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@BringComponent
 public @interface RestController {
 
   /**

@@ -124,7 +124,7 @@ public class WebPathScanner {
         .toList();
 
     if (annotationList.isEmpty()) {
-      log.info("Method [{}] does not have any HTTP annotations.", method.getName());
+      log.debug("Method [{}] does not have any HTTP annotations.", method.getName());
       return null;
     }
 

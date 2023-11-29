@@ -1,0 +1,51 @@
+package io.github.bobocodebreskul.demointegration.controller;
+
+import io.github.bobocodebreskul.context.annotations.Delete;
+import io.github.bobocodebreskul.context.annotations.Get;
+import io.github.bobocodebreskul.context.annotations.Head;
+import io.github.bobocodebreskul.context.annotations.Post;
+import io.github.bobocodebreskul.context.annotations.Put;
+import io.github.bobocodebreskul.context.annotations.RequestBody;
+import io.github.bobocodebreskul.context.annotations.RequestMapping;
+import io.github.bobocodebreskul.context.annotations.RestController;
+
+@RestController
+// TODO wrong behavior on empty if in method start with slash
+@RequestMapping("/")
+public class BaseController {
+
+  @Get
+  public String doGet() {
+    return "BaseController Get Method";
+  }
+
+  @Post
+  public String doPost() {
+    return "BaseController Post Method";
+  }
+
+  @Put
+  public String doPut() {
+    return "BaseController Put Method";
+  }
+
+  @Head
+  public String doHead() {
+    return "BaseController Head Method";
+  }
+
+  @Delete
+  public String doDelete() {
+    return "BaseController Delete Method";
+  }
+
+  @Post("withRequestBody")
+  public String doPostWithRequestBody(@RequestBody RequestDto dto) {
+    return dto.getString() + dto.getInteger();
+  }
+
+  @Get("withRequestBody")
+  public String doGetWithRequestBody(@RequestBody RequestDto dto) {
+    return dto.getString() + dto.getInteger();
+  }
+}

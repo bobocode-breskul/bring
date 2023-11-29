@@ -7,6 +7,7 @@ import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.RequestBody;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
+import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
@@ -154,7 +155,9 @@ public class DispatcherServlet extends HttpServlet {
       log.error("Error invoking method for controller method: {}", controllerMethod, ex);
       throw new MethodInvocationException("Method ", ex);
     }
-  } /**
+  }
+
+  /**
    * Processes the method parameter.
    *
    * @param parameter The method parameter to be processed.
@@ -181,11 +184,11 @@ public class DispatcherServlet extends HttpServlet {
         return getBodyFromRequest(parameter.getType(), req);
       }
 
-      throw new RuntimeException("Unsupported parameter type: " + parameter.getType());
+      throw new WebMethodParameterException("Unsupported parameter type: " + parameter.getType());
 
     } catch (Exception e) {
       log.error("Error processing method parameter", e);
-      throw new RuntimeException("Error processing method parameter", e);
+      throw new WebMethodParameterException("Error processing method parameter", e);
     }
   }
 
@@ -200,7 +203,7 @@ public class DispatcherServlet extends HttpServlet {
   private void validateRequestMethod(HttpServletRequest req) {
     if (RequestMethod.GET.name().equals(req.getMethod())) {
       log.error("GET request not allowed for @RequestBody parameter.");
-      throw new RuntimeException("GET http method not support request body");
+      throw new WebMethodParameterException("GET http method not support request body");
     }
   }
 
@@ -224,7 +227,7 @@ public class DispatcherServlet extends HttpServlet {
 
     } catch (IOException e) {
       log.error("Error reading request body", e);
-      throw new RuntimeException("Error reading request body", e);
+      throw new WebMethodParameterException("Error reading request body", e);
     }
   }
 

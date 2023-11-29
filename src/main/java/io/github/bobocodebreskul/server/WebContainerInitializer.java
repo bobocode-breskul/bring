@@ -15,21 +15,26 @@ import lombok.extern.slf4j.Slf4j;
  * registers a super servlet named "dispatcherServlet" and maps it to "/*" in the servlet context.
  * <p>
  * The initialization process involves collecting paths and controllers from a
- * {@link BringContainer} using {@link WebPathScanner} and creating an instance of
- * {@link DispatcherServlet} to handle incoming requests.
+ * {@link BringContainer} using {@link WebPathScanner}, collecting error handlers
+ * from {@link BringContainer} using {@link WebErrorHandlerControllerScanner}
+ * and creating an instance of {@link DispatcherServlet} to handle incoming requests.
  */
 @Slf4j
 public class WebContainerInitializer implements ServletContainerInitializer {
 
+  private final WebErrorHandlerControllerScanner webErrorHandlerControllerScanner;
   private final WebPathScanner webPathScanner;
 
   /**
    * Constructs a new instance of {@code WebContainerInitializer} with the specified
    * webPathScanner.
    *
+   * @param webErrorHandlerControllerScanner The webErrorHandlerControllerScanner is used for retrieving error handlers
    * @param webPathScanner The webPathScanner is used for retrieving paths.
    */
-  public WebContainerInitializer(WebPathScanner webPathScanner) {
+  public WebContainerInitializer(WebErrorHandlerControllerScanner webErrorHandlerControllerScanner,
+      WebPathScanner webPathScanner) {
+    this.webErrorHandlerControllerScanner = webErrorHandlerControllerScanner;
     this.webPathScanner = webPathScanner;
   }
 
@@ -46,7 +51,10 @@ public class WebContainerInitializer implements ServletContainerInitializer {
   public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
     // Register your super servlet
     try {
-      ctx.addServlet("dispatcherServlet", new DispatcherServlet(webPathScanner.getAllPaths()))
+      ctx.addServlet("dispatcherServlet",
+              new DispatcherServlet(
+                  webErrorHandlerControllerScanner.getAllWebErrorHandlerControllers(),
+                  webPathScanner.getAllPaths()))
           .addMapping("/*");
       log.info("DispatcherServlet registered and mapped to '/*'.");
     } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {

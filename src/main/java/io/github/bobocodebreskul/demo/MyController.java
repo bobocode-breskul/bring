@@ -1,18 +1,16 @@
 package io.github.bobocodebreskul.demo;
 
-import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.annotations.RestController;
 import io.github.bobocodebreskul.context.annotations.Delete;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Head;
 import io.github.bobocodebreskul.context.annotations.Post;
 import io.github.bobocodebreskul.context.annotations.Put;
 import io.github.bobocodebreskul.context.annotations.RequestMapping;
+import io.github.bobocodebreskul.context.annotations.RestController;
 
 //TODO: remove
 @RequestMapping("/pictures")
 @RestController
-@BringComponent
 public class MyController {
 
   @Get("/first")

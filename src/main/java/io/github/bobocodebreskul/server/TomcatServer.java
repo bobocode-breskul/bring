@@ -107,7 +107,10 @@ public class TomcatServer {
   private static void setContext(Tomcat tomcat, BringContainer container) {
     Context context = tomcat.addWebapp(DEFAULT_CONTEXT_PATH, DOC_BASE);
     context.addServletContainerInitializer(
-        new WebContainerInitializer(new WebPathScanner(container)), null);
+        new WebContainerInitializer(
+            new WebErrorHandlerControllerScanner(container),
+            new WebPathScanner(container)),
+        null);
     log.info("Tomcat context set.");
   }
 }

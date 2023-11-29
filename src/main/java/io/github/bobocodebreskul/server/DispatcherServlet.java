@@ -1,11 +1,9 @@
 package io.github.bobocodebreskul.server;
 
-import static java.util.Objects.isNull;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
-import io.github.bobocodebreskul.context.exception.MethodInvocationException;
+import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +14,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -29,15 +28,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
+  private final Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod;
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
+  private final ObjectMapper mapper = new ObjectMapper();
 
   /**
-   * Constructs a new instance of {@code DispatcherServlet} with the specified container and
-   * path-to-controller mapping.
+   * Constructs a new instance of {@code DispatcherServlet} with the specified container,
+   * exception-to-errorController mapping and path-to-controller mapping.
    *
+   * @param exceptionToErrorHandlerControllerMethod A mapping of errors to error handler controller instances.
    * @param pathToControllerMethod A mapping of paths to controller instances.
    */
-  public DispatcherServlet(Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
+  public DispatcherServlet(Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
+      Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
+    this.exceptionToErrorHandlerControllerMethod = exceptionToErrorHandlerControllerMethod;
     this.pathToControllerMethod = pathToControllerMethod;
   }
 
@@ -75,82 +79,154 @@ public class DispatcherServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-    processRequest(req, resp);
+    processRequest(req, resp, true);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-    processRequest(req, resp);
+    processRequest(req, resp, true);
   }
 
   @Override
   protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-    processRequest(req, resp);
+    processRequest(req, resp, true);
   }
 
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-    processRequest(req, resp);
+    processRequest(req, resp, true);
   }
 
   @Override
   protected void doHead(HttpServletRequest req, HttpServletResponse resp) {
-    processRequest(req, resp);
+    processRequest(req, resp, true);
   }
 
-  private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-    ObjectMapper mapper = new ObjectMapper();
-    String pathInfo = req.getPathInfo().toLowerCase();
+  protected void handleError(HttpServletRequest req, HttpServletResponse resp, Throwable ex) {
+    try {
+      ControllerMethod controllerMethod = exceptionToErrorHandlerControllerMethod.get(
+          ex.getClass());
+      if (controllerMethod == null) {
+        processResponse(resp, ex);
+      } else {
+        Object controller = controllerMethod.controller();
+        Method method = controllerMethod.method();
 
-    // Log debug-level information for request processing details
-    log.debug("Processing request for path: {}", pathInfo);
+        Object result = doMethodInvoke(method, controller, req, ex);
+        processResponse(resp, result);
+      }
 
+      processRequest(req, resp, false);
+    } catch (IOException | InvocationTargetException | IllegalAccessException e) {
+      log.error("Error happened during processing handling exception: {}", ex.getMessage(), ex);
+      handleError(req, resp, new DispatcherServletException(ex));
+    }
+  }
+
+  private void processRequest(HttpServletRequest req, HttpServletResponse resp,
+      boolean isNormalFlow) {
+    try {
+      if (!isNormalFlow) {
+        return;
+      }
+
+      String pathInfo = req.getPathInfo().toLowerCase();
+
+      // Log debug-level information for request processing details
+      log.debug("Processing request for path: {}", pathInfo);
+
+      Map<String, ControllerMethod> controllerMethodMap = getPathControllerMethodMap(pathInfo);
+      ControllerMethod controllerMethod = getControllerMethod(req, controllerMethodMap, pathInfo);
+      Method method = getMethod(controllerMethod);
+
+      Object result = method.invoke(controllerMethod.controller());
+      try (PrintWriter writer = resp.getWriter()) {
+        writer.println(mapper.writeValueAsString(result));
+        resp.setStatus(HttpServletResponse.SC_OK);
+        writer.flush();
+      }
+    } catch (Exception ex) {
+      if (ex instanceof InvocationTargetException) {
+        handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
+      } else {
+        handleError(req, resp, ex);
+      }
+    }
+  }
+
+  private Map<String, ControllerMethod> getPathControllerMethodMap(String pathInfo) {
     Map<String, ControllerMethod> controllerMethodMap = pathToControllerMethod.get(pathInfo);
 
-    if (isNull(controllerMethodMap)) {
+    if (controllerMethodMap == null) {
       log.warn("No controller methods found for path: {}", pathInfo);
-      return404(resp, mapper);
-      return;
+      throw new ResourceNotFoundException("Page not found!");
     }
+    return controllerMethodMap;
+  }
 
+  private static ControllerMethod getControllerMethod(HttpServletRequest req,
+      Map<String, ControllerMethod> controllerMethodMap, String pathInfo) {
     ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
 
-    if (isNull(controllerMethod)) {
-      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo, req.getMethod());
-      return404(resp, mapper);
-      return;
+    if (controllerMethod == null) {
+      log.warn("No controller method found for path: {} and HTTP method: {}",
+          pathInfo,
+          req.getMethod());
+      throw new ResourceNotFoundException("Page not found!");
     }
+    return controllerMethod;
+  }
 
+  private static Method getMethod(ControllerMethod controllerMethod) {
     Method method = controllerMethod.method();
 
-    if (isNull(method)) {
+    if (method == null) {
       log.warn("No method found for controller method: {}", controllerMethod);
-      return404(resp, mapper);
-      return;
+      throw new ResourceNotFoundException("Page not found!");
     }
+    return method;
+  }
 
+  private void processResponse(HttpServletResponse resp, Throwable ex) throws IOException {
     try (PrintWriter writer = resp.getWriter()) {
-      Object result = method.invoke(controllerMethod.controller());
-      writer.println(mapper.writeValueAsString(result));
+      if (ex instanceof ResourceNotFoundException) {
+        resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      } else {
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      writer.println(mapper.writeValueAsString(ex.getMessage()));
       writer.flush();
-      resp.setStatus(HttpServletResponse.SC_OK);
-    } catch (IOException | IllegalAccessException ex) {
-      log.error("Error processing request for path: {}", pathInfo, ex);
-      throw new DispatcherServletException(ex);
-    } catch (InvocationTargetException ex) {
-      log.error("Error invoking method for controller method: {}", controllerMethod, ex);
-      throw new MethodInvocationException("Method ", ex);
     }
   }
 
-  private void return404(HttpServletResponse resp, ObjectMapper mapper) {
-    try (PrintWriter writer = resp.getWriter()) {
-      writer.println(mapper.writeValueAsString("Page not found!"));
-      writer.flush();
-      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-    } catch (IOException e) {
-      log.error("Error returning 404 response", e);
-      throw new DispatcherServletException(e);
+  private static Object doMethodInvoke(Method method, Object controller, HttpServletRequest req,
+      Throwable ex)
+      throws IllegalAccessException, InvocationTargetException {
+    if (method.getParameterCount() == 1) {
+      return method.invoke(controller, ex);
     }
+    return getMethodInvokeResult(method, controller, req, ex);
+  }
+
+  private void processResponse(HttpServletResponse resp, Object result) throws IOException {
+    String outputResult = mapper.writeValueAsString(result);
+
+    try (PrintWriter writer = resp.getWriter()) {
+      resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+      if (Objects.nonNull(result)) {
+        writer.println(outputResult);
+        writer.flush();
+      }
+    }
+  }
+
+  private static Object getMethodInvokeResult(Method method, Object controller,
+      HttpServletRequest req, Throwable ex)
+      throws IllegalAccessException, InvocationTargetException {
+    if (Throwable.class.isAssignableFrom(method.getParameterTypes()[0])) {
+      return method.invoke(controller, ex, req);
+    }
+    return method.invoke(controller, req, ex);
   }
 }

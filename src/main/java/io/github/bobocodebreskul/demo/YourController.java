@@ -1,6 +1,5 @@
 package io.github.bobocodebreskul.demo;
 
-import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Delete;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Head;
@@ -12,7 +11,6 @@ import io.github.bobocodebreskul.context.annotations.RestController;
 //TODO: remove
 @RequestMapping("/pictures/yours")
 @RestController("/pictures/yours")
-@BringComponent
 public class YourController {
 
   @Get("/first")

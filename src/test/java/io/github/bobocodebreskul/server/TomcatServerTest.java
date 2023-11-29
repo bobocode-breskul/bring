@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.RequestMapping;
 import io.github.bobocodebreskul.context.annotations.RestController;
@@ -25,6 +26,8 @@ class TomcatServerIntegrationTest {
 
   @BeforeEach
   void setUp() throws InterruptedException {
+    PropertiesConfiguration.loadProperties();
+
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);

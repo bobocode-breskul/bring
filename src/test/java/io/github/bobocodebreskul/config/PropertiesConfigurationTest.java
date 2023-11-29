@@ -7,6 +7,7 @@ import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException
 import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import java.lang.reflect.Field;
 import java.util.Properties;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
@@ -17,6 +18,14 @@ class PropertiesConfigurationTest {
   @BeforeAll
   public static void init() {
     PropertiesConfiguration.loadProperties();
+  }
+
+  @AfterAll
+  public static void after() throws NoSuchFieldException, IllegalAccessException {
+    String newConfigFile = "application.properties";
+    Field configFile = PropertiesConfiguration.class.getDeclaredField("CONFIG_FILE");
+    configFile.setAccessible(true);
+    configFile.set(null, newConfigFile);
   }
 
   @Order(1)

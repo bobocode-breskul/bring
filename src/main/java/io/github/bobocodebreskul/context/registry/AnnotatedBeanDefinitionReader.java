@@ -92,9 +92,6 @@ public class AnnotatedBeanDefinitionReader {
     log.info("Registering the bean definition of class {}", beanClass.getName());
     String name = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
-    // todo: create beanDefinitionValidator that validate things such as:
-    //  bean name validity (not allowed characters), check for circular dependency
-
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
     annotatedBeanDefinition.setName(name);
 

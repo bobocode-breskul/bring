@@ -7,12 +7,14 @@ import io.github.bobocodebreskul.server.enums.ResponseBodyEnum;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -377,5 +379,84 @@ class BringResponseTest {
     headers.setAccessible(false);
   }
 
-  // TODO: add tests for get/set status and get/set body
+  @Order(20)
+  @DisplayName("Check that body was set successfully")
+  @Test
+  void given_BringResponse_When_SetBody_Then_BodyIsSuccessfullySet()
+      throws NoSuchFieldException, IllegalAccessException {
+    // given
+    BringResponse<String> response = new BringResponse<>("");
+
+    // when
+    response.setBody("Test body");
+
+    // then
+    Field body = response.getClass().getDeclaredField("body");
+    body.setAccessible(true);
+    String actual = (String) body.get(response);
+    assertThat(actual).isEqualTo("Test body");
+    body.setAccessible(false);
+  }
+
+  @Order(21)
+  @DisplayName("Check that body was get successfully")
+  @Test
+  void given_BringResponse_When_GetBody_Then_BodyIsSuccessfullyGet() {
+    // given
+    BringResponse<String> response = new BringResponse<>("");
+    response.setBody("Test body");
+
+    // when
+    String actual = response.getBody();
+
+    // then
+    assertThat(actual).isEqualTo("Test body");
+  }
+
+  @Order(22)
+  @DisplayName("Check that status was set successfully")
+  @MethodSource("getStatuses")
+  @ParameterizedTest
+  void given_BringResponse_When_SetStatus_Then_StatusIsSuccessfullySet(
+      ResponseStatus responseStatus)
+      throws NoSuchFieldException, IllegalAccessException {
+    // given
+    BringResponse<ResponseBodyEnum> response = new BringResponse<>(ResponseBodyEnum.NONE);
+
+    // when
+    response.setStatus(responseStatus);
+
+    // then
+    Field status = response.getClass().getDeclaredField("status");
+    status.setAccessible(true);
+    ResponseStatus actual = (ResponseStatus) status.get(response);
+    assertThat(actual).isEqualTo(responseStatus);
+    status.setAccessible(false);
+  }
+
+  @Order(23)
+  @DisplayName("Check that status was get successfully")
+  @MethodSource("getStatuses")
+  @ParameterizedTest
+  void given_BringResponse_When_GetStatus_Then_StatusIsSuccessfullyGet(
+      ResponseStatus responseStatus) {
+    // given
+    BringResponse<ResponseBodyEnum> response = new BringResponse<>(ResponseBodyEnum.NONE);
+    response.setStatus(responseStatus);
+
+    // when
+    ResponseStatus actual = response.getStatus();
+
+    // then
+    assertThat(actual).isEqualTo(responseStatus);
+  }
+
+  private static Stream<ResponseStatus> getStatuses() {
+    return Stream.of(ResponseStatus.ACCEPTED,
+        ResponseStatus.CREATED,
+        ResponseStatus.BAD_GATEWAY,
+        ResponseStatus.BAD_REQUEST,
+        ResponseStatus.OK,
+        ResponseStatus.FORBIDDEN);
+  }
 }

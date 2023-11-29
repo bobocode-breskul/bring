@@ -178,7 +178,6 @@ public class BringResponse<T> {
     return String.join("; ", pairs);
   }
 
-  // TODO: add tests for get/set status and get/set body
   public T getBody() {
     log.debug("Get body call");
     return body;

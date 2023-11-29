@@ -32,7 +32,8 @@ public class BeanDefinitionValidatorTest {
   @BeforeEach
   public void setUp() {
     definitionRegistry = new SimpleBeanDefinitionRegistry();
-    beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry, new BeanDependencyUtils());
+    beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry,
+        new BeanDependencyUtils());
   }
 
   @Test

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchException;
 
 import io.github.bobocodebreskul.context.exception.WebPathValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class WebPathValidatorTest {
 
   @Order(1)
+  @DisplayName("Do nothing when path is valid")
   @ParameterizedTest
   @ValueSource(strings = {"/", "/test", "/test/test", "/test/test/test"})
   public void whenPathIsValid_thenDoNothing(String path) {
@@ -25,6 +27,7 @@ public class WebPathValidatorTest {
   }
 
   @ParameterizedTest
+  @DisplayName("Throw WebPathValidationException when the path does not start with a slash")
   @Order(2)
   @ValueSource(strings = {"test", "test/test", "test/test/test"})
   public void whenPathNotStartsWithSlash_thenThrowWebPathValidationException(String path) {
@@ -37,6 +40,7 @@ public class WebPathValidatorTest {
   }
 
   @ParameterizedTest
+  @DisplayName("Throw WebPathValidationException when the path contains white spaces")
   @Order(3)
   @ValueSource(strings = {"//te st", "/ test/test", "/test/test ", "/test/test\n", "/test/test\r"})
   public void whenPathContainsWhitespaces_thenThrowWebPathValidationException(String path) {
@@ -49,6 +53,7 @@ public class WebPathValidatorTest {
   }
 
   @ParameterizedTest
+  @DisplayName("Throw WebPathValidationException when the path contains more than one consecutive slash")
   @Order(4)
   @ValueSource(strings = {"//test", "/test//test", "/test///test"})
   public void whenPathContainsMoreThanOneSlashSequentially_thenThrowWebPathValidationException(
@@ -62,6 +67,7 @@ public class WebPathValidatorTest {
   }
 
   @ParameterizedTest
+  @DisplayName("Throw WebPathValidationException when the path contains the asterisk symbol")
   @Order(5)
   @ValueSource(strings = {"/test*", "/test/*", "/*"})
   public void whenPathContainsAsterisk_thenThrowWebPathValidationException(String path) {

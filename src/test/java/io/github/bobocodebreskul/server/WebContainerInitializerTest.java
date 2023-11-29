@@ -52,7 +52,7 @@ class WebContainerInitializerTest {
   }
 
   @Test
-  @DisplayName("DispatcherServlet configured when application started")
+  @DisplayName("Verify DispatcherServlet Configuration on Startup")
   @Order(1)
   public void given_WebPathScannerReturnPaths_When_OnStartup_Then_DispatcherServletConfigured()
       throws ServletException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -71,7 +71,7 @@ class WebContainerInitializerTest {
   }
 
   @Order(2)
-  @DisplayName("Throw ServletException when WebPathScanner throw TargetException")
+  @DisplayName("Ensure ServletException is thrown when WebPathScanner encounters InvocationTargetException")
   @ParameterizedTest
   @MethodSource("provideExceptionsForWebPathScannerTest")
   public void given_WebPathScannerThrowsInvocationTargetException_When_OnStartup_Then_ShouldThrowServletException(

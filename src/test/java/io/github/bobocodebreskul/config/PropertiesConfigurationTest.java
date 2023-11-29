@@ -32,7 +32,7 @@ class PropertiesConfigurationTest {
     String server = properties.getProperty("server");
 
     // then
-    assertEquals("8097", port);
+    assertEquals("8080", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -46,7 +46,7 @@ class PropertiesConfigurationTest {
     String server = PropertiesConfiguration.getProperty("server");
 
     // then
-    assertEquals("8097", port);
+    assertEquals("8080", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -59,7 +59,7 @@ class PropertiesConfigurationTest {
     int port = PropertiesConfiguration.getPropertyAsInt("port");
 
     // then
-    assertEquals(8097, port);
+    assertEquals(8080, port);
   }
 
   @Order(4)
@@ -78,11 +78,11 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getPropertyOrDefault_thenReturnPropertyString() {
 
     // when
-    String port = PropertiesConfiguration.getPropertyOrDefault("port", "8080");
+    String port = PropertiesConfiguration.getPropertyOrDefault("port", "8097");
     String server = PropertiesConfiguration.getPropertyOrDefault("server", "test");
 
     // then
-    assertEquals("8097", port);
+    assertEquals("8080", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -92,10 +92,10 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getPropertyAsIntOrDefault_thenReturnPropertyInteger() {
 
     // when
-    int port = PropertiesConfiguration.getPropertyAsIntOrDefault("port", 8080);
+    int port = PropertiesConfiguration.getPropertyAsIntOrDefault("port", 8097);
 
     // then
-    assertEquals(8097, port);
+    assertEquals(8080, port);
   }
 
   @Order(7)
@@ -103,7 +103,7 @@ class PropertiesConfigurationTest {
   @Test
   void given_PropertiesConfiguration_when_getPropertyAsIntOrDefaultFromString_thenThrowInvalidPropertyValueException() {
     assertThatThrownBy(
-        () -> PropertiesConfiguration.getPropertyAsIntOrDefault("server", 8080))
+        () -> PropertiesConfiguration.getPropertyAsIntOrDefault("server", 8097))
         .isInstanceOf(InvalidPropertyValueException.class)
         .hasMessage("\"server\" property value is not a number!");
   }

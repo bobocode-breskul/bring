@@ -1,5 +1,8 @@
 package io.github.bobocodebreskul.context.exception;
 
+/**
+ * Custom exception for errors related to web method parameters in controller methods.
+ */
 public class WebMethodParameterException extends RuntimeException {
 
   public WebMethodParameterException(String message, Throwable cause) {

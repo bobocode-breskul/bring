@@ -3,12 +3,13 @@ package io.github.bobocodebreskul.context.support;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.UNCERTAIN_BEAN_NAME_EXCEPTION_MSG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
+import io.github.bobocodebreskul.context.annotations.BringBean;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
-import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
@@ -17,7 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
-import java.util.Collections;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -313,6 +314,51 @@ class BeanDefinitionReaderUtilsTest {
     // TODO: IMPLEMENT only method dependencies found
   }
 
+  @Test
+  @DisplayName("Get List of methods which annotated with @BringBean from class")
+  @Order(20)
+  void given_BeanClassWithBeanMethods_When_TwoMethodsAnnotatedAsBringBean_Then_ReturnListOfMethods() {
+    List<Method> beanMethods = BeanDefinitionReaderUtils.getBeanMethods(Config1.class);
+
+    assertThat(beanMethods.size()).isEqualTo(2);
+  }
+
+  @Test
+  @DisplayName("Get List of methods which annotated with @BringBean from class when some not annotated")
+  @Order(21)
+  void given_BeanClassWithBeanMethods_When_OneMethodsAnnotatedAsBringBeanAndOneNot_Then_ReturnListOfMethods() {
+    List<Method> beanMethods = BeanDefinitionReaderUtils.getBeanMethods(Config2.class);
+
+    assertThat(beanMethods.size()).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Get List of methods which annotated with @BringBean but class null")
+  @Order(22)
+  void when_ClassNull_Then_ThrowException() {
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getBeanMethods(null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  @DisplayName("Get Method name but method null")
+  @Order(23)
+  void given_Method_When_MethodNull_Then_ThrowException() {
+    assertThatThrownBy(() -> BeanDefinitionReaderUtils.getMethodBeanName(null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  @DisplayName("Get Method name ")
+  @Order(23)
+  void given_Method_When_MethodNotNull_Then_ReturnName() {
+    Method method = Config1.class.getMethods()[0];
+
+    String methodBeanName = BeanDefinitionReaderUtils.getMethodBeanName(method);
+
+    assertThat(methodBeanName).isEqualTo(method.getName());
+  }
+
   private static Stream<Arguments> getConstructors() {
     return Stream.of(Arguments.of(AnotherComponent.class.getDeclaredConstructors()[0], 1),
         Arguments.of(MultipleArgumentDependentComponent.class.getDeclaredConstructors()[0], 2));
@@ -454,6 +500,31 @@ class BeanDefinitionReaderUtilsTest {
     public MultipleConstructorWithoutAutowiredAndDefaultComponent(
         AnotherComponent anotherComponent) {
       this.anotherComponent = anotherComponent;
+    }
+  }
+
+  static class Config1 {
+
+    @BringBean
+    public void bean1() {
+
+    }
+
+    @BringBean
+    public void bean2() {
+
+    }
+  }
+
+  static class Config2 {
+
+    @BringBean
+    public void bean1() {
+
+    }
+
+    public void bean2() {
+
     }
   }
 }

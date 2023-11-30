@@ -165,15 +165,27 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
-  // TODO: create docs
-  // TODO: tests
-  public static <T> List<Method> getBeanMethods(Class<T> beanClass) {
+  /**
+   * Retrieves a list of methods annotated with {@link BringBean} from the specified configuration bean class.
+   *
+   * @param beanClass The class of the bean to inspect.
+   * @return A list of methods annotated with {@link BringBean}.
+   * @throws NullPointerException If the provided beanClass is null.
+   */
+  public static List<Method> getBeanMethods(Class<?> beanClass) {
     validateBeanClassNonNull(beanClass);
     return Arrays.stream(beanClass.getMethods())
         .filter(method -> method.isAnnotationPresent(BringBean.class))
         .toList();
   }
 
+  /**
+   * Retrieves the bean name for the specified bean method.
+   *
+   * @param beanMethod The method for which to generate the bean name.
+   * @return The bean name based on the method's name.
+   * @throws NullPointerException If the provided beanMethod is null.
+   */
   public static String getMethodBeanName(Method beanMethod) {
     Objects.requireNonNull(beanMethod, () -> {
       log.error("Failed to generate bean name for nullable bean bean method");

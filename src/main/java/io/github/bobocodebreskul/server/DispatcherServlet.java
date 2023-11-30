@@ -2,11 +2,15 @@ package io.github.bobocodebreskul.server;
 
 import static java.util.Objects.isNull;
 
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.RequestBody;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
+import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +19,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -29,7 +37,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
+  private final static List<String> METHODS_WITHOUT_BODY = List.of(
+      RequestMethod.GET.name(),
+      RequestMethod.HEAD.name(),
+      RequestMethod.DELETE.name()
+  );
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
+  private final ObjectMapper mapper;
 
   /**
    * Constructs a new instance of {@code DispatcherServlet} with the specified container and
@@ -39,6 +53,7 @@ public class DispatcherServlet extends HttpServlet {
    */
   public DispatcherServlet(Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
     this.pathToControllerMethod = pathToControllerMethod;
+    this.mapper = new ObjectMapper();
   }
 
   /**
@@ -116,7 +131,8 @@ public class DispatcherServlet extends HttpServlet {
     ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
 
     if (isNull(controllerMethod)) {
-      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo, req.getMethod());
+      log.warn("No controller method found for path: {} and HTTP method: {}", pathInfo,
+          req.getMethod());
       return404(resp, mapper);
       return;
     }
@@ -129,9 +145,15 @@ public class DispatcherServlet extends HttpServlet {
       return;
     }
 
+    Object[] args = Arrays.stream(method.getParameters())
+        .map(parameter -> prepareMethodParameter(parameter, req, resp))
+        .toArray();
+
     try (PrintWriter writer = resp.getWriter()) {
-      Object result = method.invoke(controllerMethod.controller());
-      writer.println(mapper.writeValueAsString(result));
+      Object result = method.invoke(controllerMethod.controller(), args);
+      if (!method.getReturnType().equals(Void.class)) {
+        writer.println(mapper.writeValueAsString(result));
+      }
       writer.flush();
       resp.setStatus(HttpServletResponse.SC_OK);
     } catch (IOException | IllegalAccessException ex) {
@@ -140,6 +162,89 @@ public class DispatcherServlet extends HttpServlet {
     } catch (InvocationTargetException ex) {
       log.error("Error invoking method for controller method: {}", controllerMethod, ex);
       throw new MethodInvocationException("Method ", ex);
+    }
+  }
+
+  /**
+   * Prepare the method parameter. It is get parameter and try to find object which we can inject
+   * here mainly it our request and response, but also possible add request body
+   *
+   * @param parameter The method parameter to be processed.
+   * @param req       The HttpServletRequest.
+   * @param resp      The HttpServletResponse.
+   * @return The prepared parameter instance.
+   * @throws WebMethodParameterException If an error occurs during processing.
+   */
+  private Object prepareMethodParameter(Parameter parameter, HttpServletRequest req,
+      HttpServletResponse resp) {
+    try {
+      log.debug("Processing method parameter: {}", parameter.getName());
+
+      if (isHttpRequest(parameter)) {
+        return req;
+      }
+
+      if (isHttpResponse(parameter)) {
+        return resp;
+      }
+
+      if (parameter.isAnnotationPresent(RequestBody.class)) {
+        validateRequestMethod(req);
+        return getBodyFromRequest(parameter.getType(), req);
+      }
+
+      throw new WebMethodParameterException("Unsupported parameter type: " + parameter.getType());
+
+    } catch (Exception e) {
+      log.error(
+          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
+              parameter.getType()), e);
+      throw new WebMethodParameterException(
+          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
+              parameter.getType()), e);
+    }
+  }
+
+  private boolean isHttpRequest(Parameter parameter) {
+    return HttpServletRequest.class.isAssignableFrom(parameter.getType());
+  }
+
+  private boolean isHttpResponse(Parameter parameter) {
+    return HttpServletResponse.class.isAssignableFrom(parameter.getType());
+  }
+
+  private void validateRequestMethod(HttpServletRequest req) {
+    if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
+      log.error("%s request not allowed for @RequestBody parameter.".formatted(req.getMethod()));
+      throw new WebMethodParameterException("%s http method not support request body".formatted(req.getMethod()));
+    }
+  }
+
+  /**
+   * Retrieves the request body for the given type.
+   *
+   * @param bodyType The type of the expected request body.
+   * @param req      The HttpServletRequest.
+   * @return The request body object.
+   * @throws WebMethodParameterException If an error occurs while retrieving or parsing the request body.
+   */
+  private Object getBodyFromRequest(Class<?> bodyType, HttpServletRequest req) {
+    String body = null;
+    try {
+      log.debug("Retrieving request body for type: {}", bodyType.getSimpleName());
+
+      body = req.getReader()
+          .lines()
+          .collect(Collectors.joining(System.lineSeparator()));
+
+      return mapper.readValue(body, bodyType);
+
+    } catch (DatabindException e) {
+      log.error("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
+      throw new WebMethodParameterException("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
+    }catch (IOException e) {
+      log.error("Error reading request body from request", e);
+      throw new WebMethodParameterException("Error reading request body from request", e);
     }
   }
 

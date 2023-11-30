@@ -9,15 +9,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
-/*
- * (done) body (get, set)
- * (done) status (get, set)
- * (in progress) headers()
- * cookies (done) builder
- * parameterized ResponseEntity з типом Body.
- * response.builder().setBody(body).setStatus(200).build();
- */
-
 /**
  * todo write java doc
  * @param <T>
@@ -34,8 +25,8 @@ public class BringResponse<T> {
   private Map<String, String> headers = new HashMap<>();
 
   private final Map<String, String> cookies = new HashMap<>();
-  T body;
-  ResponseStatus status;
+  private T body;
+  private ResponseStatus status;
 
   public BringResponse(T body) {
     this.body = body;
@@ -47,7 +38,6 @@ public class BringResponse<T> {
   }
 
   public BringResponse(@Nullable T body, @Nullable Map<String, String> headers, ResponseStatus status) {
-    // todo map headers to lowercase and test it.
     this.headers = isNull(headers) ? new HashMap<>() : headers;
     this.body = body;
     if (isNull(status)) {
@@ -178,21 +168,41 @@ public class BringResponse<T> {
     return String.join("; ", pairs);
   }
 
+  /**
+   * Return Response body.
+   *
+   * @return response body as object.
+   */
   public T getBody() {
     log.debug("Get body call");
     return body;
   }
 
+  /**
+   * Set parametrized object as body into BringResponse.
+   *
+   * @param body parametrized object of response.
+   */
   public void setBody(T body) {
     log.debug("Set body call");
     this.body = body;
   }
 
+  /**
+   * Returns http response status.
+   *
+   * @return response status as enum object which contain http status code.
+   */
   public ResponseStatus getStatus() {
     log.debug("Get status call");
     return status;
   }
 
+  /**
+   * Set http response status into response entity
+   *
+   * @param status enum object which contain http status code.
+   */
   public void setStatus(ResponseStatus status) {
     log.debug("Set status call");
     this.status = status;
@@ -216,9 +226,12 @@ public class BringResponse<T> {
       return new BringResponse<>(body, headers, status);
     }
 
-    // todo think about termination methods with other response statuses
-    BringResponse<T> ok() {
-      return new BringResponse<>(body, headers, ResponseStatus.OK);
+    public <T> BringResponse<T> body(T body) {
+      return new BringResponse<>(body, headers, responseStatus);
+    }
+
+    public BringResponse<Void> build() {
+      return new BringResponse<>(null, headers, responseStatus);
     }
   }
 }

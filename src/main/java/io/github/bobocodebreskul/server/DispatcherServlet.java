@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.server;
 
 import static java.util.Objects.isNull;
 
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.RequestBody;
@@ -218,21 +219,25 @@ public class DispatcherServlet extends HttpServlet {
    * @param bodyType The type of the expected request body.
    * @param req      The HttpServletRequest.
    * @return The request body object.
-   * @throws RuntimeException If an error occurs while retrieving or parsing the request body.
+   * @throws WebMethodParameterException If an error occurs while retrieving or parsing the request body.
    */
   private Object getBodyFromRequest(Class<?> bodyType, HttpServletRequest req) {
+    String body = null;
     try {
       log.debug("Retrieving request body for type: {}", bodyType.getSimpleName());
 
-      String body = req.getReader()
+      body = req.getReader()
           .lines()
           .collect(Collectors.joining(System.lineSeparator()));
 
       return mapper.readValue(body, bodyType);
 
-    } catch (IOException e) {
-      log.error("Error reading request body", e);
-      throw new WebMethodParameterException("Error reading request body", e);
+    } catch (DatabindException e) {
+      log.error("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
+      throw new WebMethodParameterException("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
+    }catch (IOException e) {
+      log.error("Error reading request body from request", e);
+      throw new WebMethodParameterException("Error reading request body from request", e);
     }
   }
 

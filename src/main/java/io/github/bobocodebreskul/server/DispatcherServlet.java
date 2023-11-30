@@ -138,7 +138,7 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     Object[] args = Arrays.stream(method.getParameters())
-        .map(parameter -> processMethodParameter(parameter, req, resp))
+        .map(parameter -> prepareMethodParameter(parameter, req, resp))
         .toArray();
 
     try (PrintWriter writer = resp.getWriter()) {
@@ -158,15 +158,16 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   /**
-   * Processes the method parameter.
+   * Prepare the method parameter. It is get parameter and try to find object which we can inject
+   * here mainly it our request and response, but also possible add request body
    *
    * @param parameter The method parameter to be processed.
    * @param req       The HttpServletRequest.
    * @param resp      The HttpServletResponse.
-   * @return The processed parameter.
-   * @throws RuntimeException If an error occurs during processing.
+   * @return The prepared parameter instance.
+   * @throws WebMethodParameterException If an error occurs during processing.
    */
-  private Object processMethodParameter(Parameter parameter, HttpServletRequest req,
+  private Object prepareMethodParameter(Parameter parameter, HttpServletRequest req,
       HttpServletResponse resp) {
     try {
       log.debug("Processing method parameter: {}", parameter.getName());
@@ -187,8 +188,12 @@ public class DispatcherServlet extends HttpServlet {
       throw new WebMethodParameterException("Unsupported parameter type: " + parameter.getType());
 
     } catch (Exception e) {
-      log.error("Error processing method parameter", e);
-      throw new WebMethodParameterException("Error processing method parameter", e);
+      log.error(
+          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
+              parameter.getType()), e);
+      throw new WebMethodParameterException(
+          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
+              parameter.getType()), e);
     }
   }
 

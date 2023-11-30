@@ -1,7 +1,5 @@
 package io.github.bobocodebreskul.config;
 
-import static java.util.Objects.isNull;
-
 import io.github.bobocodebreskul.context.exception.ConfigurationFileNotFoundException;
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
 import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
@@ -18,13 +16,12 @@ public class PropertiesConfiguration {
 
   private static String CONFIG_FILE = "application.properties";
 
-  private static Properties properties;
+  private static Properties properties = new Properties();
 
   /**
    * Method loads properties from configuration file and stores then in properties variable.
    */
   public static void loadProperties() {
-    Properties properties = new Properties();
     try (InputStream input = PropertiesConfiguration.class.getClassLoader()
         .getResourceAsStream(CONFIG_FILE)) {
       if (input == null) {
@@ -32,7 +29,6 @@ public class PropertiesConfiguration {
         throw new ConfigurationFileNotFoundException(
             "Sorry, unable to find %s".formatted(CONFIG_FILE));
       }
-
       properties.load(input);
       log.info("Properties from %s file was loaded.".formatted(CONFIG_FILE));
     } catch (Exception e) {
@@ -40,7 +36,6 @@ public class PropertiesConfiguration {
       throw new LoadingPropertiesFailedException(
           "Loading properties from %s file failed.".formatted(CONFIG_FILE), e);
     }
-    PropertiesConfiguration.properties = properties;
   }
 
   /**
@@ -65,7 +60,7 @@ public class PropertiesConfiguration {
   public static String getPropertyOrDefault(String propertyName, String defaultValue) {
     log.debug("Get string property \"%s\"".formatted(propertyName));
     String property = properties.getProperty(propertyName);
-    return isNull(property) ? defaultValue : property;
+    return property == null ? defaultValue : property;
   }
 
   /**
@@ -96,7 +91,7 @@ public class PropertiesConfiguration {
     log.debug("Get integer property \"%s\"".formatted(propertyName));
     try {
       String property = properties.getProperty(propertyName);
-      return isNull(property) ? defaultValue : Integer.parseInt(property);
+      return property == null ? defaultValue : Integer.parseInt(property);
     } catch (NumberFormatException ex) {
       throw new InvalidPropertyValueException(
           "\"%s\" property value is not a number!".formatted(propertyName), ex);

@@ -2,7 +2,6 @@ package io.github.bobocodebreskul.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.RequestMapping;
 import io.github.bobocodebreskul.context.annotations.RestController;
@@ -22,12 +21,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class TomcatServerIntegrationTest {
+
   private HttpClient httpClient;
 
   @BeforeEach
   void setUp() throws InterruptedException {
-    PropertiesConfiguration.loadProperties();
-
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);
@@ -54,7 +52,8 @@ class TomcatServerIntegrationTest {
 
   @Test
   @DisplayName("Test endpoint creation and verify status 200 and body is equal to hello")
-  void given_TomcatServer_when_oneControllerRegistered_then_returnBodyWithStatus200ForRegisteredController() throws IOException, InterruptedException {
+  void given_TomcatServer_when_oneControllerRegistered_then_returnBodyWithStatus200ForRegisteredController()
+      throws IOException, InterruptedException {
     String url = "http://localhost:8080/myendpoint";
     HttpRequest request = HttpRequest.newBuilder()
         .uri(URI.create(url))

@@ -38,8 +38,8 @@ class PropertiesConfigurationTest {
     Field propertiesField = PropertiesConfiguration.class.getDeclaredField("properties");
     propertiesField.setAccessible(true);
     Properties properties = (Properties) propertiesField.get(null);
-    String port = properties.getProperty("port");
-    String server = properties.getProperty("server");
+    String port = properties.getProperty("server.port");
+    String server = properties.getProperty("server.url");
 
     // then
     assertEquals("8080", port);
@@ -52,8 +52,8 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getProperty_thenReturnPropertyString() {
 
     // when
-    String port = PropertiesConfiguration.getProperty("port");
-    String server = PropertiesConfiguration.getProperty("server");
+    String port = PropertiesConfiguration.getProperty("server.port");
+    String server = PropertiesConfiguration.getProperty("server.url");
 
     // then
     assertEquals("8080", port);
@@ -66,7 +66,7 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getPropertyAsInt_thenReturnPropertyInteger() {
 
     // when
-    int port = PropertiesConfiguration.getPropertyAsInt("port");
+    int port = PropertiesConfiguration.getPropertyAsInt("server.port");
 
     // then
     assertEquals(8080, port);
@@ -77,9 +77,9 @@ class PropertiesConfigurationTest {
   @Test
   void given_PropertiesConfiguration_when_getPropertyAsIntFromString_thenThrowInvalidPropertyValueException() {
     assertThatThrownBy(
-        () -> PropertiesConfiguration.getPropertyAsInt("server"))
+        () -> PropertiesConfiguration.getPropertyAsInt("server.url"))
         .isInstanceOf(InvalidPropertyValueException.class)
-        .hasMessage("\"server\" property value is not a number!");
+        .hasMessage("\"server.url\" property value is not a number!");
   }
 
   @Order(5)
@@ -88,8 +88,8 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getPropertyOrDefault_thenReturnPropertyString() {
 
     // when
-    String port = PropertiesConfiguration.getPropertyOrDefault("port", "8097");
-    String server = PropertiesConfiguration.getPropertyOrDefault("server", "test");
+    String port = PropertiesConfiguration.getPropertyOrDefault("server.port", "8097");
+    String server = PropertiesConfiguration.getPropertyOrDefault("server.url", "test");
 
     // then
     assertEquals("8080", port);
@@ -102,7 +102,7 @@ class PropertiesConfigurationTest {
   void given_PropertiesConfiguration_when_getPropertyAsIntOrDefault_thenReturnPropertyInteger() {
 
     // when
-    int port = PropertiesConfiguration.getPropertyAsIntOrDefault("port", 8097);
+    int port = PropertiesConfiguration.getPropertyAsIntOrDefault("server.port", 8097);
 
     // then
     assertEquals(8080, port);
@@ -113,9 +113,9 @@ class PropertiesConfigurationTest {
   @Test
   void given_PropertiesConfiguration_when_getPropertyAsIntOrDefaultFromString_thenThrowInvalidPropertyValueException() {
     assertThatThrownBy(
-        () -> PropertiesConfiguration.getPropertyAsIntOrDefault("server", 8097))
+        () -> PropertiesConfiguration.getPropertyAsIntOrDefault("server.url", 8097))
         .isInstanceOf(InvalidPropertyValueException.class)
-        .hasMessage("\"server\" property value is not a number!");
+        .hasMessage("\"server.url\" property value is not a number!");
   }
 
   @Order(8)

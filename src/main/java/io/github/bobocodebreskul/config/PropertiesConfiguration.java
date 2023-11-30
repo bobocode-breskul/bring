@@ -40,7 +40,8 @@ public class PropertiesConfiguration {
   }
 
   /**
-   * Method returns property string value loaded from configuration file.
+   * Method returns property string value loaded from configuration file. If property does not exist
+   * throws PropertyNotFoundException.
    *
    * @param propertyName property key name
    * @return string property value
@@ -70,7 +71,8 @@ public class PropertiesConfiguration {
   }
 
   /**
-   * Method returns property integer value loaded from configuration file.
+   * Method returns property integer value loaded from configuration file. If property does not
+   * exist throws PropertyNotFoundException.
    *
    * @param propertyName property key name
    * @return integer property value

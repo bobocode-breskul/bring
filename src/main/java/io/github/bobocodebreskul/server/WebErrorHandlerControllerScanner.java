@@ -1,10 +1,10 @@
 package io.github.bobocodebreskul.server;
 
-import io.github.bobocodebreskul.context.annotations.ErrorHandlerController;
-import io.github.bobocodebreskul.context.annotations.ExceptionHandler;
 import io.github.bobocodebreskul.context.exception.DuplicateErrorHandlerException;
 import io.github.bobocodebreskul.context.exception.MethodValidationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;
+import io.github.bobocodebreskul.server.annotations.ExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Arrays;

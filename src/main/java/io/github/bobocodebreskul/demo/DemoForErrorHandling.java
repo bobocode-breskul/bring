@@ -1,8 +1,8 @@
 package io.github.bobocodebreskul.demo;
 
-import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.RequestMapping;
-import io.github.bobocodebreskul.context.annotations.RestController;
+import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
+import io.github.bobocodebreskul.server.annotations.RestController;
 
 //TODO: remove
 @RequestMapping("/error")

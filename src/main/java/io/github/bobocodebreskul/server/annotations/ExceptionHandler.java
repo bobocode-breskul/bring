@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.annotations;
+package io.github.bobocodebreskul.server.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

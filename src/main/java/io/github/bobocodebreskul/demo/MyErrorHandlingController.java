@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.demo;
 
-import io.github.bobocodebreskul.context.annotations.ErrorHandlerController;
-import io.github.bobocodebreskul.context.annotations.ExceptionHandler;
+import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;
+import io.github.bobocodebreskul.server.annotations.ExceptionHandler;
 
 //TODO: remove
 @ErrorHandlerController

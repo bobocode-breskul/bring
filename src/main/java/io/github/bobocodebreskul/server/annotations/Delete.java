@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.annotations;
+package io.github.bobocodebreskul.server.annotations;
 
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import java.lang.annotation.ElementType;
@@ -7,8 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Put annotation marks our method as a Put handler of a corresponding Controller. This annotation
- * is designed for use in conjunction with the {@link RestController @RestController} annotation.
+ * Delete annotation marks our method as a Delete handler of a corresponding Controller. This
+ * annotation is designed for use in conjunction with the {@link RestController @RestController}
+ * annotation.
  *
  * <p>Usage:</p>
  * <pre>
@@ -16,8 +17,8 @@ import java.lang.annotation.Target;
  * @RestController("controller")
  * public class SampleController {
  *
- *   @Put("/test")
- *   public ResponseEntity doPut() {
+ *   @Delete("/test")
+ *   public ResponseEntity doDelete() {
  *     return new ResponseEntity().ok();
  *   }
  * }}
@@ -27,8 +28,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = RequestMethod.PUT)
-public @interface Put {
+@RequestMapping(method = RequestMethod.DELETE)
+public @interface Delete {
 
   String value() default "";
 }

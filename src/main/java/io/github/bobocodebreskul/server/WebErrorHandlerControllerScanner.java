@@ -40,18 +40,6 @@ public class WebErrorHandlerControllerScanner {
    *
    * @return Map of (Throwable.class, ControllerMethod)
    */
-  //TODO: add test when container does not have any error handler controller beans then should return empty map
-  //TODO: add test when container has error handler controller beans but does not have methods annotated with exception handler then should return empty map
-  //TODO: add test when container has error handler controller beans but only private methods annotated with exception handler then should return empty map
-  //TODO: add test when container has error handler controller beans and have private and public methods annotated with exception handler then should return only public methods in map
-  //TODO: add test when container has error handler controller beans but only private methods annotated with exception handler then should return empty map
-  //TODO: add test when container has error handler controller beans but method param has no arguments then should throw MethodValidationException
-  //TODO: add test when container has error handler controller beans but method param has more then 2 arguments then should throw MethodValidationException
-  //TODO: add test when container has error handler controller beans but method param has 2 exception type arguments then should throw MethodValidationException
-  //TODO: add test when container has error handler controller beans but method param has 2 HttpServletRequest type arguments then should throw MethodValidationException
-  //TODO: add test when container has error handler controller beans but method params does not have HttpServletRequest type arguments then should throw MethodValidationException
-  //TODO: add test when container has error handler controller beans and have rigth deifned methods then should return valid controllerMethodMap
-  //TODO: add test when container has error handler controller beans and have rigth deifned methods but have duplicate error handlers then should throw DuplicateErrorHandlerException
   public Map<Class<?>, ControllerMethod> getAllWebErrorHandlerControllers() {
     Map<Class<?>, ControllerMethod> controllerMethodMap = new HashMap<>();
 
@@ -105,7 +93,7 @@ public class WebErrorHandlerControllerScanner {
 
   private static void validateMethodParams(Class<?>[] methodParameterTypes) {
     if (methodParameterTypes.length > 2 || methodParameterTypes.length == 0) {
-      throw new MethodValidationException("Invalid parameter quantaty");
+      throw new MethodValidationException("Invalid parameter quantity");
     }
 
     if (Arrays.stream(methodParameterTypes)
@@ -118,8 +106,7 @@ public class WebErrorHandlerControllerScanner {
         Arrays.stream(methodParameterTypes)
             .filter(HttpServletRequest.class::isAssignableFrom)
             .count() != 1) {
-      throw new MethodValidationException(
-          "Only 1 HttpServletRequest is allowed for errorhandler method");
+      throw new MethodValidationException("There should be at least 1 HttpServletRequest");
     }
   }
 }

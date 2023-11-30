@@ -3,8 +3,10 @@ package io.github.bobocodebreskul.server;
 import static java.util.Objects.isNull;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 // todo: docs
@@ -67,6 +69,10 @@ class BringHttpEntity<T> {
     }
     log.error("Header for name='{}' not found.", headerName);
     return "";
+  }
+
+  public Set<String> getHeadersNames() {
+    return new HashSet<>(this.headers.keySet());
   }
 
   /**

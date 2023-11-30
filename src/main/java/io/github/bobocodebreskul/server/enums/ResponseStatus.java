@@ -78,4 +78,8 @@ public enum ResponseStatus {
   ResponseStatus(int status) {
     this.status = status;
   }
+
+  public int getValue() {
+    return status;
+  }
 }

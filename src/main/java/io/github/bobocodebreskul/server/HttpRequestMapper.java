@@ -1,7 +1,9 @@
 package io.github.bobocodebreskul.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.exception.RequestsMappingException;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,15 +17,40 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class HttpRequestMapper {
-
-//    public BringResponse<T> mapHttpServletResponseOnBringResponseEntity(
-//        HttpServletResponse httpServletResponse) {
-//
-//      return null;
-//    }
   ObjectMapper objectMapper = new ObjectMapper();
+
+  public <T> void writeBringResponseIntoHttpServletResponse(
+    BringResponse<T> bringResponseEntity, HttpServletResponse httpServletResponse) {
+
+    httpServletResponse.setStatus(bringResponseEntity.getStatus().getValue());
+
+    bringResponseEntity.getHeadersNames()
+      .forEach(headerName -> httpServletResponse.setHeader(headerName,
+        bringResponseEntity.getHeader(headerName)));
+
+    if (bringResponseEntity.getBody() != null) {
+      try {
+        httpServletResponse.getOutputStream().print(writeBodyAsJson(bringResponseEntity.getBody()));
+      } catch (IOException e) {
+        log.error("Failed to write response entity to httpServletResponse", e);
+        throw new RequestsMappingException("Failed to write response entity to httpServletResponse", e);
+      }
+    }
+  }
+
+  private String writeBodyAsJson(Object body) {
+    try {
+      return objectMapper.writeValueAsString(body);
+    } catch (JsonProcessingException e) {
+      log.error("Failed to write body as String. ", e);
+      throw new RequestsMappingException("Failed to write body as String. ", e);
+    }
+  }
+
 
   public <T> BringRequest<T> mapHttpServletRequestOnBringRequestEntity(
       HttpServletRequest httpServletRequest, Class<T> bodyType) {
@@ -48,7 +75,8 @@ public class HttpRequestMapper {
       return body;
     } catch (IOException e) {
       // todo update exception
-      throw new RuntimeException(e);
+      log.error("Failed to map HttpServletRequest body into object.", e);
+      throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);
     }
   }
 
@@ -57,10 +85,9 @@ public class HttpRequestMapper {
       String stringUri = request.getRequestURI();
       return new URI(stringUri);
     } catch (URISyntaxException e) {
-      // todo update exception
-      throw new RuntimeException(e);
+      log.error("Failed to map HttpServletRequest body into object.", e);
+      throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);
     }
-
   }
 
   private Map<String, String> extractHeaders(HttpServletRequest request) {

@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BringResponse<T> extends BringHttpEntity<T> {
 
-  ResponseStatus status;
+  private ResponseStatus status;
 
   public BringResponse(T body) {
     super(body);

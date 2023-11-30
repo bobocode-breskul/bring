@@ -74,7 +74,7 @@ public class PropertiesConfiguration {
    * @param propertyName property key name
    * @return integer property value
    */
-  public static Integer getPropertyAsInt(String propertyName) {
+  public static int getPropertyAsInt(String propertyName) {
     log.debug("Get integer property \"%s\"".formatted(propertyName));
     try {
       return Integer.parseInt(properties.getProperty(propertyName));
@@ -92,7 +92,7 @@ public class PropertiesConfiguration {
    * @param defaultValue property default value
    * @return string property value
    */
-  public static Integer getPropertyAsIntOrDefault(String propertyName, int defaultValue) {
+  public static int getPropertyAsIntOrDefault(String propertyName, int defaultValue) {
     log.debug("Get integer property \"%s\"".formatted(propertyName));
     try {
       String property = properties.getProperty(propertyName);

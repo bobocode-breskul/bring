@@ -3,7 +3,7 @@ package io.github.bobocodebreskul.server;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bobocodebreskul.context.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;

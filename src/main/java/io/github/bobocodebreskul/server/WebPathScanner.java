@@ -5,13 +5,13 @@ import static io.github.bobocodebreskul.context.support.ReflectionUtils.invokeAn
 import static io.github.bobocodebreskul.server.WebPathValidator.validatePath;
 import static io.github.bobocodebreskul.server.enums.RequestMethod.GET;
 
-import io.github.bobocodebreskul.context.annotations.Delete;
-import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.Head;
-import io.github.bobocodebreskul.context.annotations.Post;
-import io.github.bobocodebreskul.context.annotations.Put;
-import io.github.bobocodebreskul.context.annotations.RequestMapping;
-import io.github.bobocodebreskul.context.annotations.RestController;
+import io.github.bobocodebreskul.server.annotations.Delete;
+import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.Head;
+import io.github.bobocodebreskul.server.annotations.Post;
+import io.github.bobocodebreskul.server.annotations.Put;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
+import io.github.bobocodebreskul.server.annotations.RestController;
 import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
 import io.github.bobocodebreskul.context.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.registry.BringContainer;

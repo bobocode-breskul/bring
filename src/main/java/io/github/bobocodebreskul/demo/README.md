@@ -1,1 +1,0 @@
-This package is used only for examples. We will decide later if we will remove it

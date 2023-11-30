@@ -1,6 +1,11 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.config.PropertiesConfiguration.getPropertyAsIntOrDefault;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +24,17 @@ import org.apache.catalina.startup.Tomcat;
 public class TomcatServer {
 
   private static final String DEFAULT_HOST = "localhost";
-  private static final int DEFAULT_PORT = 8080;
+
+  /**
+   * The PORT field stores the web server port. If the "server.port" property exists in the
+   * application.properties file, a custom port will be set. Otherwise, the default port 8080 will
+   * be used.
+   */
+  private static final int PORT = getPropertyAsIntOrDefault("server.port", 8080);
   private static final String DEFAULT_CONTEXT_PATH = "/";
   private static final String DOC_BASE = ".";
-  private static Tomcat tomcat;
   private static final ExecutorService executor = Executors.newFixedThreadPool(1);
+  private static Tomcat tomcat;
 
   /**
    * Starts an embedded Tomcat server with the specified {@link BringContainer}.
@@ -36,10 +47,11 @@ public class TomcatServer {
    */
   public static void run(BringContainer container) {
     log.info("Tomcat server is starting...");
+    disableTomcatLogs();
     tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);
-    tomcat.setPort(DEFAULT_PORT);
+    tomcat.setPort(PORT);
     tomcat.getConnector();
     setContext(tomcat, container);
 
@@ -109,5 +121,15 @@ public class TomcatServer {
     context.addServletContainerInitializer(
         new WebContainerInitializer(new WebPathScanner(container)), null);
     log.info("Tomcat context set.");
+  }
+
+  private static void disableTomcatLogs() {
+    System.setProperty("java.util.logging.config.file", getResourcePath("logging.properties"));
+  }
+
+  private static String getResourcePath(String fileName) {
+    return Optional.ofNullable(TomcatServer.class.getClassLoader().getResource(fileName))
+        .map(URL::getPath)
+        .orElse(EMPTY);
   }
 }

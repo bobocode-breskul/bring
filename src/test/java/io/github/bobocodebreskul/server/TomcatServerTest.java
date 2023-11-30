@@ -21,6 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class TomcatServerIntegrationTest {
+
   private HttpClient httpClient;
 
   @BeforeEach
@@ -51,7 +52,8 @@ class TomcatServerIntegrationTest {
 
   @Test
   @DisplayName("Test endpoint creation and verify status 200 and body is equal to hello")
-  void given_TomcatServer_when_oneControllerRegistered_then_returnBodyWithStatus200ForRegisteredController() throws IOException, InterruptedException {
+  void given_TomcatServer_when_oneControllerRegistered_then_returnBodyWithStatus200ForRegisteredController()
+      throws IOException, InterruptedException {
     String url = "http://localhost:8080/myendpoint";
     HttpRequest request = HttpRequest.newBuilder()
         .uri(URI.create(url))
@@ -60,7 +62,7 @@ class TomcatServerIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"hello\"\n");
+    assertThat(response.body()).isEqualTo("\"hello\"" + System.lineSeparator());
   }
 
   @RestController

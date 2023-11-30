@@ -2,7 +2,6 @@ package io.github.bobocodebreskul.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.exception.RequestsMappingException;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,11 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 

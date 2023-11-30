@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Represents an HTTP response entity. Gives access to response headers, cookies, body and status.
+ * Extension of {@link BringHttpEntity} that adds HTTP response status.
  * Could be used as return value in {@code @RestController} methods.
  * <p>Example:</p>
  * <pre class="code">

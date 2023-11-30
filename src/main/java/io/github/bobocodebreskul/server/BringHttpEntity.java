@@ -9,7 +9,13 @@ import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
-// todo: docs
+/**
+ * Representation of HTTP request or response, containing headers, cookies and body.
+ * Use its extension classes in your implementation.
+ * @see BringRequest
+ * @see BringResponse
+ * @param <T> body type
+ */
 @Slf4j
 class BringHttpEntity<T> {
 
@@ -23,7 +29,7 @@ class BringHttpEntity<T> {
 
   private final Map<String, String> cookies = new HashMap<>();
 
-  T body;
+  private T body;
 
   public BringHttpEntity(T body) {
     this.body = body;

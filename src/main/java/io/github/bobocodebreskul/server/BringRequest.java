@@ -27,22 +27,26 @@ public class BringRequest<T> extends BringHttpEntity<T>{
   private final RequestMethod requestMethod;
   private final URI url;
 
-  /**
-   * Create and return {@link BringRequest} builder for specified HTTP {@link RequestMethod}
-   * @return builder instance
-   */
-  public static Builder method(RequestMethod method) {
-    return new Builder(method);
-  }
-
+  // TODO: test constructor
   public BringRequest(RequestMethod requestMethod, URI url) {
     this(requestMethod, url, null);
   }
 
+  // TODO: test constructor
   public BringRequest(RequestMethod requestMethod, URI url, T body) {
     super(body);
     this.requestMethod = requestMethod;
     this.url = url;
+  }
+
+  // TODO: tests
+  /**
+   * Create and return {@link BringRequest} builder for specified HTTP {@link RequestMethod}
+   * and URL
+   * @return builder instance
+   */
+  public static Builder method(RequestMethod method, URI url) {
+    return new Builder(method, url);
   }
 
   /**
@@ -50,7 +54,7 @@ public class BringRequest<T> extends BringHttpEntity<T>{
    * @return request HTTP method as {@link RequestMethod} enum value
    */
   public RequestMethod getRequestMethod() {
-    log.debug("Get requesst method call");
+    log.debug("Get request method call");
     return requestMethod;
   }
 
@@ -69,16 +73,12 @@ public class BringRequest<T> extends BringHttpEntity<T>{
   public static class Builder {
 
     private final RequestMethod requestMethod;
-    private URI uri;
+    private final URI uri;
     private Map<String, String> headers;
 
-    public Builder(RequestMethod requestMethod) {
+    private Builder(RequestMethod requestMethod, URI uri) {
       this.requestMethod = requestMethod;
-    }
-
-    public Builder uri(URI uri) {
       this.uri = uri;
-      return this;
     }
 
     public Builder headers(Map<String, String> headers) {

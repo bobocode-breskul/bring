@@ -48,4 +48,14 @@ public class BaseController {
   public String doGetWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
   }
+
+  @Delete("withRequestBody")
+  public String doDeleteWithRequestBody(@RequestBody RequestDto dto) {
+    return dto.getString() + dto.getInteger();
+  }
+
+  @Head("withRequestBody")
+  public String doHeadWithRequestBody(@RequestBody RequestDto dto) {
+    return dto.getString() + dto.getInteger();
+  }
 }

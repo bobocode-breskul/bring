@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
+  private final static List<String> METHODS_WITHOUT_BODY = List.of(
+      RequestMethod.GET.name(),
+      RequestMethod.HEAD.name(),
+      RequestMethod.DELETE.name()
+  );
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
   private final ObjectMapper mapper;
 
@@ -208,9 +214,9 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void validateRequestMethod(HttpServletRequest req) {
-    if (RequestMethod.GET.name().equals(req.getMethod())) {
-      log.error("GET request not allowed for @RequestBody parameter.");
-      throw new WebMethodParameterException("GET http method not support request body");
+    if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
+      log.error("%s request not allowed for @RequestBody parameter.".formatted(req.getMethod()));
+      throw new WebMethodParameterException("%s http method not support request body".formatted(req.getMethod()));
     }
   }
 

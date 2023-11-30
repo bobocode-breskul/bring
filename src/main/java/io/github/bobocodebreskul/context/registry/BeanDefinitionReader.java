@@ -3,8 +3,7 @@ package io.github.bobocodebreskul.context.registry;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanMethodDependencies;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
@@ -55,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * @see BringComponent
  */
 @Slf4j
-public class AnnotatedBeanDefinitionReader {
+public class BeanDefinitionReader {
 
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
@@ -67,7 +66,7 @@ public class AnnotatedBeanDefinitionReader {
    * @param registry the storage to load bean definitions into, in the form of a
    *                 BeanDefinitionRegistry
    */
-  public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+  public BeanDefinitionReader(BeanDefinitionRegistry registry) {
     this.beanDefinitionRegistry = registry;
   }
 
@@ -113,12 +112,10 @@ public class AnnotatedBeanDefinitionReader {
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
     annotatedBeanDefinition.setInitConstructor(beanConstructor);
-    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
+    List<BeanDependency> dependencies = getBeanMethodDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);
-    annotatedBeanDefinition.setAutowireCandidate(
-        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
@@ -149,10 +146,6 @@ public class AnnotatedBeanDefinitionReader {
   }
 
   private <T> void doRegisterConfigurationBean(Class<T> beanClass) {
-    log.debug("doRegisterConfigurationBean method invoked: beanClass={}", beanClass);
-    log.info("Registering the configuration bean definition methods of class {}",
-        beanClass.getName());
-    // todo: add validation logic
     BeanDefinitionReaderUtils.getBeanMethods(beanClass).stream()
         .map(this::mapBeanMethodToBeanDefinition)
         .forEach(beanDefinition -> beanDefinitionRegistry.registerBeanDefinition(
@@ -160,22 +153,29 @@ public class AnnotatedBeanDefinitionReader {
   }
 
   private ConfigurationBeanDefinition mapBeanMethodToBeanDefinition(Method beanMethod) {
-    String beanName = BeanDefinitionReaderUtils.getMethodBeanName(beanMethod);
+
+    log.debug("mapBeanMethodToBeanDefinition method invoked: beanClass={}",
+        beanMethod.getReturnType());
+    log.info("Registering the bean definition of class {}", beanMethod.getReturnType().getName());
     Class<?> beanType = beanMethod.getReturnType();
     Object configClassInstance = instantiateConfigurationClass(beanMethod.getDeclaringClass());
 
-    var configurationBeanDefinition = new ConfigurationBeanDefinition(beanType, beanMethod, configClassInstance);
+    String name = BeanDefinitionReaderUtils.getMethodBeanName(beanMethod);
+    var configurationBeanDefinition = new ConfigurationBeanDefinition(beanType, beanMethod,
+        configClassInstance);
+    configurationBeanDefinition.setName(name);
+    configurationBeanDefinition.setScope(SINGLETON_SCOPE);
+    configurationBeanDefinition.setBeanClass(beanMethod.getReturnType());
 
     if (beanMethod.isAnnotationPresent(Primary.class)) {
+      log.trace("Found @Primary annotation on the beanName={}", name);
       configurationBeanDefinition.setPrimary(true);
     }
 
-    configurationBeanDefinition.setScope(SINGLETON_SCOPE);
+    List<BeanDependency> dependencies = getBeanMethodDependencies(beanMethod);
+    configurationBeanDefinition.setDependencies(dependencies);
 
-
-    BeanDefinitionReaderUtils.getBeanMethodDependencies(beanMethod, beanName);
-    // todo: set bean dependencies from method parameters
-    // todo: define scope
+    return configurationBeanDefinition;
   }
 
   private Object instantiateConfigurationClass(Class<?> configClass) {

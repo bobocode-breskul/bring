@@ -2,7 +2,7 @@ package io.github.bobocodebreskul.context.config;
 
 import java.lang.reflect.Method;
 
-public class ConfigurationBeanDefinition extends GenericBeanDefinition{
+public class ConfigurationBeanDefinition extends GenericBeanDefinition {
 
   private Method beanMethod;
   private Object configurationInstance;

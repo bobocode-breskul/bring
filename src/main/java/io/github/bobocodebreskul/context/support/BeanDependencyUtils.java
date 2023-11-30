@@ -44,14 +44,12 @@ public class BeanDependencyUtils {
       return registry.getBeanDefinition(dependency.name());
     }
 
-    int modifiers = dependency.type().getModifiers();
-    if (Modifier.isInterface(modifiers) || Modifier.isAbstract(modifiers)) {
-      // TODO: IMPLEMENTATION - when class has sub-class marked as @BringComponent
+    try {
       return getDependencyForType(dependency.type(), registry);
+    } catch (DependencyNotResolvedException e) {
+      log.error("No suitable dependency found for {}", dependency);
+      throw new DependencyNotResolvedException("No suitable dependency found for " + dependency, e);
     }
-
-    log.error("No suitable dependency found for {}", dependency);
-    throw new DependencyNotResolvedException("No suitable dependency found for " + dependency);
   }
 
   private BeanDefinition getDependencyFromQualifier(String qualifier, BeanDependency dependency,

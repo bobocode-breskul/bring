@@ -80,16 +80,6 @@ public interface BeanDefinition {
   boolean isPrototype();
 
   /**
-   * Set whether this bean is a candidate for getting autowired into some other bean.
-   */
-  void setAutowireCandidate(boolean autowireCandidate);
-
-  /**
-   * Return whether this bean is a candidate for getting autowired into some other bean.
-   */
-  boolean isAutowireCandidate();
-
-  /**
    * Set whether this bean is a primary autowire candidate.
    * <p>If this value is {@code true} for exactly one bean among multiple
    * matching candidates, it will serve as the main autowire candidate.

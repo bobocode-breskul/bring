@@ -4,7 +4,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
+import io.github.bobocodebreskul.context.registry.BeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.ConfigTestClass;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.multi.MultiCandidate1;
@@ -38,7 +38,7 @@ class RecursiveClassPathAnnotatedBeanScannerTest {
   @Mock
   private ScanUtils scanUtils;
   @Mock
-  private AnnotatedBeanDefinitionReader beanDefinitionReader;
+  private BeanDefinitionReader beanDefinitionReader;
 
   @Test
   @DisplayName("Register two bean definitions when scan by single package")

@@ -41,7 +41,7 @@ class AnnotatedBeanDefinitionReaderTest {
   @Spy
   private BeanDefinitionRegistry registry;
   @InjectMocks
-  private AnnotatedBeanDefinitionReader annotatedBeanDefinitionReader;
+  private BeanDefinitionReader annotatedBeanDefinitionReader;
 
   @Test
   @DisplayName("Test simple bean definition is created and passed to registry")
@@ -63,7 +63,6 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
     assertThat(actualBeanDefinition.getDependencies()).isEmpty();
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
@@ -92,36 +91,6 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.getDependencies()).isNotEmpty();
     assertThat(actualBeanDefinition.getDependencies().stream().map(BeanDependency::type).toArray())
         .containsExactlyInAnyOrder(MyComponent.class);
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
-    assertThat(actualBeanDefinition.isPrimary()).isFalse();
-    assertThat(actualBeanDefinition.isSingleton()).isTrue();
-  }
-
-  @Test
-  @DisplayName("Test bean definition autowired candidate property marked as true")
-  @Order(3)
-  void given_BeanClassInjected_When_RegisterBean_Then_BeanDefinitionAutowiredCandidateTrue() {
-    //given
-    var beanClass = MyComponent.class;
-    var beanClassWithDependency = AnotherComponent.class;
-    var abd = new AnnotatedGenericBeanDefinition(beanClassWithDependency);
-    abd.setDependencies(List.of(new BeanDependency(beanClass.getSimpleName(), null, beanClass)));
-    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
-    doReturn(Collections.singletonList(abd)).when(registry).getBeanDefinitions();
-
-    //when
-    annotatedBeanDefinitionReader.register(beanClassWithDependency, beanClass);
-
-    //then
-    verify(registry, times(2)).registerBeanDefinition(nameCaptor.capture(),
-        definitionCaptor.capture());
-    assertThat(nameCaptor.getValue()).isEqualTo(beanClass.getName());
-    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
-    assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
-    assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.getDependencies()).isEmpty();
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isTrue();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
@@ -144,7 +113,6 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(primaryBeanClass);
     assertThat(actualBeanDefinition.getDependencies()).isEmpty();
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isTrue();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
@@ -170,7 +138,6 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
     assertThat(actualBeanDefinition.getName()).isEqualTo(beanName);
     assertThat(actualBeanDefinition.getDependencies()).isEmpty();
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
@@ -287,7 +254,6 @@ class AnnotatedBeanDefinitionReaderTest {
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
@@ -312,7 +278,6 @@ class AnnotatedBeanDefinitionReaderTest {
     BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
     assertThat(actualBeanDefinition).isInstanceOf(AnnotatedGenericBeanDefinition.class);
     assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(beanClass);
-    assertThat(actualBeanDefinition.isAutowireCandidate()).isFalse();
     assertThat(actualBeanDefinition.isPrimary()).isFalse();
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }

@@ -46,7 +46,7 @@ public class BringContainer implements ObjectFactory {
    * @return created beans container
    */
   public static BringContainer run(Class<?> configClass) {
-    PropertiesConfiguration.loadProperties();
+    PropertiesConfiguration.loadProperties(PropertiesConfiguration.APPLICATION_PROPERTIES);
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);

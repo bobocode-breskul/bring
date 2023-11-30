@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * @see BringComponent
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD}) // TODO: expend java doc
 public @interface Primary {
 
 }

@@ -7,11 +7,13 @@ import static io.github.bobocodebreskul.context.support.ReflectionUtils.hasDefau
 import static java.util.Objects.nonNull;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
+import io.github.bobocodebreskul.context.annotations.BringBean;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +185,41 @@ public class BeanDefinitionReaderUtils {
     });
   }
 
+  // TODO: create docs
+  // TODO: tests
+  public static <T> List<Method> getBeanMethods(Class<T> beanClass) {
+    validateBeanClassNonNull(beanClass);
+    return Arrays.stream(beanClass.getMethods())
+        .filter(method -> method.isAnnotationPresent(BringBean.class))
+        .toList();
+  }
+
+  public static String getMethodBeanName(Method beanMethod) {
+    Objects.requireNonNull(beanMethod, () -> {
+      log.error("Failed to generate bean name for nullable bean bean method");
+      return "Bean method has not been specified";
+    });
+
+    return beanMethod.getName();
+  }
+
+  public static List<BeanDependency> getBeanMethodDependencies(Method beanMethod, String beanName) {
+    Objects.requireNonNull(beanMethod, () -> {
+      log.error("Failed to get bean method dependencies for nullable method");
+      return "Bean method has not been specified";
+    });
+    log.trace("Scanning method {} for dependencies", beanMethod.getName());
+
+    Map<String, String> parameterNameByAnnotationValue =
+        ReflectionUtils.extractMethodAnnotationValues(beanMethod, Qualifier.class,
+            QUALIFIER_NAME_FIELD, String.class);
+
+    return Arrays.stream(beanMethod.getParameters())
+        .map(parameter -> new BeanDependency(get(beanMethod),
+            parameterNameByAnnotationValue.get(parameter.getName()), parameter.getType()))
+        .collect(Collectors.toList());
+  }
+
   private static Set<String> extractBeanNamesFromAnnotations(Class<?> beanClass) {
     return Arrays.stream(beanClass.getAnnotations())
       .filter(ReflectionUtils::isComponentAnnotation)
@@ -190,6 +227,9 @@ public class BeanDefinitionReaderUtils {
         annotation.annotationType(), COMPONENT_NAME_FIELD, String.class))
       .filter(beanName -> nonNull(beanName) && !beanName.isBlank())
       .collect(Collectors.toSet());
+
+    beanClass.class.asSubclass()
+    // TODO: read BringConfiguration name;
   }
 
   private static String generateBeanName(Class<?> beanClass) {

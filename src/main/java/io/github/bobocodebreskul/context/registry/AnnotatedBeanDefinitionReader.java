@@ -8,15 +8,19 @@ import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtil
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.BringConfiguration;
 import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +88,11 @@ public class AnnotatedBeanDefinitionReader {
    * @param beanClass the class of the bean
    */
   public void registerBean(Class<?> beanClass) {
-    doRegisterBean(beanClass);
+    if (ReflectionUtils.isAnnotationPresentForClass(BringConfiguration.class, beanClass)) {
+      doRegisterConfigurationBean(beanClass);
+    } else {
+      doRegisterBean(beanClass);
+    }
   }
 
   private <T> void doRegisterBean(Class<T> beanClass) {
@@ -138,5 +146,44 @@ public class AnnotatedBeanDefinitionReader {
 
     log.trace("Retrieve default singleton scope for bean: {}", beanName);
     return SINGLETON_SCOPE;
+  }
+
+  private <T> void doRegisterConfigurationBean(Class<T> beanClass) {
+    log.debug("doRegisterConfigurationBean method invoked: beanClass={}", beanClass);
+    log.info("Registering the configuration bean definition methods of class {}",
+        beanClass.getName());
+    // todo: add validation logic
+    BeanDefinitionReaderUtils.getBeanMethods(beanClass).stream()
+        .map(this::mapBeanMethodToBeanDefinition)
+        .forEach(beanDefinition -> beanDefinitionRegistry.registerBeanDefinition(
+            beanDefinition.getName(), beanDefinition));
+  }
+
+  private ConfigurationBeanDefinition mapBeanMethodToBeanDefinition(Method beanMethod) {
+    String beanName = BeanDefinitionReaderUtils.getMethodBeanName(beanMethod);
+    Class<?> beanType = beanMethod.getReturnType();
+    Object configClassInstance = instantiateConfigurationClass(beanMethod.getDeclaringClass());
+
+    var configurationBeanDefinition = new ConfigurationBeanDefinition(beanType, beanMethod, configClassInstance);
+
+    if (beanMethod.isAnnotationPresent(Primary.class)) {
+      configurationBeanDefinition.setPrimary(true);
+    }
+
+    configurationBeanDefinition.setScope(SINGLETON_SCOPE);
+
+
+    BeanDefinitionReaderUtils.getBeanMethodDependencies(beanMethod, beanName);
+    // todo: set bean dependencies from method parameters
+    // todo: define scope
+  }
+
+  private Object instantiateConfigurationClass(Class<?> configClass) {
+    try {
+      return configClass.getConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+             NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

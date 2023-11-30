@@ -9,12 +9,16 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.github.bobocodebreskul.Config;
+import io.github.bobocodebreskul.context.annotations.BringBean;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.BringConfiguration;
 import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -282,6 +286,59 @@ class AnnotatedBeanDefinitionReaderTest {
     assertThat(actualBeanDefinition.isSingleton()).isTrue();
   }
 
+  @Test
+  @DisplayName("Register Bean from configuration class")
+  @Order(8)
+  public void given_ConfigurationClassWithOneBringBeanMethod_when_RegisterBringBean_then_ReturnBuiltBeanDefinition() {
+    Class<?> configurationClass = Config1.class;
+
+    annotatedBeanDefinitionReader.registerBean(configurationClass);
+
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition).isInstanceOf(ConfigurationBeanDefinition.class);
+    assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(configurationClass.getMethods()[0].getReturnType());
+    assertThat(actualBeanDefinition.isPrimary()).isFalse();
+    assertThat(actualBeanDefinition.isSingleton()).isTrue();
+    assertThat(actualBeanDefinition.getName()).isEqualTo(configurationClass.getMethods()[0].getName());
+  }
+
+  @Test
+  @DisplayName("Register Primary Bean from configuration class")
+  @Order(8)
+  public void given_ConfigurationClassWithOneBringBeanMethod_when_RegisterBringBeanAndItPrimary_then_ReturnBuiltBeanDefinition() {
+    Class<?> configurationClass = Config2.class;
+
+    annotatedBeanDefinitionReader.registerBean(configurationClass);
+
+    ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<BeanDefinition> definitionCaptor = ArgumentCaptor.forClass(BeanDefinition.class);
+
+    verify(registry, atMostOnce()).registerBeanDefinition(anyString(), any());
+    verify(registry).registerBeanDefinition(nameCaptor.capture(), definitionCaptor.capture());
+    BeanDefinition actualBeanDefinition = definitionCaptor.getValue();
+    assertThat(actualBeanDefinition).isInstanceOf(ConfigurationBeanDefinition.class);
+    assertThat(actualBeanDefinition.getBeanClass()).isEqualTo(configurationClass.getMethods()[0].getReturnType());
+    assertThat(actualBeanDefinition.isPrimary()).isTrue();
+    assertThat(actualBeanDefinition.isSingleton()).isTrue();
+    assertThat(actualBeanDefinition.getName()).isEqualTo(configurationClass.getMethods()[0].getName());
+  }
+
+  @Test
+  @DisplayName("Register bean from configuration class do not have default constructor then throw error")
+  @Order(9)
+  public void given_ConfigurationClassWithOneBringBeanMethod_when_ConfigurationClassWithOutDefaultConstructor_then_ThrowException() {
+    Class<?> configurationClass = Config3.class;
+
+    assertThatThrownBy(() -> annotatedBeanDefinitionReader.registerBean(configurationClass))
+        .isInstanceOf(BeanDefinitionCreationException.class)
+        .hasMessage("Default constructor invoke for configuration fails: %s".formatted(configurationClass));
+  }
+
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   @BringComponent
@@ -342,4 +399,35 @@ class AnnotatedBeanDefinitionReaderTest {
   @BringComponent
   @Scope(BeanDefinition.PROTOTYPE_SCOPE)
   static class PrototypeComponent {}
+
+  @BringConfiguration
+  public static class Config1 {
+
+    @BringBean
+    public String bean() {
+      return "hello";
+    }
+  }
+
+  @BringConfiguration
+  public static class Config2 {
+
+    @BringBean
+    @Primary
+    public String bean() {
+      return "hello";
+    }
+  }
+
+  @BringConfiguration
+  public static class Config3 {
+
+    public Config3(String s) {
+    }
+
+    @BringBean
+    public String bean() {
+      return "hello";
+    }
+  }
 }

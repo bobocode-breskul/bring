@@ -349,7 +349,7 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @Test
-  @DisplayName("Get Method name ")
+  @DisplayName("Get Method name")
   @Order(23)
   void given_Method_When_MethodNotNull_Then_ReturnName() {
     Method method = Config1.class.getMethods()[0];

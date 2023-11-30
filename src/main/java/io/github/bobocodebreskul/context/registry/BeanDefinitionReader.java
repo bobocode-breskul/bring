@@ -183,7 +183,7 @@ public class BeanDefinitionReader {
       return configClass.getConstructor().newInstance();
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
              NoSuchMethodException e) {
-      throw new RuntimeException(e);
+      throw new BeanDefinitionCreationException("Default constructor invoke for configuration fails: %s".formatted(configClass));
     }
   }
 }

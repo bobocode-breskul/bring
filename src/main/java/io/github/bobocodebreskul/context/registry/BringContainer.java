@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.context.registry;
 
+import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
@@ -45,6 +46,7 @@ public class BringContainer implements ObjectFactory {
    * @return created beans container
    */
   public static BringContainer run(Class<?> configClass) {
+    PropertiesConfiguration.loadProperties(PropertiesConfiguration.APPLICATION_PROPERTIES);
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
     AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
         definitionRegistry);

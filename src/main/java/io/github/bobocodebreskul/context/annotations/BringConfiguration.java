@@ -6,9 +6,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
-//TODO: write doc
-
+/**
+ * Indicates that a class is a configuration component. In which we can add methods and mark them
+ * with {@link BringBean} then from this methods will be used for bean creation.
+ *
+ * <pre>
+ *   {@code
+ * @BringConfiguration
+ * public class Config {
+ *
+ *   @BringBean
+ *   public YourObject beanName() {
+ *     return new YourObject();
+ *   }
+ * }}
+ * </pre>
+ *
+ * @see BringBean
+ * @see BringComponent
+ */
 @BringComponent
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

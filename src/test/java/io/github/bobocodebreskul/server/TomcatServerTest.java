@@ -2,9 +2,9 @@ package io.github.bobocodebreskul.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.RequestMapping;
-import io.github.bobocodebreskul.context.annotations.RestController;
+import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
+import io.github.bobocodebreskul.server.annotations.RestController;
 import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import io.github.bobocodebreskul.context.registry.BringContainer;
@@ -62,7 +62,7 @@ class TomcatServerIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"hello\"\n");
+    assertThat(response.body()).isEqualTo("\"hello\"" + System.lineSeparator());
   }
 
   @RestController

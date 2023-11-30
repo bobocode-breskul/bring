@@ -1,8 +1,11 @@
 package io.github.bobocodebreskul.server;
 
 import static io.github.bobocodebreskul.config.PropertiesConfiguration.getPropertyAsIntOrDefault;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import io.github.bobocodebreskul.context.registry.BringContainer;
+import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +47,7 @@ public class TomcatServer {
    */
   public static void run(BringContainer container) {
     log.info("Tomcat server is starting...");
+    disableTomcatLogs();
     tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);
@@ -117,5 +121,15 @@ public class TomcatServer {
     context.addServletContainerInitializer(
         new WebContainerInitializer(new WebPathScanner(container)), null);
     log.info("Tomcat context set.");
+  }
+
+  private static void disableTomcatLogs() {
+    System.setProperty("java.util.logging.config.file", getResourcePath("logging.properties"));
+  }
+
+  private static String getResourcePath(String fileName) {
+    return Optional.ofNullable(TomcatServer.class.getClassLoader().getResource(fileName))
+        .map(URL::getPath)
+        .orElse(EMPTY);
   }
 }

@@ -92,16 +92,16 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("a", getFileLocation(A.class), "b", getFileLocation(B.class), "c",
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("a", getFileLocation(A.class), "b", getFileLocation(B.class), "c",
         getFileLocation(C.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
@@ -132,16 +132,16 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("a", getFileLocation(A.class), "d1", getFileLocation(D1.class), "c",
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("a", getFileLocation(A.class), "d1", getFileLocation(D1.class), "c",
         getFileLocation(C.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
@@ -176,16 +176,16 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("a", getFileLocation(A.class), "d2", getFileLocation(D2.class), "c",
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("a", getFileLocation(A.class), "d2", getFileLocation(D2.class), "c",
         getFileLocation(C.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
@@ -221,16 +221,16 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("a", getFileLocation(A.class), "d1", getFileLocation(D1.class), "c",
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("a", getFileLocation(A.class), "d1", getFileLocation(D1.class), "c",
         getFileLocation(C.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
@@ -315,16 +315,16 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        ↑     ↓
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("b", getFileLocation(B.class), "c", getFileLocation(C.class), "d",
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("↑     ↓%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("b", getFileLocation(B.class), "c", getFileLocation(C.class), "d",
         getFileLocation(D1.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
@@ -343,12 +343,12 @@ public class BeanDefinitionValidatorTest {
 
     //when
     //then
-    String expectedMessage = """
-        The dependencies of some of the beans form a cycle:
-        ┌─────┐
-        |  %s defined in file [%s]
-        └─────┘
-                """.formatted("a", getFileLocation(A.class));
+    StringBuilder stringBuilder = new StringBuilder("The dependencies of some of the beans form a cycle:%n");
+    stringBuilder.append("┌─────┐%n");
+    stringBuilder.append("|  %s defined in file [%s]%n");
+    stringBuilder.append("└─────┘%n");
+    String expectedMessage = stringBuilder.toString()
+        .formatted("a", getFileLocation(A.class));
     assertThatThrownBy(() -> beanDefinitionValidator.validateBeanDefinitions())
         .isInstanceOf(BeanDefinitionValidationException.class)
         .hasMessage(expectedMessage);

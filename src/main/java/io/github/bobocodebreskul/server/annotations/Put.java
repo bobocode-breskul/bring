@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.annotations;
+package io.github.bobocodebreskul.server.annotations;
 
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import java.lang.annotation.ElementType;
@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Head annotation marks our method as a Head handler of a corresponding Controller. This annotation
+ * Put annotation marks our method as a Put handler of a corresponding Controller. This annotation
  * is designed for use in conjunction with the {@link RestController @RestController} annotation.
  *
  * <p>Usage:</p>
@@ -16,8 +16,8 @@ import java.lang.annotation.Target;
  * @RestController("controller")
  * public class SampleController {
  *
- *   @Head("/test")
- *   public ResponseEntity doHead() {
+ *   @Put("/test")
+ *   public ResponseEntity doPut() {
  *     return new ResponseEntity().ok();
  *   }
  * }}
@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@RequestMapping(method = RequestMethod.HEAD)
-public @interface Head {
+@RequestMapping(method = RequestMethod.PUT)
+public @interface Put {
 
   String value() default "";
 }

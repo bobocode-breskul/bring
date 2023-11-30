@@ -16,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +54,7 @@ class WebContainerInitializerTest {
   }
 
   @Test
+  @DisplayName("Verify DispatcherServlet Configuration on Startup")
   @Order(1)
   public void given_WebPathScannerReturnPaths_When_OnStartup_Then_DispatcherServletConfigured()
       throws ServletException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -71,6 +73,7 @@ class WebContainerInitializerTest {
   }
 
   @Order(2)
+  @DisplayName("Ensure ServletException is thrown when WebPathScanner encounters InvocationTargetException")
   @ParameterizedTest
   @MethodSource("provideExceptionsForWebPathScannerTest")
   public void given_WebPathScannerThrowsInvocationTargetException_When_OnStartup_Then_ShouldThrowServletException(

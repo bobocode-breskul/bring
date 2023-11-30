@@ -58,7 +58,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Get Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Get Method\"" + System.lineSeparator());
   }
 
 
@@ -75,7 +75,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Post Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Post Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -91,7 +91,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Put Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Put Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -107,7 +107,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Delete Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Delete Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -141,7 +141,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"%s%s\"\n".formatted(requestBody.getString(), requestBody.getInteger()));
+    assertThat(response.body()).isEqualTo("\"%s%s\"%n".formatted(requestBody.getString(), requestBody.getInteger()));
   }
 
   @Test

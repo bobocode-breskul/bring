@@ -60,7 +60,7 @@ class TomcatServerIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"hello\"\n");
+    assertThat(response.body()).isEqualTo("\"hello\"" + System.lineSeparator());
   }
 
   @RestController

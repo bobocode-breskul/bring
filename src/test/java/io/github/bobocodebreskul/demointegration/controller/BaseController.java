@@ -1,13 +1,13 @@
 package io.github.bobocodebreskul.demointegration.controller;
 
-import io.github.bobocodebreskul.context.annotations.Delete;
-import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.Head;
-import io.github.bobocodebreskul.context.annotations.Post;
-import io.github.bobocodebreskul.context.annotations.Put;
-import io.github.bobocodebreskul.context.annotations.RequestBody;
-import io.github.bobocodebreskul.context.annotations.RequestMapping;
-import io.github.bobocodebreskul.context.annotations.RestController;
+import io.github.bobocodebreskul.server.annotations.Delete;
+import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.Head;
+import io.github.bobocodebreskul.server.annotations.Post;
+import io.github.bobocodebreskul.server.annotations.Put;
+import io.github.bobocodebreskul.server.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
+import io.github.bobocodebreskul.server.annotations.RestController;
 
 @RestController
 // TODO wrong behavior on empty if in method start with slash

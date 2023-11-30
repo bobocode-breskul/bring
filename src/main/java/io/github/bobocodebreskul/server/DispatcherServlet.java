@@ -4,8 +4,8 @@ import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bobocodebreskul.context.annotations.Get;
-import io.github.bobocodebreskul.context.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.Get;
+import io.github.bobocodebreskul.server.annotations.RequestBody;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.MethodInvocationException;
 import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
@@ -108,6 +108,7 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
+    ObjectMapper mapper = new ObjectMapper();
     String pathInfo = req.getPathInfo().toLowerCase();
 
     // Log debug-level information for request processing details

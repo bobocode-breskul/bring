@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.annotations;
+package io.github.bobocodebreskul.server.annotations;
 
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import java.lang.annotation.ElementType;

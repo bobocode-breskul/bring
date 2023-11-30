@@ -21,8 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpRequestMapper {
+
   ObjectMapper objectMapper = new ObjectMapper();
 
+  // todo test BringResponse with all fields then we set correct values to HttpServletResponse
+  // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException
+  // todo test when ObjectMapper#writeValueAsString(body) throw JsonProcessingException then throw RequestsMappingException
   public <T> void writeBringResponseIntoHttpServletResponse(
     BringResponse<T> bringResponseEntity, HttpServletResponse httpServletResponse) {
 
@@ -37,9 +41,22 @@ public class HttpRequestMapper {
         httpServletResponse.getOutputStream().print(writeBodyAsJson(bringResponseEntity.getBody()));
       } catch (IOException e) {
         log.error("Failed to write response entity to httpServletResponse", e);
-        throw new RequestsMappingException("Failed to write response entity to httpServletResponse", e);
+        throw new RequestsMappingException("Failed to write response entity to httpServletResponse",
+          e);
       }
     }
+  }
+
+  // todo test when we fill all BringRequest fields from HttpServletRequest when body exists
+  // todo test when we fill all BringRequest fields from HttpServletRequest when body not exists
+  // todo test when objectMapper.readValue(stringBody, bodyType) then throws IOException
+  public <T> BringRequest<T> mapHttpServletRequestOnBringRequestEntity(
+    HttpServletRequest httpServletRequest, Class<T> bodyType) {
+
+    RequestMethod method = RequestMethod.getByName(httpServletRequest.getMethod());
+    return BringRequest.method(method, URI.create(httpServletRequest.getRequestURI()))
+      .headers(extractHeaders(httpServletRequest))
+      .body(extractBody(httpServletRequest, bodyType));
   }
 
   private String writeBodyAsJson(Object body) {
@@ -51,22 +68,10 @@ public class HttpRequestMapper {
     }
   }
 
-
-  public <T> BringRequest<T> mapHttpServletRequestOnBringRequestEntity(
-      HttpServletRequest httpServletRequest, Class<T> bodyType) {
-
-      RequestMethod method = RequestMethod.getByName(httpServletRequest.getMethod());
-      // TODO: handle void type, empty input (for example GET)
-      return BringRequest.method(method)
-          .uri(extractURI(httpServletRequest))
-          .headers(extractHeaders(httpServletRequest))
-          .body(extractBody(httpServletRequest, bodyType));
-
-  }
-
   private <T> T extractBody(HttpServletRequest request, Class<T> bodyType) {
     try {
-      BufferedReader bodyReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+      BufferedReader bodyReader = new BufferedReader(
+        new InputStreamReader(request.getInputStream()));
       String stringBody = bodyReader.lines().toString();
       T body = null;
       if (!stringBody.isBlank()) {
@@ -74,17 +79,6 @@ public class HttpRequestMapper {
       }
       return body;
     } catch (IOException e) {
-      // todo update exception
-      log.error("Failed to map HttpServletRequest body into object.", e);
-      throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);
-    }
-  }
-
-  private URI extractURI(HttpServletRequest request) {
-    try {
-      String stringUri = request.getRequestURI();
-      return new URI(stringUri);
-    } catch (URISyntaxException e) {
       log.error("Failed to map HttpServletRequest body into object.", e);
       throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);
     }
@@ -99,5 +93,4 @@ public class HttpRequestMapper {
     }
     return headers;
   }
-
 }

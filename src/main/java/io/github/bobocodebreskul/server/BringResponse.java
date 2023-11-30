@@ -39,7 +39,7 @@ public class BringResponse<T> extends BringHttpEntity<T> {
   }
 
   public BringResponse(@Nullable T body, @Nullable Map<String, String> headers, ResponseStatus status) {
-    super(isNull(headers) ? new HashMap<>() : headers, body);
+    super(headers, body);
     if (isNull(status)) {
       log.error("HttpStatus must not be null");
       throw new IllegalArgumentException("HttpStatus must not be null");

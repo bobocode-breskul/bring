@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ClassUtils;
+import org.slf4j.Logger;
 
 /**
  * Servlet that dispatches incoming HTTP GET requests to the appropriate controller methods.
@@ -40,6 +41,7 @@ import org.apache.commons.lang3.ClassUtils;
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
 public class DispatcherServlet extends HttpServlet {
+
   private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
   private final static List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),

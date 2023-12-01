@@ -130,6 +130,11 @@ public class BringResponse<T> {
     return "";
   }
 
+  /**
+   * Returns all headers.
+   *
+   * @return Map of header and value.
+   */
   public Map<String, String> getAllHeaders() {
     return new HashMap<>(this.headers);
   }

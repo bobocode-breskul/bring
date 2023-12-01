@@ -35,9 +35,7 @@ import org.slf4j.Logger;
  * corresponding methods in the controllers provided by the {@link BringContainer}. It uses
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
-@Slf4j
 public class DispatcherServlet extends HttpServlet {
-
   private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
   private final static List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),

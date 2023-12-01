@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.config.PropertiesConfiguration.getPropertyAsIntOrDefault;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import io.github.bobocodebreskul.context.registry.BringContainer;
@@ -23,11 +24,17 @@ import org.apache.catalina.startup.Tomcat;
 public class TomcatServer {
 
   private static final String DEFAULT_HOST = "localhost";
-  private static final int DEFAULT_PORT = 8080;
+
+  /**
+   * The PORT field stores the web server port. If the "server.port" property exists in the
+   * application.properties file, a custom port will be set. Otherwise, the default port 8080 will
+   * be used.
+   */
+  private static final int PORT = getPropertyAsIntOrDefault("server.port", 8080);
   private static final String DEFAULT_CONTEXT_PATH = "/";
   private static final String DOC_BASE = ".";
-  private static Tomcat tomcat;
   private static final ExecutorService executor = Executors.newFixedThreadPool(1);
+  private static Tomcat tomcat;
 
   /**
    * Starts an embedded Tomcat server with the specified {@link BringContainer}.
@@ -44,7 +51,7 @@ public class TomcatServer {
     tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);
-    tomcat.setPort(DEFAULT_PORT);
+    tomcat.setPort(PORT);
     tomcat.getConnector();
     setContext(tomcat, container);
 
@@ -112,7 +119,10 @@ public class TomcatServer {
   private static void setContext(Tomcat tomcat, BringContainer container) {
     Context context = tomcat.addWebapp(DEFAULT_CONTEXT_PATH, DOC_BASE);
     context.addServletContainerInitializer(
-        new WebContainerInitializer(new WebPathScanner(container)), null);
+        new WebContainerInitializer(
+            new WebErrorHandlerControllerScanner(container),
+            new WebPathScanner(container)),
+        null);
     log.info("Tomcat context set.");
   }
 

@@ -58,7 +58,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Get Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Get Method\"" + System.lineSeparator());
   }
 
 
@@ -75,7 +75,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Post Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Post Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -91,7 +91,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Put Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Put Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -107,7 +107,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"BaseController Delete Method\"\n");
+    assertThat(response.body()).isEqualTo("\"BaseController Delete Method\"" + System.lineSeparator());
   }
 
   @Test
@@ -141,7 +141,7 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).isEqualTo("\"%s%s\"\n".formatted(requestBody.getString(), requestBody.getInteger()));
+    assertThat(response.body()).isEqualTo("\"%s%s\"%n".formatted(requestBody.getString(), requestBody.getInteger()));
   }
 
   @Test
@@ -211,5 +211,69 @@ public class BringIntegrationTest {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(500);
+  }
+
+  @Test
+  @DisplayName("Test application start with controller get method throws runtime exception and with configured exception handler with 1 argument RuntimeException ex should return correct body")
+  void given_RanApplication_when_ControllerGetMethodThrowsRuntimeException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/error/runtime";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(500);
+    assertThat(response.body()).contains("RuntimeException");
+  }
+
+  @Test
+  @DisplayName("Test application start with controller get method throws IllegalArgumentException and with configured exception handler with 2 argument IllegalArgumentException ex, HttpServletRequest req should return correct body")
+  void given_RanApplication_when_ControllerGetMethodThrowsIllegalArgumentException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/error/illegalargument";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(500);
+    assertThat(response.body()).contains("IllegalArgumentException and HttpServletRequest");
+  }
+
+  @Test
+  @DisplayName("Test application start with controller get method throws DuplicatePathException and with configured exception handler with 2 argument DuplicatePathException ex, HttpServletRequest req should not return body")
+  void given_RanApplication_when_ControllerGetMethodThrowsDuplicatePathException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/error/duplicate";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(500);
+    assertThat(response.body()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Test application start with controller get method throws AmbiguousHttpAnnotationException and with configured exception handler with 2 argument HttpServletRequest req, AmbiguousHttpAnnotationException ex should return correct body")
+  void given_RanApplication_when_ControllerGetMethodThrowsAmbiguousHttpAnnotationException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/error/ambiguos";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(500);
+    assertThat(response.body()).contains("HttpServletRequest and AmbiguousHttpAnnotationException");
   }
 }

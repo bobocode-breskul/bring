@@ -48,7 +48,7 @@ public class TomcatServer {
    */
   public static void run(BringContainer container) {
     log.info("Tomcat server is starting...");
-//    disableTomcatLogs();
+    disableTomcatLogs();
     tomcat = new Tomcat();
     tomcat.setHostname(DEFAULT_HOST);
     tomcat.getHost().setAppBase(DOC_BASE);

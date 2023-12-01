@@ -100,6 +100,9 @@ public class BringResponse<T> extends BringHttpEntity<T> {
     this.status = status;
   }
 
+  /**
+   * Builder class to simplify {@link BringResponse} object creation.
+   */
   public static class ResponseBuilder {
 
     private final ResponseStatus responseStatus;
@@ -109,15 +112,33 @@ public class BringResponse<T> extends BringHttpEntity<T> {
       this.responseStatus = status;
     }
 
+    /**
+     * Set HTTP headers to builder objects.
+     *
+     * @param headers HTTP headers
+     * @return current Builder object
+     */
     public ResponseBuilder headers(Map<String, String> headers) {
       this.headers = headers;
       return this;
     }
 
+    /**
+     * Set HTTP entity body to builder and compose {@link BringResponse} object.
+     *
+     * @param body parameterized body
+     * @return {@code BringResponse} object instance
+     * @param <T> body type
+     */
     public <T> BringResponse<T> body(T body) {
       return new BringResponse<>(body, headers, responseStatus);
     }
 
+    /**
+     * Compose {@link BringResponse} with empty body.
+     *
+     * @return {@code BringResponse} object instance
+     */
     public BringResponse<Void> build() {
       return new BringResponse<>(null, headers, responseStatus);
     }

@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO: tests
 /**
  * Extension of {@link BringHttpEntity} that adds HTTP method and target URL. Could be used as
  * method parameter in {@code @RestController} classes.
@@ -78,15 +77,33 @@ public class BringRequest<T> extends BringHttpEntity<T>{
       this.uri = uri;
     }
 
+    /**
+     * Set HTTP headers to builder objects.
+     *
+     * @param headers HTTP headers
+     * @return current Builder object
+     */
     public Builder headers(Map<String, String> headers) {
       this.headers = headers;
       return this;
     }
 
+    /**
+     * Set HTTP entity body to builder and compose {@link BringRequest} object.
+     *
+     * @param body parameterized body
+     * @return {@code BringRequest} object instance
+     * @param <T> body type
+     */
     public <T> BringRequest<T> body(T body) {
       return create(body);
     }
 
+    /**
+     * Compose {@link BringRequest} with empty body.
+     *
+     * @return {@code BringRequest} object instance
+     */
     public BringRequest<Void> build() {
       return create(null);
     }

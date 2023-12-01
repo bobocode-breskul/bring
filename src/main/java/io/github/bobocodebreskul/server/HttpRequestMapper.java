@@ -52,10 +52,6 @@ public class HttpRequestMapper {
     this.objectMapper = objectMapper;
   }
 
-  // todo test BringResponse with all fields then we set correct values to HttpServletResponse
-  // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException
-  // todo test when ObjectMapper#writeValueAsString(body) throw JsonProcessingException then throw RequestsMappingException
-
   /**
    * Convert {@code HttpServletResponse} into parameterized {@link BringResponse}
    *
@@ -100,10 +96,6 @@ public class HttpRequestMapper {
           e);
     }
   }
-
-  // todo test when we fill all BringRequest fields from HttpServletRequest when body exists
-  // todo test when we fill all BringRequest fields from HttpServletRequest when body not exists
-  // todo test when objectMapper.readValue(stringBody, bodyType) then throws IOException
 
   /**
    * Convert {@code HttpServletRequest} into parameterized {@link BringRequest}

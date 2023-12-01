@@ -76,10 +76,14 @@ class BringHttpEntity<T> {
       log.info("Header value for header name '{}' is '{}'.", headerName, headerValue);
       return headerValue;
     }
-    log.error("Header for name='{}' not found.", headerName);
+    log.warn("Header for name='{}' not found.", headerName);
     return "";
   }
 
+  /**
+   * Get all set header names
+   * @return header names as Set collection
+   */
   public Set<String> getHeadersNames() {
     return new HashSet<>(this.headers.keySet());
   }
@@ -179,11 +183,19 @@ class BringHttpEntity<T> {
     return String.join("; ", pairs);
   }
 
+  /**
+   * Get HTTP entity as parameterized body
+   * @return parameterized body
+   */
   public T getBody() {
     log.debug("Get body call");
     return body;
   }
 
+  /**
+   * Set HTTP entity parameterized body
+   * @param body parameterized body
+   */
   public void setBody(T body) {
     log.debug("Set body call");
     this.body = body;

@@ -1,6 +1,10 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
+
 import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestMethod;
+import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestParameterType;
 
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +15,7 @@ import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.RequestParam;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -27,7 +32,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 
 /**
@@ -40,11 +47,6 @@ import org.slf4j.Logger;
 public class DispatcherServlet extends HttpServlet {
 
   private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-  private static final List<String> METHODS_WITHOUT_BODY = List.of(
-      RequestMethod.GET.name(),
-      RequestMethod.HEAD.name(),
-      RequestMethod.DELETE.name()
-  );
   private final HttpRequestMapper httpRequestMapper;
   private final Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod;
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
@@ -311,6 +313,11 @@ public class DispatcherServlet extends HttpServlet {
         return composeBringRequest(parameter, req);
       }
 
+      if (parameter.isAnnotationPresent(RequestParam.class)) {
+        validateRequestParameterType(parameter.getType());
+        return getRequestParam(parameter, req);
+      }
+
       if (parameter.isAnnotationPresent(RequestBody.class)) {
         validateRequestMethod(req);
         return getBodyFromRequest(parameter.getType(), req);
@@ -338,14 +345,6 @@ public class DispatcherServlet extends HttpServlet {
 
   private boolean isBringRequest(Parameter parameter) {
     return BringRequest.class.isAssignableFrom(parameter.getType());
-  }
-
-  private void validateRequestMethod(HttpServletRequest req) {
-    if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
-      log.error("{} request not allowed for @RequestBody parameter.", req.getMethod());
-      throw new WebMethodParameterException(
-          "%s http method not support request body".formatted(req.getMethod()));
-    }
   }
 
   private BringRequest<?> composeBringRequest(Parameter parameter, HttpServletRequest req) {
@@ -412,4 +411,18 @@ public class DispatcherServlet extends HttpServlet {
     }
     return path;
   }
+
+  private Object getRequestParam(Parameter parameter, HttpServletRequest req) {
+    RequestParam annotation = parameter.getAnnotation(RequestParam.class);
+    String requestParamName = annotation.value();
+    log.debug("Retrieving request parameter with name: {}", requestParamName);
+    return Optional.ofNullable(req.getParameter(requestParamName))
+        .map(value -> castValue(value, parameter.getType()))
+        .orElseGet(() -> {
+          log.warn("Cannot find request parameter [{}] in request", requestParamName);
+          return null;
+        });
+  }
+
+
 }

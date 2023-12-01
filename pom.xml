@@ -31,6 +31,12 @@
       <organizationUrl>https://hladchenko.com/</organizationUrl>
     </developer>
     <developer>
+      <name>Volodymyr Holichenko</name>
+      <email>vladimirgolicenko154@gmail.com</email>
+      <organization>https://github.com/bobocode-breskul</organization>
+      <organizationUrl>https://www.linkedin.com/in/volodymyr-holichenko-1a1374174/</organizationUrl>
+    </developer>
+    <developer>
       <name>Roman Pryshchepa</name>
       <email>roman.pryshchepa@gmail.com</email>
       <organization>PE Roman Pryshchepa</organization>
@@ -82,6 +88,7 @@
     <tomcat.version>10.1.16</tomcat.version>
     <jakarta.version>6.0.0</jakarta.version>
     <jackson.version>2.16.0</jackson.version>
+    <maven.compiler.version>3.11.0</maven.compiler.version>
   </properties>
 
   <dependencies>
@@ -157,8 +164,6 @@
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-
-
   </dependencies>
 
   <distributionManagement>
@@ -273,6 +278,17 @@
             <version>${junit.version}</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <compilerArgs>
+            <compilerArgument>-parameters</compilerArgument>
+          </compilerArgs>
+        </configuration>
       </plugin>
     </plugins>
   </build>

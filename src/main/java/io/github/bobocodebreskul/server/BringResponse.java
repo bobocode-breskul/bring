@@ -2,11 +2,13 @@ package io.github.bobocodebreskul.server;
 
 import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
+import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Extension of {@link BringHttpEntity} that adds HTTP response status.
@@ -22,10 +24,12 @@ import lombok.extern.slf4j.Slf4j;
  *       .body("RESULT DATA");
  *   }
  * </pre>
+ *
  * @param <T> body type
  */
-@Slf4j
 public class BringResponse<T> extends BringHttpEntity<T> {
+
+  private final static Logger log = LoggerFactory.getLogger(BringResponse.class);
 
   private ResponseStatus status;
 
@@ -49,6 +53,7 @@ public class BringResponse<T> extends BringHttpEntity<T> {
 
   /**
    * Create a builder with specified status
+   *
    * @param status HTTP response status
    * @return builder instance
    */
@@ -58,6 +63,7 @@ public class BringResponse<T> extends BringHttpEntity<T> {
 
   /**
    * Create a builder with the status set to {@link ResponseStatus#OK OK}.
+   *
    * @return the created builder
    */
   public static ResponseBuilder ok() {
@@ -66,9 +72,10 @@ public class BringResponse<T> extends BringHttpEntity<T> {
 
   /**
    * A shortcut for creation of a {@link BringResponse} with {@link ResponseStatus#OK OK}.
+   *
    * @param body the response body.
+   * @param <T>  body class type.
    * @return the created {@link BringResponse} object.
-   * @param <T> body class type.
    */
   public static <T> BringResponse<T> ok(T body) {
     return ok().body(body);

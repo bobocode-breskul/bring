@@ -14,10 +14,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class PropertiesConfiguration {
-
   public static final String APPLICATION_PROPERTIES = "application.properties";
 
   private static final Properties properties = new Properties();
+
+  static {
+    PropertiesConfiguration.loadProperties(PropertiesConfiguration.APPLICATION_PROPERTIES);
+  }
 
   /**
    * Method loads properties from configuration file and stores then in properties variable.

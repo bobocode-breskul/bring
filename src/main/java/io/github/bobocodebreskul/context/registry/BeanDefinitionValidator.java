@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  * {@link BeanDefinitionRegistry}, checking for circular dependencies and ensuring proper bean
  * naming conventions.
  */
+// TODO logs
 public class BeanDefinitionValidator {
 
   static final String DISALLOWED_BEAN_NAME_CHARACTERS_EXCEPTION_MESSAGE = "Bean candidate [%s] "

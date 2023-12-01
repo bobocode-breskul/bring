@@ -243,7 +243,7 @@ class BringContainerTest {
     // then
     assertThatThrownBy(() -> objectFactory.getBean(inputBeanName))
         .isInstanceOf(InstanceCreationException.class)
-        .hasMessage("Could not create an instance of \"%s\" class!".formatted(inputBeanName));
+        .hasMessage("Could not create an instance of \"%s\" class, please check constructors and their parameters.".formatted(inputBeanName));
   }
 
   static class BeanClass1 {

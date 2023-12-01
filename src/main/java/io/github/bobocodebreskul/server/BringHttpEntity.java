@@ -55,9 +55,6 @@ class BringHttpEntity<T> {
       log.error("Adding header failed. Header name should not be null.");
       throw new IllegalArgumentException(HEADER_NAME_SHOULD_NOT_BE_NULL);
     }
-    // TODO: check if cookie
-    //  if present in headers - then remove all cookies and overwrite them
-    //  if not present - just initialize
     if (isNull(headerValue)) {
       log.error("Adding header failed. Header value should not be null.");
       throw new IllegalArgumentException(HEADER_VALUE_SHOULD_NOT_BE_NULL);

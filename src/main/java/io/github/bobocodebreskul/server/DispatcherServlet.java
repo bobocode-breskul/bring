@@ -170,6 +170,7 @@ public class DispatcherServlet extends HttpServlet {
         writer.flush();
       }
     } catch (Exception ex) {
+      log.error("Failed to process request due to error: [{}]", ex.getMessage(), ex);
       if (ex instanceof InvocationTargetException) {
         handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
       } else {

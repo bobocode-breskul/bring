@@ -8,11 +8,11 @@ import org.slf4j.Logger;
 public class WebPathValidator {
 
   private final static Logger log = LoggerFactory.getLogger(WebPathValidator.class);
-  static final String PATH_SHOULD_START_WITH_SLASH = "Path '%s' validation failed. Path should start with /.";
-  static final String PATH_SHOULD_NOT_ENDS_WITH_SLASH = "Path '%s' validation failed. Path should not end with /.";
-  static final String PATH_SHOULD_NOT_CONTAIN_WHITESPACES = "Path '%s' validation failed. Path should not contain whitespaces.";
-  static final String PATH_SHOULD_NOT_CONTAIN_ASTERISKS = "Path '%s' validation failed. Path should not contain *.";
-  static final String PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY = "Path '%s' validation failed. Path should not contain more than one '/' sequentially.";
+  static final String PATH_SHOULD_START_WITH_SLASH = "Request mapping with path '%s' validation failed. Path should start with /.";
+  static final String PATH_SHOULD_NOT_ENDS_WITH_SLASH = "Request mapping with path path '%s' validation failed. Path should not end with /.";
+  static final String PATH_SHOULD_NOT_CONTAIN_WHITESPACES = "Request mapping with path '%s' validation failed. Path should not contain whitespaces.";
+  static final String PATH_SHOULD_NOT_CONTAIN_ASTERISKS = "Request mapping with path '%s' validation failed. Path should not contain *.";
+  static final String PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY = "Request mapping with path '%s' validation failed. Path should not contain more than one '/' sequentially.";
 
   private static final Pattern WHITESPACE_SEARCH_PATTERN = Pattern.compile("\\s");
 

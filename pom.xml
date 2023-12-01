@@ -6,7 +6,7 @@
 
   <groupId>io.github.bobocode-breskul</groupId>
   <artifactId>bring</artifactId>
-  <version>1.0</version>
+  <version>1.5</version>
   <packaging>jar</packaging>
 
   <name>Bring</name>

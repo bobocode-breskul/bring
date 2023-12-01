@@ -1,6 +1,10 @@
 package io.github.bobocodebreskul.context.utils;
 
+import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.context.exception.DuplicatePathException;
 import io.github.bobocodebreskul.server.annotations.Delete;
+import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;
+import io.github.bobocodebreskul.server.annotations.ExceptionHandler;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.Head;
 import io.github.bobocodebreskul.server.annotations.Post;
@@ -8,6 +12,7 @@ import io.github.bobocodebreskul.server.annotations.Put;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class TestUtil {
 
@@ -53,6 +58,42 @@ public class TestUtil {
 
   public static Object retrieveControllerMethodWithHttpAnnotationAndRequestMapping() {
     return new ControllerMethodWithHttpAnnotationAndRequestMapping();
+  }
+
+  public static Object getErrorHandlerControllerWithNotAnnotatedMethods() {
+    return new ErrorHandlerControllerWithNotAnnotatedMethods();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedPrivateMethods() {
+    return new ErrorHandlerControllerWithAnnotatedPrivateMethods();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedPrivateAndPublicMethods() {
+    return new ErrorHandlerControllerWithAnnotatedPrivateAndPublicMethods();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedMethodParamHasNoArguments() {
+    return new ErrorHandlerControllerWithAnnotatedMethodParamHasNoArguments();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedMethodParamHasMoreThen2Arguments() {
+    return new ErrorHandlerControllerWithAnnotatedMethodParamHasMoreThen2Arguments();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedMethodParamHas2ExceptionTypeArguments() {
+    return new ErrorHandlerControllerWithAnnotatedMethodParamHas2ExceptionTypeArguments();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedMethodParamHas2HttpServletRequestArguments() {
+    return new ErrorHandlerControllerWithAnnotatedMethodParamWithoutHttpServletRequestArguments();
+  }
+
+  public static Object getCorrectErrorHandlerController() {
+    return new CorrectErrorHandlerController();
+  }
+
+  public static Object getErrorHandlerControllerWithAnnotatedMethodParamWithDuplicateErrorHandlers() {
+    return new ErrorHandlerControllerWithAnnotatedMethodParamWithDuplicateErrorHandlers();
   }
 
   @RestController
@@ -194,6 +235,97 @@ public class TestUtil {
     @RequestMapping(value = "/post", method = RequestMethod.POST)
     public String helloGet1() {
       return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithNotAnnotatedMethods {
+    public String hello(){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedPrivateMethods {
+    @ExceptionHandler
+    private String hello(){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedPrivateAndPublicMethods {
+    @ExceptionHandler
+    private String hello(AmbiguousHttpAnnotationException ex){
+      return "Hello";
+    }
+
+    @ExceptionHandler
+    public String hi(RuntimeException ex){
+      return "hi";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedMethodParamHasNoArguments {
+    @ExceptionHandler
+    public String hello(){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedMethodParamHasMoreThen2Arguments {
+    @ExceptionHandler
+    public String hello(RuntimeException ex, RuntimeException ex2, RuntimeException ex3){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedMethodParamHas2ExceptionTypeArguments {
+    @ExceptionHandler
+    public String hello(RuntimeException ex, RuntimeException ex2){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedMethodParamWithoutHttpServletRequestArguments {
+    @ExceptionHandler
+    public String hello(RuntimeException ex, String str){
+      return "Hello";
+    }
+  }
+
+  @ErrorHandlerController
+  static class CorrectErrorHandlerController {
+    @ExceptionHandler
+    public String hello(AmbiguousHttpAnnotationException ex, HttpServletRequest req) {
+      return "Hello";
+    }
+
+    @ExceptionHandler
+    public String golang(HttpServletRequest req, DuplicatePathException ex) {
+      return "golang";
+    }
+
+    @ExceptionHandler
+    public String hi(RuntimeException ex){
+      return "hi";
+    }
+  }
+
+  @ErrorHandlerController
+  static class ErrorHandlerControllerWithAnnotatedMethodParamWithDuplicateErrorHandlers {
+    @ExceptionHandler
+    public String hello(RuntimeException ex){
+      return "Hello";
+    }
+
+    @ExceptionHandler
+    public String hi(RuntimeException ex){
+      return "Hi";
     }
   }
 }

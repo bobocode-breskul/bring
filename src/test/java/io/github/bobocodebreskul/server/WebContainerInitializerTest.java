@@ -42,6 +42,8 @@ class WebContainerInitializerTest {
   private ServletRegistration.Dynamic mockServletRegistration;
   @Mock
   private ServletContext mockServletContext;
+  @Mock
+  private WebErrorHandlerControllerScanner webErrorHandlerControllerScanner;
 
   private static Stream<Arguments> provideExceptionsForWebPathScannerTest() {
     return Stream.of(

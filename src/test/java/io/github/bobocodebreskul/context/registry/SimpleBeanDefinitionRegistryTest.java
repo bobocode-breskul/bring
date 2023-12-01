@@ -10,10 +10,13 @@ import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateExcept
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Mockito;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SimpleBeanDefinitionRegistryTest {
 
   private static final String CANNOT_REGISTER_DUPLICATE_ALIAS_MESSAGE =

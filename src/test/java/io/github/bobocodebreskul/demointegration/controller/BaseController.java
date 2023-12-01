@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.demointegration.controller;
 
+import io.github.bobocodebreskul.server.BringRequest;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.Head;
@@ -56,5 +57,11 @@ public class BaseController {
   @Head("/withRequestBody")
   public String doHeadWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
+  }
+
+  @Post("/withBringRequest")
+  public String doPostWithBringRequest(BringRequest<RequestDto> request) {
+    RequestDto body = request.getBody();
+    return body.getString() + body.getInteger();
   }
 }

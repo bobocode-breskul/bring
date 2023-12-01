@@ -21,6 +21,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +39,13 @@ import org.slf4j.Logger;
  */
 public class DispatcherServlet extends HttpServlet {
 
-  private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-  private final static List<String> METHODS_WITHOUT_BODY = List.of(
+  private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
+  private static final List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),
       RequestMethod.HEAD.name(),
       RequestMethod.DELETE.name()
   );
+  private final HttpRequestMapper httpRequestMapper;
   private final Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod;
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
   private final ObjectMapper mapper = new ObjectMapper();
@@ -55,8 +58,10 @@ public class DispatcherServlet extends HttpServlet {
    *                                                instances.
    * @param pathToControllerMethod                  A mapping of paths to controller instances.
    */
-  public DispatcherServlet(Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
+  public DispatcherServlet(HttpRequestMapper httpRequestMapper,
+      Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
       Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
+    this.httpRequestMapper = httpRequestMapper;
     this.exceptionToErrorHandlerControllerMethod = exceptionToErrorHandlerControllerMethod;
     this.pathToControllerMethod = pathToControllerMethod;
   }
@@ -209,23 +214,30 @@ public class DispatcherServlet extends HttpServlet {
           .toArray();
 
       Object result = method.invoke(controllerMethod.controller(), args);
-      if (result instanceof BringResponse<?>) {
-
-      }
-      try (PrintWriter writer = resp.getWriter()) {
-        if (!method.getReturnType().equals(Void.class)) {
-          writer.println(mapper.writeValueAsString(result));
-        }
-        resp.setStatus(HttpServletResponse.SC_OK);
-        writer.flush();
+      if (result instanceof BringResponse<?> bringResponse) {
+        httpRequestMapper.writeBringResponseIntoHttpServletResponse(resp, bringResponse);
+      } else {
+        writeRawResult(resp, method, result);
       }
     } catch (Exception ex) {
-      log.error("Failed to process request due to error: [{}]", ex.getMessage(), ex);
-      if (ex instanceof InvocationTargetException) {
-        handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
+      if (ex instanceof InvocationTargetException itex) {
+        log.error("Error during request handling", itex.getTargetException());
+        handleError(req, resp, itex.getTargetException());
       } else {
+        log.error("Error during request handling", ex);
         handleError(req, resp, ex);
       }
+    }
+  }
+
+  private void writeRawResult(HttpServletResponse resp, Method method, Object result)
+      throws IOException {
+    try (PrintWriter writer = resp.getWriter()) {
+      if (!method.getReturnType().equals(Void.class)) {
+        writer.println(mapper.writeValueAsString(result));
+      }
+      resp.setStatus(HttpServletResponse.SC_OK);
+      writer.flush();
     }
   }
 
@@ -295,6 +307,10 @@ public class DispatcherServlet extends HttpServlet {
         return resp;
       }
 
+      if (isBringRequest(parameter)) {
+        return composeBringRequest(parameter, req);
+      }
+
       if (parameter.isAnnotationPresent(RequestBody.class)) {
         validateRequestMethod(req);
         return getBodyFromRequest(parameter.getType(), req);
@@ -307,8 +323,8 @@ public class DispatcherServlet extends HttpServlet {
           "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
               parameter.getType()), e);
       throw new WebMethodParameterException(
-          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
-              parameter.getType()), e);
+          "Error processing '%s' method parameter with type '%s', due to %s".formatted(parameter.getName(),
+              parameter.getType(), e.getMessage()), e);
     }
   }
 
@@ -320,12 +336,41 @@ public class DispatcherServlet extends HttpServlet {
     return HttpServletResponse.class.isAssignableFrom(parameter.getType());
   }
 
+  private boolean isBringRequest(Parameter parameter) {
+    return BringRequest.class.isAssignableFrom(parameter.getType());
+  }
+
   private void validateRequestMethod(HttpServletRequest req) {
     if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
-      log.error("%s request not allowed for @RequestBody parameter.".formatted(req.getMethod()));
+      log.error("{} request not allowed for @RequestBody parameter.", req.getMethod());
       throw new WebMethodParameterException(
           "%s http method not support request body".formatted(req.getMethod()));
     }
+  }
+
+  private BringRequest<?> composeBringRequest(Parameter parameter, HttpServletRequest req) {
+    Type parameterType = parameter.getParameterizedType();
+    // Check if it's a parameterized type
+    if (parameterType instanceof ParameterizedType parameterizedType) {
+      // Get the actual type arguments
+      Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+      // Assuming there's only one type argument
+      if (typeArguments.length == 1) {
+        // Get the class of the type argument
+        Class<?> genericClass = (Class<?>) typeArguments[0];
+        return httpRequestMapper.mapHttpServletRequestOnBringRequestEntity(req, genericClass);
+      } else {
+        log.error("Invalid number of parameterized types found for BringRequest. Expected 1, "
+            + "found {}", typeArguments.length);
+        throw new WebMethodParameterException(("BringRequest parameter should have only 1 "
+            + "parameterized type, found %d").formatted(typeArguments.length));
+      }
+    }
+    log.error("BringRequest type could not be casted to parameterized type, type {}",
+        parameterType);
+    throw new WebMethodParameterException(("Could not extract parameterized type from BringRequest "
+        + "object, type - '%s'").formatted(parameterType));
   }
 
   /**

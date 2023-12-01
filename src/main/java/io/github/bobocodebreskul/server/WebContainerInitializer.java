@@ -55,6 +55,7 @@ public class WebContainerInitializer implements ServletContainerInitializer {
     try {
       ctx.addServlet("dispatcherServlet",
               new DispatcherServlet(
+                  new HttpRequestMapper(),
                   webErrorHandlerControllerScanner.getAllWebErrorHandlerControllers(),
                   webPathScanner.getAllPaths()))
           .addMapping("/*");

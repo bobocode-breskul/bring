@@ -7,11 +7,14 @@ import static io.github.bobocodebreskul.context.support.ReflectionUtils.hasDefau
 import static java.util.Objects.nonNull;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
+import io.github.bobocodebreskul.context.annotations.BringBean;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -65,26 +68,27 @@ public class BeanDefinitionReaderUtils {
   }
 
   /**
-   * Returns a list of bean constructor dependencies (as {@link BeanDependency}) this bean depends
-   * on by reading constructor argument types.
+   * Returns a list of bean method/constructor dependencies (as {@link BeanDependency}) this bean depends
+   * on by reading method/constructor argument types.
    *
-   * @param beanConstructor the constructor of the bean to analyze for dependencies
-   * @return a list of bean constructor dependency types
+   * @param method the method/constructor of the bean to analyze for dependencies
+   * @return a list of bean method/constructor dependency types
    */
-  public static List<BeanDependency> getConstructorBeanDependencies(Constructor<?> beanConstructor) {
-    Objects.requireNonNull(beanConstructor, () -> {
-      log.error("Failed to get bean constructor dependencies for nullable constructor");
-      return "Bean constructor has not been specified";
+  public static List<BeanDependency> getBeanMethodDependencies(Executable method) {
+    Objects.requireNonNull(method, () -> {
+      log.error("Failed to get bean method dependencies for nullable method/constructor");
+      return "Bean method/constructor has not been specified";
     });
-    log.trace("Scanning class {} for @Autowire candidates", beanConstructor.getDeclaringClass());
+    log.debug("Scanning {} for @Autowire candidates", method.getName());
 
     Map<String, String> parameterNameByAnnotationValue =
-      ReflectionUtils.extractMethodAnnotationValues(beanConstructor, Qualifier.class,
-        QUALIFIER_NAME_FIELD, String.class);
+        ReflectionUtils.extractMethodAnnotationValues(method, Qualifier.class,
+            QUALIFIER_NAME_FIELD, String.class);
 
-    return Arrays.stream(beanConstructor.getParameters())
-      .map(parameter -> new BeanDependency(getBeanName(parameter.getType()), parameterNameByAnnotationValue.get(parameter.getName()), parameter.getType()))
-      .collect(Collectors.toList());
+    return Arrays.stream(method.getParameters())
+        .map(parameter -> new BeanDependency(getBeanName(parameter.getType()),
+            parameterNameByAnnotationValue.get(parameter.getName()), parameter.getType()))
+        .collect(Collectors.toList());
   }
 
 
@@ -153,34 +157,42 @@ public class BeanDefinitionReaderUtils {
         NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
   }
 
-  /**
-   * Determines whether a given bean class is a candidate for autowiring by checking its
-   * dependencies against the registered bean definitions in the provided
-   * {@link BeanDefinitionRegistry}.
-   *
-   * @param beanClass the class of the bean to check for autowire candidacy
-   * @param registry  the BeanDefinitionRegistry containing the registered bean definitions
-   * @return true if the bean is a candidate for autowiring, false otherwise
-   */
-  public static boolean isBeanAutowireCandidate(Class<?> beanClass,
-      BeanDefinitionRegistry registry) {
-    log.trace("Check if bean class {} is autowire candidate", beanClass.getName());
-    boolean isAutowiredCandidate = registry.getBeanDefinitions().stream()
-        .filter(beanDefinition -> !beanDefinition.getBeanClass().equals(beanClass))
-        .flatMap(beanDefinition -> beanDefinition.getDependencies().stream())
-        .anyMatch(beanDefinitionClass -> beanDefinitionClass.type().equals(beanClass));
-    if (isAutowiredCandidate) {
-      log.trace("Bean class {} is registered as autowired candidate", beanClass.getName());
-    }
-    return isAutowiredCandidate;
-  }
-
   // TODO: possible move to separate general validation class
   private static void validateBeanClassNonNull(Class<?> beanClass) {
     Objects.requireNonNull(beanClass, () -> {
       log.error("Failed to generate bean name for nullable bean class");
       return "Bean class has not been specified";
     });
+  }
+
+  /**
+   * Retrieves a list of methods annotated with {@link BringBean} from the specified configuration bean class.
+   *
+   * @param beanClass The class of the bean to inspect.
+   * @return A list of methods annotated with {@link BringBean}.
+   * @throws NullPointerException If the provided beanClass is null.
+   */
+  public static List<Method> getBeanMethods(Class<?> beanClass) {
+    validateBeanClassNonNull(beanClass);
+    return Arrays.stream(beanClass.getMethods())
+        .filter(method -> method.isAnnotationPresent(BringBean.class))
+        .toList();
+  }
+
+  /**
+   * Retrieves the bean name for the specified bean method.
+   *
+   * @param beanMethod The method for which to generate the bean name.
+   * @return The bean name based on the method's name.
+   * @throws NullPointerException If the provided beanMethod is null.
+   */
+  public static String getMethodBeanName(Method beanMethod) {
+    Objects.requireNonNull(beanMethod, () -> {
+      log.error("Failed to generate bean name for nullable bean bean method");
+      return "Bean method has not been specified";
+    });
+
+    return beanMethod.getName();
   }
 
   private static Set<String> extractBeanNamesFromAnnotations(Class<?> beanClass) {

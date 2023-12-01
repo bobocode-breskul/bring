@@ -3,20 +3,23 @@ package io.github.bobocodebreskul.context.registry;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.PROTOTYPE_SCOPE;
 import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_SCOPE;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getConstructorBeanDependencies;
-import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.isBeanAutowireCandidate;
+import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanMethodDependencies;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
+import io.github.bobocodebreskul.context.annotations.BringConfiguration;
 import io.github.bobocodebreskul.context.annotations.Primary;
 import io.github.bobocodebreskul.context.annotations.Scope;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDependency;
+import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionCreationException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
 import io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * @see BringComponent
  */
 @Slf4j
-public class AnnotatedBeanDefinitionReader {
+public class BeanDefinitionReader {
 
   final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
   private final static String COMPONENT_NAME_FIELD = "value";
@@ -63,7 +66,7 @@ public class AnnotatedBeanDefinitionReader {
    * @param registry the storage to load bean definitions into, in the form of a
    *                 BeanDefinitionRegistry
    */
-  public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+  public BeanDefinitionReader(BeanDefinitionRegistry registry) {
     this.beanDefinitionRegistry = registry;
   }
 
@@ -84,7 +87,11 @@ public class AnnotatedBeanDefinitionReader {
    * @param beanClass the class of the bean
    */
   public void registerBean(Class<?> beanClass) {
-    doRegisterBean(beanClass);
+    if (ReflectionUtils.isAnnotationPresentForClass(BringConfiguration.class, beanClass)) {
+      doRegisterConfigurationBean(beanClass);
+    } else {
+      doRegisterBean(beanClass);
+    }
   }
 
   private <T> void doRegisterBean(Class<T> beanClass) {
@@ -105,12 +112,10 @@ public class AnnotatedBeanDefinitionReader {
     Constructor<?> beanConstructor = findBeanInitConstructor(beanClass, name);
     log.debug("Constructor found for bean class [{}]: [{}]", beanClass.getName(), beanConstructor);
     annotatedBeanDefinition.setInitConstructor(beanConstructor);
-    List<BeanDependency> dependencies = getConstructorBeanDependencies(beanConstructor);
+    List<BeanDependency> dependencies = getBeanMethodDependencies(beanConstructor);
     log.debug("{} dependencies found for beanClass={} with beanName={}",
         dependencies.size(), beanClass.getName(), name);
     annotatedBeanDefinition.setDependencies(dependencies);
-    annotatedBeanDefinition.setAutowireCandidate(
-        isBeanAutowireCandidate(beanClass, beanDefinitionRegistry));
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
@@ -138,5 +143,49 @@ public class AnnotatedBeanDefinitionReader {
 
     log.trace("Retrieve default singleton scope for bean: {}", beanName);
     return SINGLETON_SCOPE;
+  }
+
+  private <T> void doRegisterConfigurationBean(Class<T> beanClass) {
+    BeanDefinitionReaderUtils.getBeanMethods(beanClass).stream()
+        .map(this::mapBeanMethodToBeanDefinition)
+        .forEach(beanDefinition -> beanDefinitionRegistry.registerBeanDefinition(
+            beanDefinition.getName(), beanDefinition));
+  }
+
+  private ConfigurationBeanDefinition mapBeanMethodToBeanDefinition(Method beanMethod) {
+
+    log.debug("mapBeanMethodToBeanDefinition method invoked: beanClass={}",
+        beanMethod.getReturnType());
+    log.info("Registering the bean definition of class {}", beanMethod.getReturnType().getName());
+    Class<?> beanType = beanMethod.getReturnType();
+    Object configClassInstance = instantiateConfigurationClass(beanMethod.getDeclaringClass());
+
+    String name = BeanDefinitionReaderUtils.getMethodBeanName(beanMethod);
+    var configurationBeanDefinition = new ConfigurationBeanDefinition(beanType, beanMethod,
+        configClassInstance);
+    configurationBeanDefinition.setName(name);
+    configurationBeanDefinition.setScope(SINGLETON_SCOPE);
+    configurationBeanDefinition.setBeanClass(beanMethod.getReturnType());
+
+    if (beanMethod.isAnnotationPresent(Primary.class)) {
+      log.trace("Found @Primary annotation on the beanName={}", name);
+      configurationBeanDefinition.setPrimary(true);
+    }
+
+    List<BeanDependency> dependencies = getBeanMethodDependencies(beanMethod);
+    configurationBeanDefinition.setDependencies(dependencies);
+
+    return configurationBeanDefinition;
+  }
+
+  private Object instantiateConfigurationClass(Class<?> configClass) {
+    try {
+      return configClass.getConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+             NoSuchMethodException e) {
+      throw new BeanDefinitionCreationException(
+          "Default constructor invoke for configuration fails: %s. Configuration class use only default constructor, and not support injections.".formatted(
+              configClass));
+    }
   }
 }

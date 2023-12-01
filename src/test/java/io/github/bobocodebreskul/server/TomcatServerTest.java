@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
-import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
+import io.github.bobocodebreskul.context.registry.BeanDefinitionReader;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.context.registry.SimpleBeanDefinitionRegistry;
@@ -27,7 +27,7 @@ class TomcatServerIntegrationTest {
   @BeforeEach
   void setUp() throws InterruptedException {
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
-    AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(
+    BeanDefinitionReader beanDefinitionReader = new BeanDefinitionReader(
         definitionRegistry);
 
     beanDefinitionReader.registerBean(Controller.class);

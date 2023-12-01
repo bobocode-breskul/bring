@@ -202,7 +202,7 @@ class BeanDependencyUtilsTest {
     // then
     assertThatThrownBy(() -> beanDependencyUtils.prepareDependencies(inputBeanDefinition, beanDefinitionRegistry))
         .isInstanceOf(DependencyNotResolvedException.class)
-        .hasMessage("No bean definition found for type " + inputClass);
+        .hasMessage("No suitable dependency found for " + inputBeanDependency);
   }
 
   @ParameterizedTest
@@ -226,7 +226,7 @@ class BeanDependencyUtilsTest {
     assertThatThrownBy(
         () -> beanDependencyUtils.prepareDependencies(inputBeanDefinition, beanDefinitionRegistry))
         .isInstanceOf(DependencyNotResolvedException.class)
-        .hasMessage("Multiple primary qualified beans found for type " + inputBeanDependency.type());
+        .hasMessage("No suitable dependency found for " + inputBeanDependency);
   }
 
   @Test
@@ -242,13 +242,10 @@ class BeanDependencyUtilsTest {
     given(beanDefinitionRegistry.getBeanDefinitionByType(inputBeanDependency.type())).willReturn(List.of(beanDefinition1, beanDefinition2));
     // when
     // then
-    String expectedFoundTypes = Stream.of(TestInterfaceImpl1.class, TestInterfaceImpl2.class)
-        .map("[%s]"::formatted).collect(Collectors.joining(System.lineSeparator()));
     assertThatThrownBy(
         () -> beanDependencyUtils.prepareDependencies(inputBeanDefinition, beanDefinitionRegistry))
         .isInstanceOf(DependencyNotResolvedException.class)
-        .hasMessage("Multiple qualifying beans found for type '%s'. Found types are: %s%s"
-            .formatted(inputBeanDependency.type(), System.lineSeparator(), expectedFoundTypes));
+        .hasMessage("No suitable dependency found for " + inputBeanDependency);
   }
 
   @Test

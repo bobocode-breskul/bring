@@ -10,4 +10,7 @@ public class DependencyNotResolvedException extends RuntimeException {
     super(message);
   }
 
+  public DependencyNotResolvedException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

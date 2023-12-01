@@ -19,7 +19,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   private Class<?> beanClass;
   private String scope;
   private boolean primary;
-  private boolean autowireCandidate;
   private List<BeanDependency> dependencies;
   private Constructor<?> initConstructor;
 
@@ -70,16 +69,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   }
 
   @Override
-  public void setAutowireCandidate(boolean autowireCandidate) {
-    this.autowireCandidate = autowireCandidate;
-  }
-
-  @Override
-  public boolean isAutowireCandidate() {
-    return autowireCandidate;
-  }
-
-  @Override
   public void setPrimary(boolean primary) {
     this.primary = primary;
   }
@@ -123,7 +112,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
 
     return new EqualsBuilder()
         .append(primary, that.primary)
-        .append(autowireCandidate, that.autowireCandidate)
         .append(name, that.name)
         .append(beanClass, that.beanClass)
         .append(scope, that.scope)
@@ -139,7 +127,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append(beanClass)
         .append(scope)
         .append(primary)
-        .append(autowireCandidate)
         .append(dependencies)
         .append(initConstructor)
         .toHashCode();
@@ -152,7 +139,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
         .append("beanClass", beanClass)
         .append("scope", scope)
         .append("primary", primary)
-        .append("autowireCandidate", autowireCandidate)
         .append("initConstructor", initConstructor)
         .toString();
   }

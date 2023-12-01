@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.context.scan;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
+import io.github.bobocodebreskul.context.registry.BeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotatedBeanScanner {
 
   private final ScanUtils scanUtils;
-  private final AnnotatedBeanDefinitionReader beanDefinitionReader;
+  private final BeanDefinitionReader beanDefinitionReader;
 
   public RecursiveClassPathAnnotatedBeanScanner(ScanUtils scanUtils,
-      AnnotatedBeanDefinitionReader beanDefinitionReader) {
+      BeanDefinitionReader beanDefinitionReader) {
     this.scanUtils = scanUtils;
     this.beanDefinitionReader = beanDefinitionReader;
   }

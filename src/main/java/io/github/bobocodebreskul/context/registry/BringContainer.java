@@ -1,9 +1,10 @@
 package io.github.bobocodebreskul.context.registry;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.config.PropertiesConfiguration;
+import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
-import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.exception.InstanceCreationException;
 import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException;
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
@@ -16,7 +17,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all found
@@ -27,15 +28,16 @@ import lombok.extern.slf4j.Slf4j;
  * @author Mykola Filimonov
  * @author Vitalii Katkov
  */
-@Slf4j
 public class BringContainer implements ObjectFactory {
 
+  private final static Logger log = LoggerFactory.getLogger(BringContainer.class);
   private final Map<String, Object> storageByName = new ConcurrentHashMap<>();
 
   private final BeanDefinitionRegistry definitionRegistry;
   private final BeanDependencyUtils dependencyUtils;
 
-  public BringContainer(BeanDefinitionRegistry definitionRegistry, BeanDependencyUtils dependencyUtils) {
+  private BringContainer(BeanDefinitionRegistry definitionRegistry,
+      BeanDependencyUtils dependencyUtils) {
     this.definitionRegistry = definitionRegistry;
     this.dependencyUtils = dependencyUtils;
   }
@@ -49,29 +51,29 @@ public class BringContainer implements ObjectFactory {
    * @return created beans container
    */
   public static BringContainer run(Class<?> configClass) {
-    PropertiesConfiguration.loadProperties(PropertiesConfiguration.APPLICATION_PROPERTIES);
-    BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
-    BeanDefinitionReader beanDefinitionReader = new BeanDefinitionReader(
-        definitionRegistry);
-    BeanDependencyUtils beanDependencyUtils = new BeanDependencyUtils();
-    BeanDefinitionValidator beanDefinitionValidator =
-        new BeanDefinitionValidator(definitionRegistry, beanDependencyUtils);
-    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
-        new ScanUtilsImpl(), beanDefinitionReader);
-    scanner.scan(configClass);
-    beanDefinitionValidator.validateBeanDefinitions();
+    log.info("Initializing BringContainer...");
 
+    //prepare base context classes
+    BeanDependencyUtils beanDependencyUtils = new BeanDependencyUtils();
+    BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
+    BeanDefinitionValidator beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry, beanDependencyUtils);
+    ScanUtilsImpl scanUtils = new ScanUtilsImpl();
+    BeanDefinitionReader beanDefinitionReader = new BeanDefinitionReader(definitionRegistry);
+    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(scanUtils, beanDefinitionReader);
     BringContainer container = new BringContainer(definitionRegistry, beanDependencyUtils);
 
+    //run initial scan for all project
+    scanner.scan(configClass);
+    beanDefinitionValidator.validateBeanDefinitions();
+    //register all founded beans
     definitionRegistry.getBeanDefinitions()
         .forEach(beanDefinition -> container.getBean(beanDefinition.getName()));
 
     TomcatServer.run(container);
-
+    log.info("BringContainer initialized successfully.");
+    log.debug("All created beans:%n%s".formatted(container.storageByName.keySet().stream().reduce("", (s1,s2) -> s1 + System.lineSeparator() + s2)));
     return container;
   }
-
-  // TODO: 1. add dependency injection by @Autowired field
 
   @Override
   public Object getBean(String name) {
@@ -81,9 +83,9 @@ public class BringContainer implements ObjectFactory {
 
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(name);
     if (beanDefinition == null) {
-      throw new NoSuchBeanDefinitionException(
-          "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(
-              name));
+      String errorMessage = "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(name);
+      log.error(errorMessage);
+      throw new NoSuchBeanDefinitionException(errorMessage);
     }
 
     if (beanDefinition instanceof AnnotatedGenericBeanDefinition) {
@@ -92,10 +94,13 @@ public class BringContainer implements ObjectFactory {
     if (beanDefinition instanceof ConfigurationBeanDefinition) {
       return getBeanByMethod(name, (ConfigurationBeanDefinition) beanDefinition);
     }
-    throw new RuntimeException("Can not create bean, no init method to create bean");
+    String errorMessage = "Cannot create bean with name %s, not supported BeanDefinition class: %s".formatted(name, beanDefinition.getClass());
+    log.error(errorMessage);
+    throw new InstanceCreationException(errorMessage);
   }
 
   private Object getBeanByConstructor(String name, BeanDefinition beanDefinition) {
+    log.debug("Started create bean by constructor with name: %s".formatted(name));
     try {
       Constructor<?> declaredConstructor = beanDefinition.getInitConstructor();
       Object[] dependentBeans = findOrCreateBeanDependencies(beanDefinition);
@@ -107,35 +112,37 @@ public class BringContainer implements ObjectFactory {
 
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException
-             | IllegalArgumentException e) {
-      // TODO: add additional logging with some input parameters
-      throw new InstanceCreationException(
-          "Could not create an instance of \"%s\" class!".formatted(name), e);
+    } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+             IllegalArgumentException e) {
+      String errorMessage = "Could not create an instance of \"%s\" class, please check constructors and their parameters.".formatted(name);
+      log.error(errorMessage, e);
+      throw new InstanceCreationException(errorMessage, e);
     }
   }
 
   private Object getBeanByMethod(String name, ConfigurationBeanDefinition beanDefinition) {
+    log.debug("Started create bean by method with name: %s".formatted(name));
     try {
       Method initMethod = beanDefinition.getBeanMethod();
       Object[] dependentBeans = findOrCreateBeanDependencies(beanDefinition);
 
-      Object newInstance = initMethod.invoke(beanDefinition.getConfigurationInstance(), dependentBeans);
+      Object newInstance = initMethod.invoke(beanDefinition.getConfigurationInstance(),
+          dependentBeans);
 
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new InstanceCreationException(
-          "Could not create an instance of \"%s\" class!".formatted(name), e);
+      String errorMessage = "Could not create an instance of \"%s\" class, please check method from configuration class and their parameters ".formatted(name);
+      log.error(errorMessage, e);
+      throw new InstanceCreationException(errorMessage, e);
     }
   }
 
   private Object[] findOrCreateBeanDependencies(BeanDefinition beanDefinition) {
-    List<BeanDefinition> dependentDefinitions = dependencyUtils.prepareDependencies(
-        beanDefinition, definitionRegistry);
+    List<BeanDefinition> dependentDefinitions = dependencyUtils.prepareDependencies(beanDefinition,
+        definitionRegistry);
     return dependentDefinitions.stream()
-        .map(dependentDefinition -> getBean(dependentDefinition.getName()))
-        .toArray();
+        .map(dependentDefinition -> getBean(dependentDefinition.getName())).toArray();
   }
 
   public List<Object> getAllBeans() {

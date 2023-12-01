@@ -15,7 +15,7 @@ public interface AliasRegistry {
    * @param name  the canonical name of the bean or component
    * @param alias the alias to be registered
    * @throws IllegalArgumentException if the specified name or alias is null
-   * @throws AliasDuplicateException if the specified alias already exists in registry
+   * @throws AliasDuplicateException  if the specified alias already exists in registry
    */
   void registerAlias(String name, String alias);
 

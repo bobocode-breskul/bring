@@ -5,6 +5,7 @@ import static io.github.bobocodebreskul.context.config.BeanDefinition.SINGLETON_
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.findBeanInitConstructor;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.getBeanMethodDependencies;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.annotations.BringConfiguration;
@@ -22,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * This class designed to read bean meta-information from annotated classes and subsequently
@@ -53,11 +54,9 @@ import lombok.extern.slf4j.Slf4j;
  * @see Primary
  * @see BringComponent
  */
-@Slf4j
 public class BeanDefinitionReader {
 
-  final static String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
-  private final static String COMPONENT_NAME_FIELD = "value";
+  private final static Logger log = LoggerFactory.getLogger(BeanDefinitionReader.class);
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
   /**
@@ -185,7 +184,7 @@ public class BeanDefinitionReader {
              NoSuchMethodException e) {
       throw new BeanDefinitionCreationException(
           "Default constructor invoke for configuration fails: %s. Configuration class use only default constructor, and not support injections.".formatted(
-              configClass));
+              configClass), e);
     }
   }
 }

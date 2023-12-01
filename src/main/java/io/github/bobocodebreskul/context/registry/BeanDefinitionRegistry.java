@@ -103,9 +103,8 @@ public interface BeanDefinitionRegistry extends AliasRegistry {
    * <p>If no bean definitions are found for the specified type, an empty list is returned.
    *
    * @param type The target type to match against bean definitions.
-   * @return A list of {@link BeanDefinition} instances matching the specified type.
-   *         An empty list if no matching bean definitions are found.
-   *
+   * @return A list of {@link BeanDefinition} instances matching the specified type. An empty list
+   * if no matching bean definitions are found.
    * @see BeanDefinition
    */
   List<BeanDefinition> getBeanDefinitionByType(Class<?> type);

@@ -6,8 +6,6 @@ import static io.github.bobocodebreskul.server.WebPathValidator.validatePath;
 import static io.github.bobocodebreskul.server.enums.RequestMethod.GET;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.server.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.server.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.Get;
@@ -16,6 +14,8 @@ import io.github.bobocodebreskul.server.annotations.Post;
 import io.github.bobocodebreskul.server.annotations.Put;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
+import io.github.bobocodebreskul.server.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.server.exception.DuplicatePathException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

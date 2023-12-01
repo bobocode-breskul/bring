@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
  * framework to indicate that a dependency should be automatically injected at runtime.
  *
  * <p>{@code @Autowired} can be applied to constructors within a class, enabling the IoC container
- * to automatically resolve and inject the required dependencies during the
- * initialization of the annotated component.
+ * to automatically resolve and inject the required dependencies during the initialization of the
+ * annotated component.
  *
  * <p>This annotation is a key element in achieving loose coupling and promoting
  * the principles of dependency injection, allowing components to be more modular, maintainable, and

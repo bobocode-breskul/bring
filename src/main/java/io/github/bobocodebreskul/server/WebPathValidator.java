@@ -6,9 +6,9 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 
 /**
- * Utility class providing methods for validating web paths used in request mappings.
- * This class checks various conditions such as starting with '/', not ending with '/',
- * containing no whitespaces, no asterisks, and not having more than one '/' sequentially.
+ * Utility class providing methods for validating web paths used in request mappings. This class
+ * checks various conditions such as starting with '/', not ending with '/', containing no
+ * whitespaces, no asterisks, and not having more than one '/' sequentially.
  *
  * @see WebPathValidationException
  */

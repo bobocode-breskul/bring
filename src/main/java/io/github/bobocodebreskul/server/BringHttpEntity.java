@@ -11,11 +11,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 /**
- * Representation of HTTP request or response, containing headers, cookies and body.
- * Use its extension classes in your implementation.
+ * Representation of HTTP request or response, containing headers, cookies and body. Use its
+ * extension classes in your implementation.
+ *
+ * @param <T> body type
  * @see BringRequest
  * @see BringResponse
- * @param <T> body type
  */
 class BringHttpEntity<T> {
 
@@ -46,7 +47,8 @@ class BringHttpEntity<T> {
 
   /**
    * Method adds header to {@link BringResponse}
-   * @param headerName header name
+   *
+   * @param headerName  header name
    * @param headerValue header value
    */
   public void addHeader(String headerName, String headerValue) {
@@ -65,6 +67,7 @@ class BringHttpEntity<T> {
 
   /**
    * Returns header value by name.
+   *
    * @param headerName header name.
    * @return header value.
    */
@@ -82,6 +85,7 @@ class BringHttpEntity<T> {
 
   /**
    * Get all set header names
+   *
    * @return header names as Set collection
    */
   public Set<String> getHeadersNames() {
@@ -90,6 +94,7 @@ class BringHttpEntity<T> {
 
   /**
    * Removes header from {@link BringResponse}
+   *
    * @param headerName header name.
    */
   public void removeHeader(String headerName) {
@@ -111,7 +116,8 @@ class BringHttpEntity<T> {
 
   /**
    * Method for adding cookies to {@link BringResponse}
-   * @param cookieName cookie name.
+   *
+   * @param cookieName  cookie name.
    * @param cookieValue cookie value.
    */
   public void addCookie(String cookieName, String cookieValue) {
@@ -133,6 +139,7 @@ class BringHttpEntity<T> {
 
   /**
    * Returns cookie value from {@link BringResponse}.
+   *
    * @param cookieName cookie name.
    * @return cookie value.
    */
@@ -149,6 +156,7 @@ class BringHttpEntity<T> {
 
   /**
    * Removes cookie from {@link BringResponse} by name.
+   *
    * @param cookieName removed cookie name.
    */
   public void removeCookie(String cookieName) {
@@ -185,6 +193,7 @@ class BringHttpEntity<T> {
 
   /**
    * Get HTTP entity as parameterized body
+   *
    * @return parameterized body
    */
   public T getBody() {
@@ -194,6 +203,7 @@ class BringHttpEntity<T> {
 
   /**
    * Set HTTP entity parameterized body
+   *
    * @param body parameterized body
    */
   public void setBody(T body) {

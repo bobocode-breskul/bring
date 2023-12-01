@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 public class ScanUtilsImpl implements ScanUtils {
 
   private final static Logger log = LoggerFactory.getLogger(ScanUtilsImpl.class);
+
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
     log.trace("Search all classes for {} package", packagePathPrefix);

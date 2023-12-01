@@ -31,6 +31,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.GET)
 public @interface Get {
+
   /**
    * Represents path.
    *

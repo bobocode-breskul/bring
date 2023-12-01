@@ -1,7 +1,6 @@
 package io.github.bobocodebreskul.server;
 
 import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
-
 import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestMethod;
 import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestParameterType;
@@ -9,14 +8,13 @@ import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.v
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.server.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
-import io.github.bobocodebreskul.server.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
-import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RequestParam;
-import io.github.bobocodebreskul.server.enums.RequestMethod;
+import io.github.bobocodebreskul.server.exception.DispatcherServletException;
+import io.github.bobocodebreskul.server.exception.WebMethodParameterException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,12 +27,10 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 
 /**
@@ -330,7 +326,8 @@ public class DispatcherServlet extends HttpServlet {
           "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
               parameter.getType()), e);
       throw new WebMethodParameterException(
-          "Error processing '%s' method parameter with type '%s', due to %s".formatted(parameter.getName(),
+          "Error processing '%s' method parameter with type '%s', due to %s".formatted(
+              parameter.getName(),
               parameter.getType(), e.getMessage()), e);
     }
   }

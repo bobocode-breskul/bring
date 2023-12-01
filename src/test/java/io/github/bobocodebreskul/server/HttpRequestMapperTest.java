@@ -14,7 +14,6 @@ class HttpRequestMapperTest {
   @DisplayName("")
   @Order(1)
   void given_MethodName_When_getByName_Then_ShouldReturnRequestMethod_1(){
-    HttpServletResponse
 
   }
   // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException

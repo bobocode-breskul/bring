@@ -130,13 +130,19 @@ public class HttpRequestMapper {
   private <T> T extractBody(HttpServletRequest request, String contentType, Class<T> bodyType) {
     try {
       BufferedReader bodyReader = new BufferedReader(
-        new InputStreamReader(request.getInputStream()));
-      String stringBody = bodyReader.lines().toString();
-      T body = null;
-      if (!stringBody.isBlank()) {
-        body = objectMapper.readValue(stringBody, bodyType);
+          new InputStreamReader(request.getInputStream()));
+      if (ALLOWED_INPUT_CONTENT_TYPES.contains(contentType)) {
+        String stringBody = bodyReader.lines()
+            .collect(Collectors.joining(System.lineSeparator()));
+        T body = null;
+        if (!stringBody.isBlank()) {
+          body = objectMapper.readValue(stringBody, bodyType);
+        }
+        return body;
       }
-      return body;
+      throw new BodyReadException(("Unsupported body type, incoming 'content-type'='%s'. Supported "
+          + "body types are ['%s', '%s']").formatted(contentType, CONTENT_TYPE_TEXT_HTML,
+          CONTENT_TYPE_APPLICATION_JSON));
     } catch (IOException e) {
       log.error("Failed to map HttpServletRequest body into object.", e);
       throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);

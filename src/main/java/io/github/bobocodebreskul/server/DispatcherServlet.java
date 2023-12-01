@@ -288,27 +288,10 @@ public class DispatcherServlet extends HttpServlet {
       if (isHttpResponse(parameter)) {
         return resp;
       }
-/*
+
       if (isBringRequest(parameter)) {
-
-        Type parameterizedType1 = parameter.getParameterizedType();
-        // Check if it's a parameterized type
-        if (parameterizedType1 instanceof ParameterizedType) {
-          ParameterizedType parameterizedType = (ParameterizedType) parameterizedType1;
-
-          // Get the actual type arguments
-          Type[] typeArguments = parameterizedType.getActualTypeArguments();
-
-          // Assuming there's only one type argument
-          if (typeArguments.length > 0) {
-            // Get the class of the type argument
-            Class<?> genericClass = (Class<?>) typeArguments[0];
-
-            System.out.println("Generic class: " + genericClass.getName());
-          }
-        }
-        return httpRequestMapper.mapHttpServletRequestOnBringRequestEntity(req, parameterizedType1);
-      }*/
+        return composeBringRequest(parameter, req);
+      }
 
       if (parameter.isAnnotationPresent(RequestBody.class)) {
         validateRequestMethod(req);

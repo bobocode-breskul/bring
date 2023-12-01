@@ -276,4 +276,23 @@ public class BringIntegrationTest {
     assertThat(response.statusCode()).isEqualTo(500);
     assertThat(response.body()).contains("HttpServletRequest and AmbiguousHttpAnnotationException");
   }
+
+  @Test
+  @DisplayName("Test application start with controller check 'post' method with request body parameter founded and triggered")
+  void given_RanApplication_when_ControllerWithoutPathRegisteredAndPostMethodWithRequestEntity_then_returnBodyWithStatus200ForPostMethod()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/withBringRequest";
+    RequestDto requestBody = new RequestDto();
+    requestBody.setInteger(10);
+    requestBody.setString("String");
+    HttpRequest request = HttpRequest.newBuilder()
+        .POST(BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).isEqualTo("\"%s%s\"%n".formatted(requestBody.getString(), requestBody.getInteger()));
+  }
 }

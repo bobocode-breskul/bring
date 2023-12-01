@@ -2,12 +2,13 @@ package io.github.bobocodebreskul.server;
 
 import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Representation of HTTP request or response, containing headers, cookies and body.
@@ -16,8 +17,9 @@ import lombok.extern.slf4j.Slf4j;
  * @see BringResponse
  * @param <T> body type
  */
-@Slf4j
 class BringHttpEntity<T> {
+
+  private static final Logger log = LoggerFactory.getLogger(BringHttpEntity.class);
 
   static final String COOKIE = "Cookie";
   static final String HEADER_NAME_SHOULD_NOT_BE_NULL = "Header name should not be null.";
@@ -37,7 +39,7 @@ class BringHttpEntity<T> {
 
   public BringHttpEntity(Map<String, String> headers, T body) {
     if (!isNull(headers)) {
-      headers.forEach((key, value) -> headers.put(key.toLowerCase(), value));
+      headers.forEach((key, value) -> this.headers.put(key.toLowerCase(), value));
     }
     this.body = body;
   }
@@ -53,6 +55,9 @@ class BringHttpEntity<T> {
       log.error("Adding header failed. Header name should not be null.");
       throw new IllegalArgumentException(HEADER_NAME_SHOULD_NOT_BE_NULL);
     }
+    // TODO: check if cookie
+    //  if present in headers - then remove all cookies and overwrite them
+    //  if not present - just initialize
     if (isNull(headerValue)) {
       log.error("Adding header failed. Header value should not be null.");
       throw new IllegalArgumentException(HEADER_VALUE_SHOULD_NOT_BE_NULL);
@@ -67,9 +72,10 @@ class BringHttpEntity<T> {
    * @return header value.
    */
   public String getHeader(String headerName) {
+    String lowerCaseHeaderName = headerName.toLowerCase();
     log.info("Get header for headerName='{}'.", headerName);
-    if (this.headers.containsKey(headerName.toLowerCase())) {
-      String headerValue = this.headers.get(headerName);
+    if (this.headers.containsKey(lowerCaseHeaderName)) {
+      String headerValue = this.headers.get(lowerCaseHeaderName);
       log.info("Header value for header name '{}' is '{}'.", headerName, headerValue);
       return headerValue;
     }

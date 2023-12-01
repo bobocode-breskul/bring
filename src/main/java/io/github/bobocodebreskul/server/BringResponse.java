@@ -3,7 +3,6 @@ package io.github.bobocodebreskul.server;
 import static java.util.Objects.isNull;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ import org.slf4j.Logger;
  */
 public class BringResponse<T> extends BringHttpEntity<T> {
 
-  private final static Logger log = LoggerFactory.getLogger(BringResponse.class);
+  private static final Logger log = LoggerFactory.getLogger(BringResponse.class);
 
   private ResponseStatus status;
 

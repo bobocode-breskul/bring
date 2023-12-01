@@ -7,7 +7,6 @@ import java.util.Map;
 /**
  * Enumeration of HTTP request methods
  */
-// TODO: tests
 public enum RequestMethod {
 
   GET, HEAD, POST, PUT, DELETE;
@@ -23,10 +22,11 @@ public enum RequestMethod {
   }
 
   public static RequestMethod getByName(String name) {
-    if (!methodByName.containsKey(name)) {
+    String lowerCaseName = name.toLowerCase();
+    if (!methodByName.containsKey(lowerCaseName)) {
       throw new IllegalArgumentException("Request method not found for name '%s'".formatted(name));
     }
-    return methodByName.get(name.toLowerCase());
+    return methodByName.get(lowerCaseName);
   }
 
 }

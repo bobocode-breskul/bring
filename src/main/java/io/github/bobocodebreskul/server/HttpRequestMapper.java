@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.exception.RequestsMappingException;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,18 +14,24 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
-@Slf4j
+/**
+ * Utility 
+ */
+//TODO write docs
 public class HttpRequestMapper {
+
+  private static final Logger log = LoggerFactory.getLogger(HttpRequestMapper.class);
 
   ObjectMapper objectMapper = new ObjectMapper();
 
   // todo test BringResponse with all fields then we set correct values to HttpServletResponse
   // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException
   // todo test when ObjectMapper#writeValueAsString(body) throw JsonProcessingException then throw RequestsMappingException
-  public <T> void writeBringResponseIntoHttpServletResponse(
-    BringResponse<T> bringResponseEntity, HttpServletResponse httpServletResponse) {
+  public void writeBringResponseIntoHttpServletResponse(BringResponse<?> bringResponseEntity,
+      HttpServletResponse httpServletResponse) {
+    // TODO: handle not only strings. For example, byte[].
 
     httpServletResponse.setStatus(bringResponseEntity.getStatus().getValue());
 
@@ -32,9 +39,17 @@ public class HttpRequestMapper {
       .forEach(headerName -> httpServletResponse.setHeader(headerName,
         bringResponseEntity.getHeader(headerName)));
 
+    httpServletResponse.setStatus(bringResponseEntity.getStatus().getValue());
+
     if (bringResponseEntity.getBody() != null) {
       try {
-        httpServletResponse.getOutputStream().print(writeBodyAsJson(bringResponseEntity.getBody()));
+        Object body = bringResponseEntity.getBody();
+        if (body instanceof byte[] byteBody) {
+          httpServletResponse.getOutputStream().write(byteBody);
+        } else {
+          httpServletResponse.setHeader();
+          httpServletResponse.getOutputStream().print(writeBodyAsJson(body));
+        }
       } catch (IOException e) {
         log.error("Failed to write response entity to httpServletResponse", e);
         throw new RequestsMappingException("Failed to write response entity to httpServletResponse",

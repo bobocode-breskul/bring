@@ -26,20 +26,17 @@ public class BringRequest<T> extends BringHttpEntity<T>{
 
   private final RequestMethod requestMethod;
   private final URI url;
-
-  // TODO: test constructor
+  
   public BringRequest(RequestMethod requestMethod, URI url) {
     this(requestMethod, url, null);
   }
 
-  // TODO: test constructor
   public BringRequest(RequestMethod requestMethod, URI url, T body) {
     super(body);
     this.requestMethod = requestMethod;
     this.url = url;
   }
 
-  // TODO: tests
   /**
    * Create and return {@link BringRequest} builder for specified HTTP {@link RequestMethod}
    * and URL

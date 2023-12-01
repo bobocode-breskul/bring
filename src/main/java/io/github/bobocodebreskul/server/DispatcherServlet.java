@@ -1,5 +1,8 @@
 package io.github.bobocodebreskul.server;
 
+import static java.util.Objects.isNull;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.config.LoggerFactory;
@@ -19,6 +22,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +40,13 @@ import org.slf4j.Logger;
  */
 public class DispatcherServlet extends HttpServlet {
 
-  private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-  private final static List<String> METHODS_WITHOUT_BODY = List.of(
+  private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
+  private static final List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),
       RequestMethod.HEAD.name(),
       RequestMethod.DELETE.name()
   );
+  private final HttpRequestMapper httpRequestMapper;
   private final Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod;
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
   private final ObjectMapper mapper = new ObjectMapper();
@@ -53,8 +59,10 @@ public class DispatcherServlet extends HttpServlet {
    *                                                instances.
    * @param pathToControllerMethod                  A mapping of paths to controller instances.
    */
-  public DispatcherServlet(Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
+  public DispatcherServlet(HttpRequestMapper httpRequestMapper,
+      Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
       Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
+    this.httpRequestMapper = httpRequestMapper;
     this.exceptionToErrorHandlerControllerMethod = exceptionToErrorHandlerControllerMethod;
     this.pathToControllerMethod = pathToControllerMethod;
   }
@@ -158,22 +166,30 @@ public class DispatcherServlet extends HttpServlet {
           .toArray();
 
       Object result = method.invoke(controllerMethod.controller(), args);
-      if (result instanceof BringResponse<?>) {
-
-      }
-      try (PrintWriter writer = resp.getWriter()) {
-        if (!method.getReturnType().equals(Void.class)) {
-          writer.println(mapper.writeValueAsString(result));
-        }
-        resp.setStatus(HttpServletResponse.SC_OK);
-        writer.flush();
+      if (result instanceof BringResponse<?> bringResponse) {
+        httpRequestMapper.writeBringResponseIntoHttpServletResponse(bringResponse, resp);
+      } else {
+        writeRawResult(resp, method, result);
       }
     } catch (Exception ex) {
-      if (ex instanceof InvocationTargetException) {
-        handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
+      if (ex instanceof InvocationTargetException itex) {
+        log.error("Error during request handling", itex.getTargetException());
+        handleError(req, resp, itex.getTargetException());
       } else {
+        log.error("Error during request handling", ex);
         handleError(req, resp, ex);
       }
+    }
+  }
+
+  private void writeRawResult(HttpServletResponse resp, Method method, Object result)
+      throws IOException {
+    try (PrintWriter writer = resp.getWriter()) {
+      if (!method.getReturnType().equals(Void.class)) {
+        writer.println(mapper.writeValueAsString(result));
+      }
+      resp.setStatus(HttpServletResponse.SC_OK);
+      writer.flush();
     }
   }
 
@@ -266,6 +282,7 @@ public class DispatcherServlet extends HttpServlet {
    */
   private Object prepareMethodParameter(Parameter parameter, HttpServletRequest req,
       HttpServletResponse resp) {
+    // TODO: handle ring request object
     try {
       log.debug("Processing method parameter: {}", parameter.getName());
 
@@ -275,6 +292,27 @@ public class DispatcherServlet extends HttpServlet {
 
       if (isHttpResponse(parameter)) {
         return resp;
+      }
+
+      if (isBringRequest(parameter)) {
+
+        Type parameterizedType1 = parameter.getParameterizedType();
+        // Check if it's a parameterized type
+        if (parameterizedType1 instanceof ParameterizedType) {
+          ParameterizedType parameterizedType = (ParameterizedType) parameterizedType1;
+
+          // Get the actual type arguments
+          Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+          // Assuming there's only one type argument
+          if (typeArguments.length > 0) {
+            // Get the class of the type argument
+            Class<?> genericClass = (Class<?>) typeArguments[0];
+
+            System.out.println("Generic class: " + genericClass.getName());
+          }
+        }
+        return httpRequestMapper.mapHttpServletRequestOnBringRequestEntity(req, parameterizedType1);
       }
 
       if (parameter.isAnnotationPresent(RequestBody.class)) {
@@ -300,6 +338,10 @@ public class DispatcherServlet extends HttpServlet {
 
   private boolean isHttpResponse(Parameter parameter) {
     return HttpServletResponse.class.isAssignableFrom(parameter.getType());
+  }
+
+  private boolean isBringRequest(Parameter parameter) {
+    return BringRequest.class.isAssignableFrom(parameter.getType());
   }
 
   private void validateRequestMethod(HttpServletRequest req) {

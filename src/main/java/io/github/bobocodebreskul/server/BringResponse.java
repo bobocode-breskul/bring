@@ -131,6 +131,15 @@ public class BringResponse<T> {
   }
 
   /**
+   * Returns all headers.
+   *
+   * @return Map of header and value.
+   */
+  public Map<String, String> getAllHeaders() {
+    return new HashMap<>(this.headers);
+  }
+
+  /**
    * Removes header from {@link BringResponse}
    *
    * @param headerName header name.

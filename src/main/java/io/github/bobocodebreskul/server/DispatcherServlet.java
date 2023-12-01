@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
+
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.config.LoggerFactory;
@@ -34,7 +36,6 @@ import org.slf4j.Logger;
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
 public class DispatcherServlet extends HttpServlet {
-
   private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
   private final static List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),
@@ -169,6 +170,7 @@ public class DispatcherServlet extends HttpServlet {
         writer.flush();
       }
     } catch (Exception ex) {
+      log.error("Failed to process request due to error: [{}]", ex.getMessage(), ex);
       if (ex instanceof InvocationTargetException) {
         handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
       } else {
@@ -231,17 +233,32 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
-  //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
-    String outputResult = mapper.writeValueAsString(result);
+    BringResponse bringResponse = toBringResponse(result);
+
+    String outputResult = mapper.writeValueAsString(bringResponse.getBody());
+    int statusCode = bringResponse.getStatus().getStatusCode();
+    Map<String, String> allHeaders = bringResponse.getAllHeaders();
 
     try (PrintWriter writer = resp.getWriter()) {
-      resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      resp.setStatus(statusCode);
+
+      for (Map.Entry<String, String> entry : allHeaders.entrySet()) {
+        resp.addHeader(entry.getKey(), entry.getValue());
+      }
 
       if (Objects.nonNull(result)) {
         writer.println(outputResult);
         writer.flush();
       }
+    }
+  }
+
+  private static BringResponse toBringResponse(Object result) {
+    if (result instanceof BringResponse response) {
+      return response;
+    } else {
+      return new BringResponse<>(result, null, INTERNAL_SERVER_ERROR);
     }
   }
 

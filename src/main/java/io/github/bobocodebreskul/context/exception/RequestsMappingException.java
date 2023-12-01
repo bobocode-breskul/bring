@@ -1,8 +1,11 @@
 package io.github.bobocodebreskul.context.exception;
 
 /**
- * Throw to indicate issues with mapping {@code HttpServletRequest} or {@code HttpServletResponse}
- * into corresponding Bring HTTP wrappers
+ * Exception thrown when fail to map {@link  io.github.bobocodebreskul.server.BringResponse} into
+ *  {@link jakarta.servlet.http.HttpServletResponse} or map {@link jakarta.servlet.http.HttpServletRequest}
+ *  into {@link io.github.bobocodebreskul.server.BringRequest}
+ *
+ * @see io.github.bobocodebreskul.server.HttpRequestMapper
  */
 public class RequestsMappingException extends RuntimeException {
 

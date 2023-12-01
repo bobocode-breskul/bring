@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 /**
  * Indicates that the annotated class is a RestController, allowing it to be scanned by the
  * ApplicationContext. A required request mapping value must be specified. Additionally, HTTP
- * Request Method annotations {@link RequestMapping} or some more specific annotation should be added to the methods
- * within the controller. The response from these methods will be automatically converted to JSON
- * and sent as the client's response.
+ * Request Method annotations {@link RequestMapping} or some more specific annotation should be
+ * added to the methods within the controller. The response from these methods will be automatically
+ * converted to JSON and sent as the client's response.
  *
  * <p>Usage:</p>
  * <pre>

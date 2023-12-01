@@ -11,7 +11,6 @@ import io.github.bobocodebreskul.context.config.BeanDependency;
 import io.github.bobocodebreskul.context.exception.DependencyNotResolvedException;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionRegistry;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;

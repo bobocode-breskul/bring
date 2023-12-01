@@ -7,9 +7,10 @@ package io.github.bobocodebreskul.context.config;
  * @param name      dependency bean name
  * @param qualifier dependency bean qualifier
  * @param type      dependency class type
- *
  * @author Vitalii Katkov
  * @author Serhii Barabash
  * @author Volodymyr Holichenko
  */
-public record BeanDependency(String name, String qualifier, Class<?> type) {}
+public record BeanDependency(String name, String qualifier, Class<?> type) {
+
+}

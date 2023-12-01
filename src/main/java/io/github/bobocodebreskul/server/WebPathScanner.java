@@ -5,6 +5,10 @@ import static io.github.bobocodebreskul.context.support.ReflectionUtils.invokeAn
 import static io.github.bobocodebreskul.server.WebPathValidator.validatePath;
 import static io.github.bobocodebreskul.server.enums.RequestMethod.GET;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
+import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.Head;
@@ -12,9 +16,6 @@ import io.github.bobocodebreskul.server.annotations.Post;
 import io.github.bobocodebreskul.server.annotations.Put;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
-import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.context.exception.DuplicatePathException;
-import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * This class is responsible for scanning and creating web paths. It uses bring container to
@@ -30,9 +31,9 @@ import lombok.extern.slf4j.Slf4j;
  * public methods marked as {@link Post}, {@link Get}, {@link Delete}, {@link Put}, {@link Head},
  * {@link RequestMapping}
  */
-@Slf4j
 public class WebPathScanner {
 
+  private final static Logger log = LoggerFactory.getLogger(WebPathScanner.class);
   private final BringContainer container;
 
   /**

@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.context.config;
 
-import io.github.bobocodebreskul.context.annotations.BringConfiguration;
 import io.github.bobocodebreskul.context.annotations.BringBean;
+import io.github.bobocodebreskul.context.annotations.BringConfiguration;
 import java.lang.reflect.Method;
 
 

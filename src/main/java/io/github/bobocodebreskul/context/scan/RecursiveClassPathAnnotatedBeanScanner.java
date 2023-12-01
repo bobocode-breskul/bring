@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
  * @author Vitalii Katkov
  * @author Oleksandr Karpachov
  */
+// TODO logs
 public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotatedBeanScanner {
 
   private final ScanUtils scanUtils;
@@ -37,8 +38,8 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
       processedScanPackages.add(scanPackage);
 
       Set<Class<?>> foundClasses = scanSingle(scanPackage).stream()
-        .filter(clazz -> !clazz.isAnnotation())
-        .collect(Collectors.toSet());
+          .filter(clazz -> !clazz.isAnnotation())
+          .collect(Collectors.toSet());
 
       foundClasses.forEach(beanDefinitionReader::registerBean);
       // TODO: implement package scan found on discovered configurations

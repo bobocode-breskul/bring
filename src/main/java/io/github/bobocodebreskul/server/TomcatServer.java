@@ -3,15 +3,16 @@ package io.github.bobocodebreskul.server;
 import static io.github.bobocodebreskul.config.PropertiesConfiguration.getPropertyAsIntOrDefault;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
+import org.slf4j.Logger;
 
 /**
  * Utility class for starting and configuring an embedded Tomcat server.
@@ -20,9 +21,9 @@ import org.apache.catalina.startup.Tomcat;
  * {@link BringContainer}. It configures the server with default settings, such as host, port,
  * context path, and document base.
  */
-@Slf4j
 public class TomcatServer {
 
+  private final static Logger log = LoggerFactory.getLogger(TomcatServer.class);
   private static final String DEFAULT_HOST = "localhost";
 
   /**

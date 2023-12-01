@@ -1,12 +1,13 @@
 package io.github.bobocodebreskul.server;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.exception.WebPathValidationException;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
-@Slf4j
 public class WebPathValidator {
 
+  private final static Logger log = LoggerFactory.getLogger(WebPathValidator.class);
   static final String PATH_SHOULD_START_WITH_SLASH = "Path '%s' validation failed. Path should start with /.";
   static final String PATH_SHOULD_NOT_CONTAIN_WHITESPACES = "Path '%s' validation failed. Path should not contain whitespaces.";
   static final String PATH_SHOULD_NOT_CONTAIN_ASTERISKS = "Path '%s' validation failed. Path should not contain *.";

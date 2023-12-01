@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.server;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.exception.DuplicateErrorHandlerException;
 import io.github.bobocodebreskul.context.exception.MethodValidationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
@@ -11,16 +12,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * This class is responsible for scanning and error handlers. It uses bring container to retrieve
  * all Beans marked as {@link ErrorHandlerController} then retrieve exceptions and methods from
  * public methods marked as {@link ExceptionHandler}
  */
-@Slf4j
 public class WebErrorHandlerControllerScanner {
 
+  private final static Logger log = LoggerFactory.getLogger(WebErrorHandlerControllerScanner.class);
   private final BringContainer container;
 
   /**

@@ -103,7 +103,7 @@ public class BringResponse<T> extends BringHttpEntity<T> {
   public static class ResponseBuilder {
 
     private final ResponseStatus responseStatus;
-    private Map<String, String> headers;
+    private Map<String, String> headers = new HashMap<>();
 
     private ResponseBuilder(ResponseStatus status) {
       this.responseStatus = status;

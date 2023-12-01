@@ -24,7 +24,15 @@ public class HttpRequestMapper {
 
   private static final Logger log = LoggerFactory.getLogger(HttpRequestMapper.class);
 
-  ObjectMapper objectMapper = new ObjectMapper();
+  private ObjectMapper objectMapper = new ObjectMapper();
+
+  public HttpRequestMapper() {
+
+  }
+
+  public HttpRequestMapper(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   // todo test BringResponse with all fields then we set correct values to HttpServletResponse
   // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException
@@ -39,15 +47,12 @@ public class HttpRequestMapper {
       .forEach(headerName -> httpServletResponse.setHeader(headerName,
         bringResponseEntity.getHeader(headerName)));
 
-    httpServletResponse.setStatus(bringResponseEntity.getStatus().getValue());
-
     if (bringResponseEntity.getBody() != null) {
       try {
         Object body = bringResponseEntity.getBody();
         if (body instanceof byte[] byteBody) {
           httpServletResponse.getOutputStream().write(byteBody);
         } else {
-//          httpServletResponse.setHeader();
           httpServletResponse.getOutputStream().print(writeBodyAsJson(body));
         }
       } catch (IOException e) {
@@ -74,8 +79,8 @@ public class HttpRequestMapper {
     try {
       return objectMapper.writeValueAsString(body);
     } catch (JsonProcessingException e) {
-      log.error("Failed to write body as String. ", e);
-      throw new RequestsMappingException("Failed to write body as String. ", e);
+      log.error("Failed to write body as String due to {}", e.getMessage(), e);
+      throw new RequestsMappingException("Failed to write body as String", e);
     }
   }
 

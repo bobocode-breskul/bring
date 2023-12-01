@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 public class BringIntegrationTest {
 
-  public static final String URL = "http://localhost:8080/url";
+  public static final String URL = "http://localhost:7777/url";
   private HttpClient httpClient;
   private ObjectMapper objectMapper;
 
@@ -213,7 +213,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws runtime exception and with configured exception handler with 1 argument RuntimeException ex should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsRuntimeException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/runtime";
+    String url = "http://localhost:7777/error/runtime";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -229,7 +229,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws IllegalArgumentException and with configured exception handler with 2 argument IllegalArgumentException ex, HttpServletRequest req should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsIllegalArgumentException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/illegalargument";
+    String url = "http://localhost:7777/error/illegalargument";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -245,7 +245,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws DuplicatePathException and with configured exception handler with 2 argument DuplicatePathException ex, HttpServletRequest req should not return body")
   void given_RanApplication_when_ControllerGetMethodThrowsDuplicatePathException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/duplicate";
+    String url = "http://localhost:7777/error/duplicate";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -261,7 +261,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws AmbiguousHttpAnnotationException and with configured exception handler with 2 argument HttpServletRequest req, AmbiguousHttpAnnotationException ex should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsAmbiguousHttpAnnotationException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/ambiguos";
+    String url = "http://localhost:7777/error/ambiguos";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -277,7 +277,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws PropertyNotFoundException and with configured exception handler with 1 argument PropertyNotFoundException ex should return correct body and status")
   void given_RanApplication_when_ControllerGetMethodThrowsPropertyNotFoundException_then_returnBodyWithStatus502ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/property";
+    String url = "http://localhost:7777/error/property";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))

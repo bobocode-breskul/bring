@@ -362,7 +362,7 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private String verifyPath(String path) {
-    while (!path.equals("/") && path.endsWith("/")) {
+    while (path.endsWith("/")) {
       path = path.substring(0, path.length() - 1);
     }
     return path;

@@ -662,7 +662,8 @@ public class ReflectionUtilsTest {
   @ParameterizedTest
   @MethodSource("getInputPrimitiveAndWrapperParameters")
   @DisplayName("When primitive/wrapper/String value specified and parameter type is corresponding primitive/wrapper/String then return converted value")
-  void given_valueMatchingTargetType_When_castValue_Then_ReturnConvertedValue(String value, Class<?> targetType, Object expected) {
+  void given_valueMatchingTargetType_When_castValue_Then_ReturnConvertedValue(String value,
+      Class<?> targetType, Object expected) {
     // when
     Object result = ReflectionUtils.castValue(value, targetType);
 
@@ -673,27 +674,34 @@ public class ReflectionUtilsTest {
   @ParameterizedTest
   @MethodSource("getInputFailureParameters")
   @DisplayName("When string value specified and parameter type doesn't match then throw exception")
-  void given_valueNonMatchingTargetType_When_castValue_Then_ThrowException(String value, Class<?> targetType, String exceptionMessage) {
+  void given_valueNonMatchingTargetType_When_castValue_Then_ThrowException(String value,
+      Class<?> targetType, Class<?> exceptionType, String exceptionMessage) {
     //when
     //then
     assertThatThrownBy(() -> ReflectionUtils.castValue(value, targetType))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(exceptionType)
         .hasMessage(exceptionMessage);
   }
 
   private static Stream<Arguments> getInputFailureParameters() {
     return Stream.of(
-        arguments("test", int.class,
+        arguments("test", int.class, IllegalArgumentException.class,
             "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]"
                 .formatted(String.class.getName(), int.class, "test")),
-        arguments("test", char.class, "String value cannot be converted to char: [%s]".formatted("test")),
-        arguments("test", void.class, "Unsupported primitive type: %s".formatted(void.class)),
-        arguments("14.4", short.class, "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]".formatted(String.class.getName(), short.class, "14.4"))
+        arguments("test", char.class, IllegalArgumentException.class,
+            "String value cannot be converted to char: [%s]".formatted("test")),
+        arguments("test", void.class, IllegalArgumentException.class,
+            "Unsupported primitive type: %s".formatted(void.class)),
+        arguments("14.4", short.class, IllegalArgumentException.class,
+            "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]".formatted(
+                String.class.getName(), short.class, "14.4")),
+        arguments("test", null, NullPointerException.class, "The class parameter cannot be null!")
     );
   }
 
   private static Stream<Arguments> getInputPrimitiveAndWrapperParameters() {
     return Stream.of(
+        arguments(null, String.class, null),
         arguments("hello", String.class, "hello"),
         arguments("14", int.class, 14),
         arguments("14", Integer.class, 14),

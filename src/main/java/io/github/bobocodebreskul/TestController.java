@@ -10,7 +10,7 @@ public class TestController {
 
   // TODO: 1.
   @Get("/test")
-  public int test(@RequestParam("test") char testParam){
+  public int test(@RequestParam("test") int testParam){
     return testParam;
   }
 }

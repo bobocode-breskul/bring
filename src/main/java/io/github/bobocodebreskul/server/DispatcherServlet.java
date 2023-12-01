@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  * Servlet that dispatches incoming HTTP GET requests to the appropriate controller methods.
@@ -338,7 +339,7 @@ public class DispatcherServlet extends HttpServlet {
 
     } catch (DatabindException e) {
       log.error(
-          "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(
+          "Cannot map body to object due too incorrect data inside expected json but was %n".formatted(
               body), e);
       throw new WebMethodParameterException(
           "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(
@@ -362,7 +363,7 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void validateRequestParameterType(Class<?> type) {
-    if (!type.isPrimitive() && !String.class.isAssignableFrom(type)) {
+    if (!ClassUtils.isPrimitiveOrWrapper(type) && !String.class.isAssignableFrom(type)) {
       log.error("Request not allowed with request parameter of type [{}]", type);
       throw new WebMethodParameterException(
           "Error reading request parameter of type [%s]. String and primitive/wrappers allowed only"

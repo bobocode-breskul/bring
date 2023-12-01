@@ -283,6 +283,11 @@ public class ReflectionUtils {
    *                                  type.
    */
   public static Object castValue(String value, Class<?> parameterType) {
+    Objects.requireNonNull(parameterType, "The class parameter cannot be null!");
+    if (Objects.isNull(value)) {
+      return null;
+    }
+
     if (String.class.isAssignableFrom(parameterType)) {
       return value;
     }
@@ -311,7 +316,8 @@ public class ReflectionUtils {
         if (value.length() == 1) {
           return value.charAt(0);
         } else {
-          throw new IllegalArgumentException("String value cannot be converted to char: [%s]".formatted(value));
+          throw new IllegalArgumentException(
+              "String value cannot be converted to char: [%s]".formatted(value));
         }
       } else if (boolean.class.isAssignableFrom(parameterType) || Boolean.class.isAssignableFrom(
           parameterType)) {

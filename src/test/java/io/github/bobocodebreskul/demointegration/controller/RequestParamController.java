@@ -7,8 +7,25 @@ import io.github.bobocodebreskul.server.annotations.RestController;
 @RestController
 public class RequestParamController {
 
-  @Get("/testValid")
-  public String testValid(@RequestParam("name") String name){
-    return name;
+  @Get("/test")
+  public String test(@RequestParam("test") String testParam) {
+    return testParam;
   }
+
+  @Get("/test/primitive")
+  public int test(@RequestParam("test") int testParam) {
+    return testParam;
+  }
+
+  @Get("/test/wrapper")
+  public int test(@RequestParam("test") Integer testParam) {
+    return testParam;
+  }
+
+
+  @Get("/test/exception")
+  public UnsupportedRequestParamTest test(@RequestParam("test") UnsupportedRequestParamTest testParam) {
+    return testParam;
+  }
+
 }

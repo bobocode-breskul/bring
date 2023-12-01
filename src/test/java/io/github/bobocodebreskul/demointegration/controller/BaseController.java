@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.demointegration.controller;
 
+import io.github.bobocodebreskul.server.BringRequest;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.Head;
@@ -10,8 +11,7 @@ import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
 
 @RestController
-// TODO wrong behavior on empty if in method start with slash
-@RequestMapping("/")
+@RequestMapping("/url")
 public class BaseController {
 
   @Get
@@ -39,23 +39,29 @@ public class BaseController {
     return "BaseController Delete Method";
   }
 
-  @Post("withRequestBody")
+  @Post("/withRequestBody")
   public String doPostWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
   }
 
-  @Get("withRequestBody")
+  @Get("/withRequestBody")
   public String doGetWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
   }
 
-  @Delete("withRequestBody")
+  @Delete("/withRequestBody")
   public String doDeleteWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
   }
 
-  @Head("withRequestBody")
+  @Head("/withRequestBody")
   public String doHeadWithRequestBody(@RequestBody RequestDto dto) {
     return dto.getString() + dto.getInteger();
+  }
+
+  @Post("/withBringRequest")
+  public String doPostWithBringRequest(BringRequest<RequestDto> request) {
+    RequestDto body = request.getBody();
+    return body.getString() + body.getInteger();
   }
 }

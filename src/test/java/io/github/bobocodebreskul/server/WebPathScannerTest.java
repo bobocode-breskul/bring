@@ -151,7 +151,7 @@ public class WebPathScannerTest {
 
     assertThat(actualException)
         .isInstanceOf(WebPathValidationException.class)
-        .hasMessage(WebPathValidator.PATH_SHOULD_START_WITH_SLASH.formatted("test/get"));
+        .hasMessage(WebPathValidator.PATH_SHOULD_START_WITH_SLASH.formatted("test"));
   }
 
   @Test

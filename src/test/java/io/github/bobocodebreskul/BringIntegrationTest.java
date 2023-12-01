@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 public class BringIntegrationTest {
 
+  public static final String URL = "http://localhost:7777/url";
   private HttpClient httpClient;
   private ObjectMapper objectMapper;
 
@@ -50,10 +51,9 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'get' method founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegistered_then_returnBodyWithStatus200ForGetMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
-        .uri(URI.create(url))
+        .uri(URI.create(URL))
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -67,10 +67,9 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'post' method founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegistered_then_returnBodyWithStatus200ForPostMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/";
     HttpRequest request = HttpRequest.newBuilder()
         .POST(BodyPublishers.noBody())
-        .uri(URI.create(url))
+        .uri(URI.create(URL))
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -84,10 +83,9 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'put' method founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegistered_then_returnBodyWithStatus200ForPutMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/";
     HttpRequest request = HttpRequest.newBuilder()
         .PUT(BodyPublishers.noBody())
-        .uri(URI.create(url))
+        .uri(URI.create(URL))
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -100,10 +98,9 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'delete' method founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegistered_then_returnBodyWithStatus200ForDeleteMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/";
     HttpRequest request = HttpRequest.newBuilder()
         .DELETE()
-        .uri(URI.create(url))
+        .uri(URI.create(URL))
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -117,10 +114,9 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'head' method founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegistered_then_returnBodyWithStatus200ForHeadMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/";
     HttpRequest request = HttpRequest.newBuilder()
         .method("HEAD", HttpRequest.BodyPublishers.noBody())
-        .uri(URI.create(url))
+        .uri(URI.create(URL))
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -132,7 +128,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'post' method with request body parameter founded and triggered")
   void given_RanApplication_when_ControllerWithoutPathRegisteredAndPostMethodWithRequestBody_then_returnBodyWithStatus200ForPostMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/withRequestBody";
+    String url = URL + "/withRequestBody";
     RequestDto requestBody = new RequestDto();
     requestBody.setInteger(10);
     requestBody.setString("String");
@@ -152,7 +148,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'post' method with wrong request body parameter founded and triggered and failed")
   void given_RanApplication_when_ControllerWithoutPathRegisteredAndPostMethodWithWrongRequestBody_then_returnBodyWithStatus500ForPostMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/withRequestBody";
+    String url = URL + "/withRequestBody";
     HttpRequest request = HttpRequest.newBuilder()
         .POST(BodyPublishers.ofString("dummyBody"))
         .uri(URI.create(url))
@@ -167,7 +163,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'get' method with request body parameter founded and triggered and failed")
   void given_RanApplication_when_ControllerWithoutPathRegisteredAndGetMethodWithRequestBody_then_returnBodyWithStatus500ForGetMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/withRequestBody";
+    String url = URL + "/withRequestBody";
     RequestDto requestBody = new RequestDto();
     requestBody.setInteger(10);
     requestBody.setString("String");
@@ -185,7 +181,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'delete' method with request body parameter founded and triggered and failed")
   void given_RanApplication_when_ControllerWithoutPathRegisteredAndDeleteMethodWithRequestBody_then_returnBodyWithStatus500ForGetMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/withRequestBody";
+    String url = URL + "/withRequestBody";
     RequestDto requestBody = new RequestDto();
     requestBody.setInteger(10);
     requestBody.setString("String");
@@ -203,7 +199,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller check 'head' method with request body parameter founded and triggered and failed")
   void given_RanApplication_when_ControllerWithoutPathRegisteredAndHeadMethodWithRequestBody_then_returnBodyWithStatus500ForGetMethod()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/withRequestBody";
+    String url = URL + "/withRequestBody";
     RequestDto requestBody = new RequestDto();
     requestBody.setInteger(10);
     requestBody.setString("String");
@@ -221,7 +217,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws runtime exception and with configured exception handler with 1 argument RuntimeException ex should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsRuntimeException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/runtime";
+    String url = "http://localhost:7777/error/runtime";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -237,7 +233,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws IllegalArgumentException and with configured exception handler with 2 argument IllegalArgumentException ex, HttpServletRequest req should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsIllegalArgumentException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/illegalargument";
+    String url = "http://localhost:7777/error/illegalargument";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -253,7 +249,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws DuplicatePathException and with configured exception handler with 2 argument DuplicatePathException ex, HttpServletRequest req should not return body")
   void given_RanApplication_when_ControllerGetMethodThrowsDuplicatePathException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/duplicate";
+    String url = "http://localhost:7777/error/duplicate";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -269,7 +265,7 @@ public class BringIntegrationTest {
   @DisplayName("Test application start with controller get method throws AmbiguousHttpAnnotationException and with configured exception handler with 2 argument HttpServletRequest req, AmbiguousHttpAnnotationException ex should return correct body")
   void given_RanApplication_when_ControllerGetMethodThrowsAmbiguousHttpAnnotationException_then_returnBodyWithStatus500ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/ambiguos";
+    String url = "http://localhost:7777/error/ambiguos";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -282,10 +278,30 @@ public class BringIntegrationTest {
   }
 
   @Test
+  @DisplayName("Test application start with controller check 'post' method with request body parameter founded and triggered")
+  void given_RanApplication_when_ControllerWithoutPathRegisteredAndPostMethodWithRequestEntity_then_returnBodyWithStatus200ForPostMethod()
+      throws IOException, InterruptedException {
+    String url = URL + "/withBringRequest";
+    RequestDto requestBody = new RequestDto();
+    requestBody.setInteger(10);
+    requestBody.setString("String");
+    HttpRequest request = HttpRequest.newBuilder()
+        .POST(BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
+        .uri(URI.create(url))
+        .header("Content-Type", "application/json")
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).isEqualTo("\"%s%s\"%n".formatted(requestBody.getString(), requestBody.getInteger()));
+  }
+
+  @Test
   @DisplayName("Test application start with controller get method throws PropertyNotFoundException and with configured exception handler with 1 argument PropertyNotFoundException ex should return correct body and status")
   void given_RanApplication_when_ControllerGetMethodThrowsPropertyNotFoundException_then_returnBodyWithStatus502ForGetMethodAndCorrectBody()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/error/property";
+    String url = "http://localhost:7777/error/property";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))

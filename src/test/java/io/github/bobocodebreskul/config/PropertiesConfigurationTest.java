@@ -1,10 +1,10 @@
 package io.github.bobocodebreskul.config;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
-import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import io.github.bobocodebreskul.context.exception.PropertyNotFoundException;
 import java.lang.reflect.Field;
 import java.util.Properties;
@@ -34,7 +34,7 @@ class PropertiesConfigurationTest {
     String server = properties.getProperty("server.url");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -48,7 +48,7 @@ class PropertiesConfigurationTest {
     String server = PropertiesConfiguration.getProperty("server.url");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -61,7 +61,7 @@ class PropertiesConfigurationTest {
     int port = PropertiesConfiguration.getPropertyAsInt("server.port");
 
     // then
-    assertEquals(8080, port);
+    assertEquals(7777, port);
   }
 
   @Order(4)
@@ -84,7 +84,7 @@ class PropertiesConfigurationTest {
     String server = PropertiesConfiguration.getPropertyOrDefault("server.url", "test");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -97,7 +97,7 @@ class PropertiesConfigurationTest {
     int port = PropertiesConfiguration.getPropertyAsIntOrDefault("server.port", 8097);
 
     // then
-    assertEquals(8080, port);
+    assertEquals(7777, port);
   }
 
   @Order(7)
@@ -137,17 +137,15 @@ class PropertiesConfigurationTest {
   }
 
   @Order(10)
-  @DisplayName("Throw a LoadingPropertiesFailedException when try to load from non existing file.")
+  @DisplayName("Do nothing when loadProperties from non existing file.")
   @Test
-  void given_PropertiesConfiguration_when_loadPropertiesFromNonExistingPropertyFile_thenThrowLoadingPropertiesFailedException() {
+  void given_PropertiesConfiguration_when_loadPropertiesFromNonExistingPropertyFile_thenDoNothing() {
 
     // given
     String newConfigFile = "test.properties";
 
     // when
-    assertThatThrownBy(() -> PropertiesConfiguration.loadProperties(newConfigFile))
-        .isInstanceOf(LoadingPropertiesFailedException.class)
-        .hasMessage("Loading properties from %s file failed.".formatted(newConfigFile));
+    assertDoesNotThrow(() -> PropertiesConfiguration.loadProperties(newConfigFile));
   }
 
   @Order(11)

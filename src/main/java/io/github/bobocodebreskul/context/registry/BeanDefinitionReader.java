@@ -69,6 +69,30 @@ public class BeanDefinitionReader {
     this.beanDefinitionRegistry = registry;
   }
 
+  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName) {
+    if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
+      String scopeName = beanClass.getAnnotation(Scope.class).value();
+      log.trace("Found @Scope annotation on the beanName={}", beanName);
+      if (PROTOTYPE_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve prototype scope for bean: {}", beanName);
+        return PROTOTYPE_SCOPE;
+      } else if (SINGLETON_SCOPE.equals(scopeName)) {
+        log.trace("Retrieve singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else if ("".equals(scopeName)) {
+        log.trace("Retrieve default singleton scope for bean: {}", beanName);
+        return SINGLETON_SCOPE;
+      } else {
+        log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
+        throw new BeanDefinitionCreationException(
+            "Invalid scope name provided %s".formatted(scopeName));
+      }
+    }
+
+    log.trace("Retrieve default singleton scope for bean: {}", beanName);
+    return SINGLETON_SCOPE;
+  }
+
   /**
    * Register one or more component classes to be processed. Adding the same component class more
    * than once causes {@link BeanDefinitionDuplicateException}.
@@ -95,7 +119,7 @@ public class BeanDefinitionReader {
 
   private <T> void doRegisterBean(Class<T> beanClass) {
     log.debug("doRegisterBean method invoked: beanClass={}", beanClass);
-    log.info("Registering the bean definition of class {}", beanClass.getName());
+    log.debug("Registering the bean definition of class {}", beanClass.getName());
     String name = BeanDefinitionReaderUtils.getBeanName(beanClass);
 
     var annotatedBeanDefinition = new AnnotatedGenericBeanDefinition(beanClass);
@@ -118,30 +142,6 @@ public class BeanDefinitionReader {
 
     beanDefinitionRegistry.registerBeanDefinition(name, annotatedBeanDefinition);
     log.trace("Registered bean definition: {}", annotatedBeanDefinition);
-  }
-
-  private static <T> String getBeanDefinitionScope(Class<T> beanClass, String beanName) {
-    if (ReflectionUtils.isAnnotationPresentForClass(Scope.class, beanClass)) {
-      String scopeName = beanClass.getAnnotation(Scope.class).value();
-      log.trace("Found @Scope annotation on the beanName={}", beanName);
-      if (PROTOTYPE_SCOPE.equals(scopeName)) {
-        log.trace("Retrieve prototype scope for bean: {}", beanName);
-        return PROTOTYPE_SCOPE;
-      } else if (SINGLETON_SCOPE.equals(scopeName)) {
-        log.trace("Retrieve singleton scope for bean: {}", beanName);
-        return SINGLETON_SCOPE;
-      } else if ("".equals(scopeName)) {
-        log.trace("Retrieve default singleton scope for bean: {}", beanName);
-        return SINGLETON_SCOPE;
-      } else {
-        log.error("Invalid scope name provided: {} for bean: {}", scopeName, beanName);
-        throw new BeanDefinitionCreationException(
-            "Invalid scope name provided %s".formatted(scopeName));
-      }
-    }
-
-    log.trace("Retrieve default singleton scope for bean: {}", beanName);
-    return SINGLETON_SCOPE;
   }
 
   private <T> void doRegisterConfigurationBean(Class<T> beanClass) {

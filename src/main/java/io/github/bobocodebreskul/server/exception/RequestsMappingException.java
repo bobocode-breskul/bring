@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.exception;
+package io.github.bobocodebreskul.server.exception;
 
 /**
  * Exception thrown when fail to map {@link  io.github.bobocodebreskul.server.BringResponse} into

@@ -73,8 +73,6 @@ public class BeanDefinitionValidator {
     beanDefinitionChain.pop();
   }
 
-  // TODO: IMPLEMENTATION - move to it's own validator class and use in
-  //  BeanDefinitionReaderUtils.getBeanName and for Qualifier logic too
   private void validateBeanName(Class<?> beanClass, String beanName) {
     if (isBlank(beanName) || DISALLOWED_BEAN_NAME_CHARS_PATTERN.matcher(beanName).find()) {
       throw new BeanDefinitionValidationException(

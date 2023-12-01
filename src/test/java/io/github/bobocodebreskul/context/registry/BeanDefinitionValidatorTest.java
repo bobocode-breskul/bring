@@ -112,7 +112,6 @@ public class BeanDefinitionValidatorTest {
   @DisplayName("When bean definition with circular dependency of format a -> d (interface, d1 impl) -> c -> a then exception thrown")
   @Order(4)
   void given_BeanDefinitionWithCircularDependencyWithInterfaces_When_validateBeanDefinitions_Then_ExceptionThrown() {
-    // TODO: When bean definition with circular dependency of format a -> d (interface, d1 impl) -> c -> a
     //given
     var aBeanDefinition = new AnnotatedGenericBeanDefinition(A.class);
     aBeanDefinition.setName("a");

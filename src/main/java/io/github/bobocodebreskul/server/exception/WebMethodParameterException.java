@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.exception;
+package io.github.bobocodebreskul.server.exception;
 
 /**
  * Custom exception for errors related to web method parameters in controller methods.

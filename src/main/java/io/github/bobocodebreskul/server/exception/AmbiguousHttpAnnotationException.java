@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.exception;
+package io.github.bobocodebreskul.server.exception;
 
 /**
  * Thrown to indicate that method has more than one http annotation

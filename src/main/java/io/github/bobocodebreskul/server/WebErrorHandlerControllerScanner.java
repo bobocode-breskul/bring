@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.server;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.context.exception.DuplicateErrorHandlerException;
+import io.github.bobocodebreskul.server.exception.DuplicateErrorHandlerException;
 import io.github.bobocodebreskul.context.exception.MethodValidationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;

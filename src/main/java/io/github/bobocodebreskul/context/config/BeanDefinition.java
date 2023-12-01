@@ -60,11 +60,6 @@ public interface BeanDefinition {
   void setScope(String scope);
 
   /**
-   * Return the name of the current target scope for this bean, or {@code null} if not known yet.
-   */
-  String getScope();
-
-  /**
    * Return whether this a singleton with a single, shared instance returned on all calls.
    *
    * @see #SINGLETON_SCOPE

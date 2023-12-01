@@ -15,6 +15,7 @@ import java.lang.annotation.Target;
  * <pre>
  * {@code
  * @RestController("controller")
+ * @RequestMapping
  * public class SampleController {
  *
  *   @Delete("/test")
@@ -30,6 +31,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.DELETE)
 public @interface Delete {
-
+  /**
+   * Represents path.
+   *
+   * @return the path to our resource
+   */
   String value() default "";
 }

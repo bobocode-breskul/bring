@@ -12,11 +12,12 @@ import java.lang.annotation.Target;
  * <pre>
  * {@code
  * @RestController("controller")
+ * @RequestMapping
  * public class SampleController {
  *   @Post
- *  public String doPostWithRequestBody(@RequestBody BodyClass body) {
- *    return body;
- *  }
+ *    public String doPostWithRequestBody(@RequestBody BodyClass body) {
+ *      return body;
+ *    }
  * }
  * }
  * </pre>

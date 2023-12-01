@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.server.utils;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
+import io.github.bobocodebreskul.server.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.server.DispatcherServlet;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.http.HttpServletRequest;

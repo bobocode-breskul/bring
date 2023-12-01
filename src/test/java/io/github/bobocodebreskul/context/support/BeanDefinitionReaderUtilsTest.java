@@ -297,22 +297,6 @@ class BeanDefinitionReaderUtilsTest {
   }
 
   @Test
-  @DisplayName("Get bean dependencies when bean class has only field autowired dependencies")
-  @Disabled
-  @Order(18)
-  void given_BeanClassWithOnlyAutowiredFieldDependencies_When_FindBeanInitConstructor_Then_ReturnValidDependencies() {
-    // TODO: IMPLEMENT only field dependencies found
-  }
-
-  @Test
-  @DisplayName("Get bean dependencies when bean class has only method autowired dependencies")
-  @Disabled
-  @Order(19)
-  void given_BeanClassWithOnlyMethodDependencies_When_FindBeanInitConstructor_Then_ReturnValidMethodDependencies() {
-    // TODO: IMPLEMENT only method dependencies found
-  }
-
-  @Test
   @DisplayName("Get List of methods which annotated with @BringBean from class")
   @Order(20)
   void given_BeanClassWithBeanMethods_When_TwoMethodsAnnotatedAsBringBean_Then_ReturnListOfMethods() {

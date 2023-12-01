@@ -1,7 +1,6 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
@@ -21,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 
 /**
- * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all found
+ * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all founded
  * and registered beans.
  *
  * @author Ruslan Hladchenko
@@ -45,7 +44,7 @@ public class BringContainer implements ObjectFactory {
 
   /**
    * Collect all bean definitions by specified scan packages and build container to create and hold
-   * all found beans.
+   * all founded beans.
    *
    * @param configClass configuration class annotated @BringComponentScan with information where to
    *                    search beans

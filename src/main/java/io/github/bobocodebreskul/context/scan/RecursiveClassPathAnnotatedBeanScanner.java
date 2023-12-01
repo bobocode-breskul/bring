@@ -4,7 +4,6 @@ import io.github.bobocodebreskul.context.annotations.BringComponent;
 import io.github.bobocodebreskul.context.registry.BeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import java.util.ArrayDeque;
-import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,23 +31,16 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
   public void scan(Class<?> configClass) {
     Set<String> scanPackages = scanUtils.readBasePackages(configClass);
     Queue<String> remainingScanPackages = new ArrayDeque<>(scanPackages);
-    Set<String> processedScanPackages = new HashSet<>();
     while (!remainingScanPackages.isEmpty()) {
       String scanPackage = remainingScanPackages.poll();
-      processedScanPackages.add(scanPackage);
 
       Set<Class<?>> foundClasses = scanSingle(scanPackage).stream()
           .filter(clazz -> !clazz.isAnnotation())
           .collect(Collectors.toSet());
 
       foundClasses.forEach(beanDefinitionReader::registerBean);
-      // TODO: implement package scan found on discovered configurations
-      // recursively find all bean from other found configurations
-//      processedScanPackages.addAll(collectScannedPackages(foundClasses));
-//      remainingScanPackages.addAll(findConfigurationScanPackages(foundClasses, processedScanPackages));
     }
   }
-
 
   private Set<Class<?>> scanSingle(String scanPackage) {
     return scanUtils.searchClassesByAnnotationRecursively(scanPackage, BringComponent.class);

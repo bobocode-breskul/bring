@@ -1,4 +1,4 @@
-package io.github.bobocodebreskul.context.exception;
+package io.github.bobocodebreskul.server.exception;
 
 /**
  * Exception thrown to indicate that an attempt to add a duplicate path has been detected.

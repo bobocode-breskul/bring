@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.context.utils;
 
-import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.server.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.server.exception.DuplicatePathException;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;
 import io.github.bobocodebreskul.server.annotations.ExceptionHandler;

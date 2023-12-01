@@ -4,6 +4,9 @@ import ch.qos.logback.classic.Level;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
+/**
+ * Used for creating Logger instances in each class
+ */
 public class LoggerFactory {
 
   public static final String PROPERTY_NAME = "logging";

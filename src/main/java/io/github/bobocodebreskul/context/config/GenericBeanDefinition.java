@@ -54,11 +54,6 @@ public abstract class GenericBeanDefinition implements BeanDefinition {
   }
 
   @Override
-  public String getScope() {
-    return this.scope;
-  }
-
-  @Override
   public boolean isSingleton() {
     return BeanDefinition.SINGLETON_SCOPE.equals(scope);
   }

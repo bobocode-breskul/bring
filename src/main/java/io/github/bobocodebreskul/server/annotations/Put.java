@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
  * <pre>
  * {@code
  * @RestController("controller")
+ * @RequestMapping
  * public class SampleController {
  *
  *   @Put("/test")
@@ -30,5 +31,10 @@ import java.lang.annotation.Target;
 @RequestMapping(method = RequestMethod.PUT)
 public @interface Put {
 
+  /**
+   * Represents path.
+   *
+   * @return the path to our resource
+   */
   String value() default "";
 }

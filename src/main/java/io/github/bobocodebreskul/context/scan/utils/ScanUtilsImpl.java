@@ -15,6 +15,12 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.slf4j.Logger;
 
+/**
+ * Util class for searching classes in packages.
+ *
+ * @author Oleksandr Karpachov
+ * @author Oleh Yakovenko
+ */
 public class ScanUtilsImpl implements ScanUtils {
 
   private final static Logger log = LoggerFactory.getLogger(ScanUtilsImpl.class);

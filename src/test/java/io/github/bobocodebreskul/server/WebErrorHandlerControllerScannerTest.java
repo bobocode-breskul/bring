@@ -14,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
 import static org.mockito.BDDMockito.given;
 
-import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.context.exception.DuplicateErrorHandlerException;
-import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.server.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.server.exception.DuplicateErrorHandlerException;
+import io.github.bobocodebreskul.server.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.exception.MethodValidationException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.http.HttpServletRequest;

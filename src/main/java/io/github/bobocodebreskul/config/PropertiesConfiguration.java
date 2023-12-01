@@ -1,6 +1,5 @@
 package io.github.bobocodebreskul.config;
 
-import io.github.bobocodebreskul.context.exception.ConfigurationFileNotFoundException;
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
 import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import io.github.bobocodebreskul.context.exception.PropertyNotFoundException;
@@ -28,8 +27,7 @@ public class PropertiesConfiguration {
     try (InputStream input = PropertiesConfiguration.class.getClassLoader()
         .getResourceAsStream(configFileName)) {
       if (input == null) {
-        throw new ConfigurationFileNotFoundException(
-            "Sorry, unable to find %s".formatted(configFileName));
+        return;
       }
       properties.load(input);
     } catch (Exception e) {

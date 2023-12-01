@@ -293,7 +293,7 @@ public class DispatcherServlet extends HttpServlet {
       if (isHttpResponse(parameter)) {
         return resp;
       }
-
+/*
       if (isBringRequest(parameter)) {
 
         Type parameterizedType1 = parameter.getParameterizedType();
@@ -313,7 +313,7 @@ public class DispatcherServlet extends HttpServlet {
           }
         }
         return httpRequestMapper.mapHttpServletRequestOnBringRequestEntity(req, parameterizedType1);
-      }
+      }*/
 
       if (parameter.isAnnotationPresent(RequestBody.class)) {
         validateRequestMethod(req);

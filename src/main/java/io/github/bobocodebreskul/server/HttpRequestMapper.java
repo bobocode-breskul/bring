@@ -47,7 +47,7 @@ public class HttpRequestMapper {
         if (body instanceof byte[] byteBody) {
           httpServletResponse.getOutputStream().write(byteBody);
         } else {
-          httpServletResponse.setHeader();
+//          httpServletResponse.setHeader();
           httpServletResponse.getOutputStream().print(writeBodyAsJson(body));
         }
       } catch (IOException e) {

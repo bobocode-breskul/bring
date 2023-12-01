@@ -121,6 +121,10 @@ public class BringResponse<T> {
     return "";
   }
 
+  public Map<String, String> getAllHeaders() {
+    return new HashMap<>(this.headers);
+  }
+
   /**
    * Removes header from {@link BringResponse}
    * @param headerName header name.

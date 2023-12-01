@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
+
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
@@ -229,15 +231,31 @@ public class DispatcherServlet extends HttpServlet {
 
   //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
-    String outputResult = mapper.writeValueAsString(result);
+    BringResponse bringResponse = toBringResponse(result);
+
+    String outputResult = mapper.writeValueAsString(bringResponse);
+    int statusCode = bringResponse.getStatus().getStatusCode();
+    Map<String, String> allHeaders = bringResponse.getAllHeaders();
 
     try (PrintWriter writer = resp.getWriter()) {
-      resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      resp.setStatus(statusCode);
+
+      for (Map.Entry<String, String> entry : allHeaders.entrySet()) {
+        resp.addHeader(entry.getKey(), entry.getValue());
+      }
 
       if (Objects.nonNull(result)) {
         writer.println(outputResult);
         writer.flush();
       }
+    }
+  }
+
+  private static BringResponse toBringResponse(Object result) {
+    if (result instanceof BringResponse response) {
+      return response;
+    } else {
+      return new BringResponse<>(result, null, INTERNAL_SERVER_ERROR);
     }
   }
 

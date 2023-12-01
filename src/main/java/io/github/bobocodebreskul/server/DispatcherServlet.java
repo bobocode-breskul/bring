@@ -1,5 +1,7 @@
 package io.github.bobocodebreskul.server;
 
+import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
+
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
@@ -8,6 +10,7 @@ import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.RequestParam;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -22,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,8 +53,9 @@ public class DispatcherServlet extends HttpServlet {
    * Constructs a new instance of {@code DispatcherServlet} with the specified container,
    * exception-to-errorController mapping and path-to-controller mapping.
    *
-   * @param exceptionToErrorHandlerControllerMethod A mapping of errors to error handler controller instances.
-   * @param pathToControllerMethod A mapping of paths to controller instances.
+   * @param exceptionToErrorHandlerControllerMethod A mapping of errors to error handler controller
+   *                                                instances.
+   * @param pathToControllerMethod                  A mapping of paths to controller instances.
    */
   public DispatcherServlet(Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod,
       Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
@@ -273,6 +278,11 @@ public class DispatcherServlet extends HttpServlet {
         return resp;
       }
 
+      if (parameter.isAnnotationPresent(RequestParam.class)) {
+        validateRequestParameterType(parameter.getType());
+        return getRequestParam(parameter, req);
+      }
+
       if (parameter.isAnnotationPresent(RequestBody.class)) {
         validateRequestMethod(req);
         return getBodyFromRequest(parameter.getType(), req);
@@ -300,8 +310,9 @@ public class DispatcherServlet extends HttpServlet {
 
   private void validateRequestMethod(HttpServletRequest req) {
     if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
-      log.error("%s request not allowed for @RequestBody parameter.".formatted(req.getMethod()));
-      throw new WebMethodParameterException("%s http method not support request body".formatted(req.getMethod()));
+      log.error("{} request not allowed for @RequestBody parameter.", req.getMethod());
+      throw new WebMethodParameterException(
+          "%s http method not support request body".formatted(req.getMethod()));
     }
   }
 
@@ -311,7 +322,8 @@ public class DispatcherServlet extends HttpServlet {
    * @param bodyType The type of the expected request body.
    * @param req      The HttpServletRequest.
    * @return The request body object.
-   * @throws WebMethodParameterException If an error occurs while retrieving or parsing the request body.
+   * @throws WebMethodParameterException If an error occurs while retrieving or parsing the request
+   *                                     body.
    */
   private Object getBodyFromRequest(Class<?> bodyType, HttpServletRequest req) {
     String body = null;
@@ -325,11 +337,37 @@ public class DispatcherServlet extends HttpServlet {
       return mapper.readValue(body, bodyType);
 
     } catch (DatabindException e) {
-      log.error("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
-      throw new WebMethodParameterException("Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(body), e);
-    }catch (IOException e) {
+      log.error(
+          "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(
+              body), e);
+      throw new WebMethodParameterException(
+          "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(
+              body), e);
+    } catch (IOException e) {
       log.error("Error reading request body from request", e);
       throw new WebMethodParameterException("Error reading request body from request", e);
     }
   }
+
+  private Object getRequestParam(Parameter parameter, HttpServletRequest req) {
+    RequestParam annotation = parameter.getAnnotation(RequestParam.class);
+    String requestParamName = annotation.value();
+    log.debug("Retrieving request parameter with name: {}", requestParamName);
+    return Optional.ofNullable(req.getParameter(requestParamName))
+        .map(value -> castValue(value, parameter.getType()))
+        .orElseGet(() -> {
+          log.warn("Cannot find request parameter [{}] in request", requestParamName);
+          return null;
+        });
+  }
+
+  private void validateRequestParameterType(Class<?> type) {
+    if (!type.isPrimitive() && !String.class.isAssignableFrom(type)) {
+      log.error("Request not allowed with request parameter of type [{}]", type);
+      throw new WebMethodParameterException(
+          "Error reading request parameter of type [%s]. String and primitive/wrappers allowed only"
+              .formatted(type));
+    }
+  }
+
 }

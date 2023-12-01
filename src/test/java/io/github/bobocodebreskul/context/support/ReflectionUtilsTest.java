@@ -635,7 +635,7 @@ public class ReflectionUtilsTest {
   }
 
   @Test
-  @DisplayName("`When targetField specified doesn't match annotation target field then throw IllegalArgumentException")
+  @DisplayName("When targetField specified doesn't match annotation target field then throw IllegalArgumentException")
   @Order(38)
   void given_WrongTargetFieldName_when_ExtractMethodAnnotationValues_Then_ThrowException()
       throws NoSuchMethodException {
@@ -657,6 +657,61 @@ public class ReflectionUtilsTest {
     assertThat(actualException)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(expectedErrMsg);
+  }
+
+  @ParameterizedTest
+  @MethodSource("getInputPrimitiveAndWrapperParameters")
+  @DisplayName("When primitive/wrapper/String value specified and parameter type is corresponding primitive/wrapper/String then return converted value")
+  void given_valueMatchingTargetType_When_castValue_Then_ReturnConvertedValue(String value, Class<?> targetType, Object expected) {
+    // when
+    Object result = ReflectionUtils.castValue(value, targetType);
+
+    //then
+    assertThat(result).isEqualTo(expected);
+  }
+
+  @ParameterizedTest
+  @MethodSource("getInputFailureParameters")
+  @DisplayName("When string value specified and parameter type doesn't match then throw exception")
+  void given_valueNonMatchingTargetType_When_castValue_Then_ThrowException(String value, Class<?> targetType, String exceptionMessage) {
+    //when
+    //then
+    assertThatThrownBy(() -> ReflectionUtils.castValue(value, targetType))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(exceptionMessage);
+  }
+
+  private static Stream<Arguments> getInputFailureParameters() {
+    return Stream.of(
+        arguments("test", int.class,
+            "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]"
+                .formatted(String.class.getName(), int.class, "test")),
+        arguments("test", char.class, "String value cannot be converted to char: [%s]".formatted("test")),
+        arguments("test", void.class, "Unsupported primitive type: %s".formatted(void.class)),
+        arguments("14.4", short.class, "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]".formatted(String.class.getName(), short.class, "14.4"))
+    );
+  }
+
+  private static Stream<Arguments> getInputPrimitiveAndWrapperParameters() {
+    return Stream.of(
+        arguments("hello", String.class, "hello"),
+        arguments("14", int.class, 14),
+        arguments("14", Integer.class, 14),
+        arguments("14", long.class, 14L),
+        arguments("14", Long.class, 14L),
+        arguments("14", short.class, (short) 14),
+        arguments("14", Short.class, (short) 14),
+        arguments("14", byte.class, (byte) 14),
+        arguments("14", Byte.class, (byte) 14),
+        arguments("14.4", double.class, 14.4d),
+        arguments("14.4", Double.class, 14.4d),
+        arguments("14.4", float.class, 14.4f),
+        arguments("14.4", Float.class, 14.4f),
+        arguments("c", char.class, 'c'),
+        arguments("c", Character.class, 'c'),
+        arguments("true", boolean.class, true),
+        arguments("true", Boolean.class, true)
+    );
   }
 
   private static Stream<Arguments> testAnnotationFieldArgs() {

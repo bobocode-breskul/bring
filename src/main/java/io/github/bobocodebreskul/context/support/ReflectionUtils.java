@@ -266,4 +266,64 @@ public class ReflectionUtils {
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     return annotation.annotationType().getMethod(methodName).invoke(annotation);
   }
+
+  /**
+   * Converts the given string value to the specified primitive or wrapper type.
+   * <p>
+   * This method is designed to handle the conversion of string values to various primitive types
+   * such as int, double, float, long, short, byte, char, and boolean. It supports both primitive
+   * types and their corresponding wrapper classes. If the target type is String, the method returns
+   * the input value as is.
+   *
+   * @param value         The string value to be converted.
+   * @param parameterType The target type to which the value should be converted.
+   * @return The converted value of the specified type.
+   * @throws IllegalArgumentException If the conversion is not supported for the given type or if
+   *                                  the string value cannot be parsed into the specified primitive
+   *                                  type.
+   */
+  public static Object castValue(String value, Class<?> parameterType) {
+    if (String.class.isAssignableFrom(parameterType)) {
+      return value;
+    }
+
+    try {
+      if (int.class.isAssignableFrom(parameterType) || Integer.class.isAssignableFrom(
+          parameterType)) {
+        return Integer.valueOf(value);
+      } else if (double.class.isAssignableFrom(parameterType) || Double.class.isAssignableFrom(
+          parameterType)) {
+        return Double.valueOf(value);
+      } else if (float.class.isAssignableFrom(parameterType) || Float.class.isAssignableFrom(
+          parameterType)) {
+        return Float.valueOf(value);
+      } else if (long.class.isAssignableFrom(parameterType) || Long.class.isAssignableFrom(
+          parameterType)) {
+        return Long.valueOf(value);
+      } else if (short.class.isAssignableFrom(parameterType) || Short.class.isAssignableFrom(
+          parameterType)) {
+        return Short.valueOf(value);
+      } else if (byte.class.isAssignableFrom(parameterType) || Byte.class.isAssignableFrom(
+          parameterType)) {
+        return Byte.valueOf(value);
+      } else if (char.class.isAssignableFrom(parameterType) || Character.class.isAssignableFrom(
+          parameterType)) {
+        if (value.length() == 1) {
+          return value.charAt(0);
+        } else {
+          throw new IllegalArgumentException("String value cannot be converted to char: [%s]".formatted(value));
+        }
+      } else if (boolean.class.isAssignableFrom(parameterType) || Boolean.class.isAssignableFrom(
+          parameterType)) {
+        return Boolean.valueOf(value);
+      } else {
+        throw new IllegalArgumentException(
+            "Unsupported primitive type: " + parameterType.getName());
+      }
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(
+          "Failed to convert value of type '%s' to required type '%s' for input string: [\"%s\"]"
+              .formatted(String.class.getName(), parameterType, value));
+    }
+  }
 }

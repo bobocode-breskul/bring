@@ -276,4 +276,20 @@ public class BringIntegrationTest {
     assertThat(response.statusCode()).isEqualTo(500);
     assertThat(response.body()).contains("HttpServletRequest and AmbiguousHttpAnnotationException");
   }
+
+  @Test
+  @DisplayName("When controller defined endpoint with request parameter then request parameter processed")
+  void given_RanApplication_When_EndpointWithRequestParameter_Then_ReturnParameterValue()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/testValid?name=test";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).isEqualTo("\"test\"".concat(System.lineSeparator()));
+  }
+
 }

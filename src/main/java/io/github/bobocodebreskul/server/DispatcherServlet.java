@@ -34,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
  * corresponding methods in the controllers provided by the {@link BringContainer}. It uses
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
-//TODO: add tests
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
@@ -229,7 +228,6 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
-  //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
     BringResponse bringResponse = toBringResponse(result);
 

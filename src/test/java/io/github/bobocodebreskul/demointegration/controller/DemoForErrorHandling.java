@@ -7,7 +7,6 @@ import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
 
-//TODO: remove
 @RequestMapping("/error")
 @RestController
 public class DemoForErrorHandling {

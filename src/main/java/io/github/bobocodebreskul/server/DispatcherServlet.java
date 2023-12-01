@@ -236,7 +236,7 @@ public class DispatcherServlet extends HttpServlet {
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
     BringResponse bringResponse = toBringResponse(result);
 
-    String outputResult = mapper.writeValueAsString(bringResponse);
+    String outputResult = mapper.writeValueAsString(bringResponse.getBody());
     int statusCode = bringResponse.getStatus().getStatusCode();
     Map<String, String> allHeaders = bringResponse.getAllHeaders();
 

@@ -45,63 +45,6 @@ public class WebPathScanner {
     this.container = container;
   }
 
-
-  /**
-   * This method is responsible for scanning and creating web paths. It uses bring container to
-   * retrieve all Beans marked as {@link RestController} then retrieve path and http method from
-   * public methods marked as {@link Post}, {@link Get}, {@link Delete}, {@link Put}, {@link Head},
-   * {@link RequestMapping}
-   *
-   * @return Map of (path, Map of (HTTP method, ControllerMethod))
-   * @throws IllegalAccessException    if this {@code Method} object is enforcing Java language
-   *                                   access control and the underlying method is inaccessible.
-   * @throws IllegalArgumentException  if the method is an instance method and the specified object
-   *                                   argument is not an instance of the class or interface
-   *                                   declaring the underlying method (or of a subclass or
-   *                                   implementor thereof); if the number of actual and formal
-   *                                   parameters differ; if an unwrapping conversion for primitive
-   *                                   arguments fails; or if, after possible unwrapping, a
-   *                                   parameter value cannot be converted to the corresponding
-   *                                   formal parameter type by a method invocation conversion.
-   * @throws InvocationTargetException if the underlying method throws an exception.
-   */
-  public Map<String, Map<String, ControllerMethod>> getAllPaths()
-      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    Map<String, Map<String, ControllerMethod>> pathMap = new HashMap<>();
-
-    for (Object controllerBean : getControllerBeans()) {
-      var controllerClass = controllerBean.getClass();
-      String prefixPath = getPrefixPath(controllerClass);
-      log.info("Processing controller class: [{}]", controllerClass.getSimpleName());
-      for (Method method : controllerClass.getMethods()) {
-        Annotation httpMethodAnnotation = getHttpAnnotation(method);
-
-        if (method.isAnnotationPresent(RequestMapping.class)) {
-          RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-          String path = prefixPath.concat(requestMapping.value()).toLowerCase();
-          validatePath(path);
-          String httpMethodName = getHttpMethodName(requestMapping);
-          addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
-          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
-              path, httpMethodName, method.getName());
-        } else if (httpMethodAnnotation == null) {
-          log.debug("Skip scanning method, because method [{}] of class [{}]  has no http mapping",
-              method.getName(), controllerBean.getClass().getName());
-        } else {
-          String path = prefixPath.concat(
-              invokeAnnotationMethod(httpMethodAnnotation, "value").toString()).toLowerCase();
-          validatePath(path);
-          String httpMethodName = getHttpMethodName(httpMethodAnnotation);
-          addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
-          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
-              path, httpMethodName, method.getName());
-        }
-      }
-    }
-
-    return pathMap;
-  }
-
   private static String getPrefixPath(Class<?> controllerClass) {
     if (controllerClass.isAnnotationPresent(RequestMapping.class)) {
       String value = controllerClass.getAnnotation(RequestMapping.class).value();
@@ -186,6 +129,70 @@ public class WebPathScanner {
       allPath.put(path, new HashMap<>(Map.of(httpMethodName, controllerMethod)));
       log.debug("Added new path: [{}] for HTTP method: [{}] for controller method: [{}]",
           path, httpMethodName, controllerMethod.method().getName());
+    }
+  }
+
+  /**
+   * This method is responsible for scanning and creating web paths. It uses bring container to
+   * retrieve all Beans marked as {@link RestController} then retrieve path and http method from
+   * public methods marked as {@link Post}, {@link Get}, {@link Delete}, {@link Put}, {@link Head},
+   * {@link RequestMapping}
+   *
+   * @return Map of (path, Map of (HTTP method, ControllerMethod))
+   * @throws IllegalAccessException    if this {@code Method} object is enforcing Java language
+   *                                   access control and the underlying method is inaccessible.
+   * @throws IllegalArgumentException  if the method is an instance method and the specified object
+   *                                   argument is not an instance of the class or interface
+   *                                   declaring the underlying method (or of a subclass or
+   *                                   implementor thereof); if the number of actual and formal
+   *                                   parameters differ; if an unwrapping conversion for primitive
+   *                                   arguments fails; or if, after possible unwrapping, a
+   *                                   parameter value cannot be converted to the corresponding
+   *                                   formal parameter type by a method invocation conversion.
+   * @throws InvocationTargetException if the underlying method throws an exception.
+   */
+  public Map<String, Map<String, ControllerMethod>> getAllPaths()
+      throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    Map<String, Map<String, ControllerMethod>> pathMap = new HashMap<>();
+
+    for (Object controllerBean : getControllerBeans()) {
+      var controllerClass = controllerBean.getClass();
+      String prefixPath = getPrefixPath(controllerClass);
+      validateIfNotEmpty(prefixPath);
+      log.info("Processing controller class: [{}]", controllerClass.getSimpleName());
+      for (Method method : controllerClass.getMethods()) {
+        Annotation httpMethodAnnotation = getHttpAnnotation(method);
+
+        if (method.isAnnotationPresent(RequestMapping.class)) {
+          RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+          validateIfNotEmpty(requestMapping.value());
+          String path = prefixPath.concat(requestMapping.value()).toLowerCase();
+          String httpMethodName = getHttpMethodName(requestMapping);
+          addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
+          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
+              path, httpMethodName, method.getName());
+        } else if (httpMethodAnnotation == null) {
+          log.debug("Skip scanning method, because method [{}] of class [{}]  has no http mapping",
+              method.getName(), controllerBean.getClass().getName());
+        } else {
+          String httpMethodAnnotationValue = invokeAnnotationMethod(httpMethodAnnotation,
+              "value").toString();
+          validateIfNotEmpty(httpMethodAnnotationValue);
+          String path = prefixPath.concat(httpMethodAnnotationValue).toLowerCase();
+          String httpMethodName = getHttpMethodName(httpMethodAnnotation);
+          addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
+          log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
+              path, httpMethodName, method.getName());
+        }
+      }
+    }
+
+    return pathMap;
+  }
+
+  private static void validateIfNotEmpty(String httpMethodAnnotationValue) {
+    if (!httpMethodAnnotationValue.isEmpty()) {
+      validatePath(httpMethodAnnotationValue);
     }
   }
 

@@ -65,7 +65,7 @@ public class HttpRequestMapper {
   public void writeBringResponseIntoHttpServletResponse(HttpServletResponse httpServletResponse,
       BringResponse<?> bringResponseEntity) {
 
-    httpServletResponse.setStatus(bringResponseEntity.getStatus().getValue());
+    httpServletResponse.setStatus(bringResponseEntity.getStatus().getStatusCode());
 
     bringResponseEntity.getHeadersNames()
         .forEach(headerName -> httpServletResponse.setHeader(headerName,

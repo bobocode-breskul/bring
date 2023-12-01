@@ -34,7 +34,7 @@ class PropertiesConfigurationTest {
     String server = properties.getProperty("server.url");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -48,7 +48,7 @@ class PropertiesConfigurationTest {
     String server = PropertiesConfiguration.getProperty("server.url");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -61,7 +61,7 @@ class PropertiesConfigurationTest {
     int port = PropertiesConfiguration.getPropertyAsInt("server.port");
 
     // then
-    assertEquals(8080, port);
+    assertEquals(7777, port);
   }
 
   @Order(4)
@@ -84,7 +84,7 @@ class PropertiesConfigurationTest {
     String server = PropertiesConfiguration.getPropertyOrDefault("server.url", "test");
 
     // then
-    assertEquals("8080", port);
+    assertEquals("7777", port);
     assertEquals("https://test.com/", server);
   }
 
@@ -97,7 +97,7 @@ class PropertiesConfigurationTest {
     int port = PropertiesConfiguration.getPropertyAsIntOrDefault("server.port", 8097);
 
     // then
-    assertEquals(8080, port);
+    assertEquals(7777, port);
   }
 
   @Order(7)

@@ -59,7 +59,7 @@ public class TomcatServer {
     executor.submit(() -> {
       try {
         tomcat.start();
-        log.info("Tomcat server started successfully.");
+        log.info("Tomcat server started successfully at port %s.".formatted(PORT));
       } catch (Exception exception) {
         log.error("Error while starting Tomcat server", exception);
         log.info("Shutting down the application due to Tomcat server failure.");

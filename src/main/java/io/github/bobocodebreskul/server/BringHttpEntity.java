@@ -166,6 +166,15 @@ class BringHttpEntity<T> {
     log.warn("Removing failed. Cookie for name='{}' not found.", cookieName);
   }
 
+  /**
+   * Returns all headers.
+   *
+   * @return Map of header and value.
+   */
+  public Map<String, String> getAllHeaders() {
+    return new HashMap<>(this.headers);
+  }
+
   private String getCookiesAsString() {
     List<String> pairs = this.cookies.entrySet().stream()
         .map(entry -> entry.getKey() + "=" + entry.getValue())

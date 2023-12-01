@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.demointegration.controller;
 
 import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
 import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.context.exception.PropertyNotFoundException;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
@@ -28,6 +29,11 @@ public class DemoForErrorHandling {
   @Get("/ambiguos")
   public String getFourth() {
     throw new AmbiguousHttpAnnotationException("duplicate");
+  }
+
+  @Get("/property")
+  public String getFifth() {
+    throw new PropertyNotFoundException("duplicate");
   }
 
 }

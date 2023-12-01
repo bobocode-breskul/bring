@@ -1,8 +1,5 @@
 package io.github.bobocodebreskul.server;
 
-import static java.util.Objects.isNull;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.config.LoggerFactory;
@@ -167,7 +164,7 @@ public class DispatcherServlet extends HttpServlet {
 
       Object result = method.invoke(controllerMethod.controller(), args);
       if (result instanceof BringResponse<?> bringResponse) {
-        httpRequestMapper.writeBringResponseIntoHttpServletResponse(bringResponse, resp);
+        httpRequestMapper.writeBringResponseIntoHttpServletResponse(resp, bringResponse);
       } else {
         writeRawResult(resp, method, result);
       }
@@ -247,7 +244,6 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
-  //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
     String outputResult = mapper.writeValueAsString(result);
 
@@ -282,7 +278,6 @@ public class DispatcherServlet extends HttpServlet {
    */
   private Object prepareMethodParameter(Parameter parameter, HttpServletRequest req,
       HttpServletResponse resp) {
-    // TODO: handle ring request object
     try {
       log.debug("Processing method parameter: {}", parameter.getName());
 
@@ -346,10 +341,35 @@ public class DispatcherServlet extends HttpServlet {
 
   private void validateRequestMethod(HttpServletRequest req) {
     if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
-      log.error("%s request not allowed for @RequestBody parameter.".formatted(req.getMethod()));
+      log.error("{} request not allowed for @RequestBody parameter.", req.getMethod());
       throw new WebMethodParameterException(
           "%s http method not support request body".formatted(req.getMethod()));
     }
+  }
+
+  private BringRequest<?> composeBringRequest(Parameter parameter, HttpServletRequest req) {
+    Type parameterType = parameter.getParameterizedType();
+    // Check if it's a parameterized type
+    if (parameterType instanceof ParameterizedType parameterizedType) {
+      // Get the actual type arguments
+      Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+      // Assuming there's only one type argument
+      if (typeArguments.length == 1) {
+        // Get the class of the type argument
+        Class<?> genericClass = (Class<?>) typeArguments[0];
+        return httpRequestMapper.mapHttpServletRequestOnBringRequestEntity(req, genericClass);
+      } else {
+        log.error("Invalid number of parameterized types found for BringRequest. Expected 1, "
+            + "found {}", typeArguments.length);
+        throw new WebMethodParameterException(("BringRequest parameter should have only 1 "
+            + "parameterized type, found %d").formatted(typeArguments.length));
+      }
+    }
+    log.error("BringRequest type could not be casted to parameterized type, type {}",
+        parameterType);
+    throw new WebMethodParameterException(("Could not extract parameterized type from BringRequest "
+        + "object, type - '%s'").formatted(parameterType));
   }
 
   /**

@@ -1,7 +1,7 @@
-# Bring ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+# Bring Framework![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## What is Bring?
-Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
+## What is Bring Framework?
+Bring Framework is a custom web framework that combines HTTP request handling with a Dependency Injection container.
 It uses IoC (Inversion of Control) container, which ....
 
 ## Table of Contents
@@ -27,7 +27,7 @@ Bring Framework is designed to simplify the development of web applications in J
 
 ## Getting Started
 
-Follow these steps to integrate Bring into your project:
+Follow these steps to integrate Bring Framework into your project:
 
 1. Add the following Maven dependency:
 
@@ -52,7 +52,7 @@ public class Config {
 
 ## Configuration
 
-To customize the behavior of the Spring Web Framework, you can configure various properties in your application...
+To customize the behavior of the Bring Framework, you can configure various properties in your application...
 
 ## Usage
 
@@ -83,7 +83,7 @@ If you'd like to contribute to Bring, please contact with the team Breskul!
 This project is licensed under the [MIT License](https://opensource.org/license/mit/).
 
 
-
+//TODO delete ?
 ## Quick Start
 The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) includes detailed installation instructions as well as a comprehensive getting started guide.
 

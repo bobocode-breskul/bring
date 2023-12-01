@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,10 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.context.exception.RequestsMappingException;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
-import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -46,8 +47,6 @@ class HttpRequestMapperTest {
   private HttpServletResponse mockedHttpServletResponse;
   @Mock
   private HttpServletRequest mockedHttpServletRequest;
-  @Mock
-  private ServletInputStream mockedServletInputStream;
   @InjectMocks
   private HttpRequestMapper requestMapper;
 
@@ -91,7 +90,8 @@ class HttpRequestMapperTest {
   @Test
   @DisplayName("HttpServletResponse throw IOException during body writing then throw RequestsMappingException")
   @Order(3)
-  void given_OutputStreamThorow_When_writeBringResponseIntoHttpServletResponse_Then_ThrownRequestsMappingException() throws IOException {
+  void given_OutputStreamThorow_When_writeBringResponseIntoHttpServletResponse_Then_ThrownRequestsMappingException()
+      throws IOException {
     //data
 
     String body = "response body";
@@ -135,22 +135,23 @@ class HttpRequestMapperTest {
 
 
   @Test
-  @DisplayName("when we fill all BringRequest fields from HttpServletRequest when body exists")
+  @DisplayName("When we fill all BringRequest fields from HttpServletRequest when body exists")
   @Order(5)
   @SneakyThrows
-  void given_HttpServletRequestHasAllFields_When_mapHttpServletRequestOnBringRequestEntity_Then_returnFilledBringRequest() {
+  void given_HttpServletRequestHasAllFields_When_MapHttpServletRequestOnBringRequestEntity_Then_returnFilledBringRequest() {
     //data
     String body = "response body";
     String method = "POST";
     String headerName1 = "headername1";
     String headerName2 = "headername2";
-    String headerContentType = "Content-Type";
+    String headerContentType = "content-type";
     String headerValue1 = "headerValue1";
     String headerValue2 = "headerValue2";
     String headerValueContentType = "text/plain";
     String stringUrl = "100.90.90.99";
     var expectedURI = URI.create(stringUrl);
     var headerNames = Collections.enumeration(List.of(headerName1, headerName2, headerContentType));
+    BufferedReader bufferedReader = mock(BufferedReader.class);
 
     //given
     given(mockedHttpServletRequest.getMethod()).willReturn(method);
@@ -159,7 +160,8 @@ class HttpRequestMapperTest {
     given(mockedHttpServletRequest.getHeader(headerName1)).willReturn(headerValue1);
     given(mockedHttpServletRequest.getHeader(headerName2)).willReturn(headerValue2);
     given(mockedHttpServletRequest.getHeader(headerContentType)).willReturn(headerValueContentType);
-    given(mockedHttpServletRequest.getInputStream()).willReturn(mockedServletInputStream);
+    given(mockedHttpServletRequest.getReader()).willReturn(bufferedReader);
+    given(bufferedReader.lines()).willReturn(List.of(body).stream());
     given(mockedMapper.readValue(anyString(), any(Class.class))).willReturn(body);
 
     //when
@@ -169,7 +171,8 @@ class HttpRequestMapperTest {
     //verify
     assertThat(actual.getRequestMethod()).isEqualTo(RequestMethod.POST);
     assertThat(actual.getUrl()).isEqualTo(expectedURI);
-    assertThat(actual.getHeadersNames()).containsExactlyInAnyOrder(headerName1, headerName2);
+    assertThat(actual.getHeadersNames()).containsExactlyInAnyOrder(headerName1, headerName2,
+        headerContentType);
     assertThat(actual.getHeader(headerName1)).isEqualTo(headerValue1);
     assertThat(actual.getHeader(headerName2)).isEqualTo(headerValue2);
     assertThat(actual.getHeader(headerContentType)).isEqualTo(headerValueContentType);
@@ -198,19 +201,19 @@ class HttpRequestMapperTest {
   @Order(7)
   @SneakyThrows
   void given_ObjectMapperThrowsIOExceptionOnReadValue_When_mapHttpServletRequestOnBringRequestEntity_Then_ShouldThrowRequestsMappingException() {
-    when(mockedMapper.readValue(anyString(), any(Class.class)))
-        .thenThrow(new JsonProcessingException("Json Error") {
-        });
+    BufferedReader bufferedReader = mock(BufferedReader.class);
+    var headerNames = Collections.enumeration(List.of("headerName", "content-type"));
 
     given(mockedHttpServletRequest.getMethod()).willReturn("GET");
     given(mockedHttpServletRequest.getRequestURI()).willReturn("/test");
-
-    var headerNames = Collections.enumeration(List.of("headerName", "Content-Type"));
-
     given(mockedHttpServletRequest.getHeaderNames()).willReturn(headerNames);
     given(mockedHttpServletRequest.getHeader("headerName")).willReturn("headerValue");
-    given(mockedHttpServletRequest.getHeader("Content-Type")).willReturn("text/plain");
-    given(mockedHttpServletRequest.getInputStream()).willReturn(mockedServletInputStream);
+    given(mockedHttpServletRequest.getHeader("content-type")).willReturn("text/plain");
+    given(mockedHttpServletRequest.getReader()).willReturn(bufferedReader);
+    given(bufferedReader.lines()).willReturn(List.of("body").stream());
+    when(mockedMapper.readValue(anyString(), any(Class.class)))
+        .thenThrow(new JsonProcessingException("Json Error") {
+        });
 
     Exception actualException = catchException(
         () -> requestMapper.mapHttpServletRequestOnBringRequestEntity(

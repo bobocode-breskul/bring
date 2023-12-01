@@ -336,7 +336,7 @@ class AnnotatedBeanDefinitionReaderTest {
 
     assertThatThrownBy(() -> annotatedBeanDefinitionReader.registerBean(configurationClass))
         .isInstanceOf(BeanDefinitionCreationException.class)
-        .hasMessage("Default constructor invoke for configuration fails: %s".formatted(configurationClass));
+        .hasMessage("Default constructor invoke for configuration fails: %s. Configuration class use only default constructor, and not support injections.".formatted(configurationClass));
   }
 
   @Target(ElementType.TYPE)

@@ -321,7 +321,7 @@ public class BringIntegrationTest {
   @DisplayName("When endpoint with request parameter of type String then it is processed and returned")
   void given_EndpointWithStringRequestParameter_When_GetEndpoint_Then_ReturnParameterValue()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test?test=test";
+    String url = "http://localhost:7777/test?test=test";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -336,7 +336,7 @@ public class BringIntegrationTest {
   @DisplayName("When endpoint with request parameter of primitive type then it is processed and returned")
   void given_EndpointWithPrimitiveRequestParameter_When_GetEndpoint_Then_ReturnParameterValue()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test/primitive?test=11";
+    String url = "http://localhost:7777/test/primitive?test=11";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -351,7 +351,7 @@ public class BringIntegrationTest {
   @DisplayName("When endpoint with request parameter of wrapper type then it is processed and returned")
   void given_EndpointWithWrapperRequestParameter_When_GetEndpoint_Then_ReturnParameterValue()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test/wrapper?test=11";
+    String url = "http://localhost:7777/test/wrapper?test=11";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -366,7 +366,7 @@ public class BringIntegrationTest {
   @DisplayName("When endpoint with request parameter and no parameter in request then null returned")
   void given_EndpointWithPrimitiveRequestParameterAndNoParameterInRequest_When_GetEndpoint_Then_ReturnNull()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test";
+    String url = "http://localhost:7777/test";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -382,7 +382,7 @@ public class BringIntegrationTest {
   @DisplayName("When endpoint with request parameter of non string/primitive/wrapper type then throw exception")
   void given_EndpointWithUnsupportedRequestParameter_When_GetEndpoint_Then_ReturnNull()
       throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test/exception?test=test";
+    String url = "http://localhost:7777/test/exception?test=test";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -391,14 +391,14 @@ public class BringIntegrationTest {
 
     assertThat(response.statusCode()).isEqualTo(500);
     assertThat(response.body()).isEqualTo(
-        "\"Error processing 'testParam' method parameter with type '%s'.\"".formatted(
-            UnsupportedRequestParamTest.class).concat(System.lineSeparator()));
+        "\"Error processing 'testParam' method parameter with type '%s', due to Error reading request parameter of type [%s]. String and primitive/wrappers allowed only\"".formatted(
+            UnsupportedRequestParamTest.class, UnsupportedRequestParamTest.class).concat(System.lineSeparator()));
   }
 
   @Test
   @DisplayName("When endpoint with request parameter of primitive type and string value specified in request then throw exception")
   void given_EndpointWithNonConvertibleRequestParameter_When_GetEndpoint_Then_ReturnNull() throws IOException, InterruptedException {
-    String url = "http://localhost:8080/test/primitive?test=test";
+    String url = "http://localhost:7777/test/primitive?test=test";
     HttpRequest request = HttpRequest.newBuilder()
         .GET()
         .uri(URI.create(url))
@@ -407,7 +407,7 @@ public class BringIntegrationTest {
 
     assertThat(response.statusCode()).isEqualTo(500);
     assertThat(response.body()).isEqualTo(
-        "\"Error processing 'testParam' method parameter with type 'int'.\"".concat(
+        "\"Error processing 'testParam' method parameter with type 'int', due to Failed to convert value of type 'java.lang.String' to required type 'int' for input string: [\\\"test\\\"]\"".concat(
             System.lineSeparator()));
   }
 }

@@ -43,7 +43,15 @@ public class HttpRequestMapper {
   private static final Set<String> ALLOWED_INPUT_CONTENT_TYPES = Set.of(CONTENT_TYPE_TEXT_HTML,
       CONTENT_TYPE_TEXT_PLAIN, CONTENT_TYPE_APPLICATION_JSON);
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private ObjectMapper objectMapper = new ObjectMapper();
+
+  public HttpRequestMapper() {
+
+  }
+
+  public HttpRequestMapper(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   // todo test BringResponse with all fields then we set correct values to HttpServletResponse
   // todo test HttpServletResponse throw IOException during body writing then throw RequestsMappingException
@@ -122,8 +130,8 @@ public class HttpRequestMapper {
     try {
       return objectMapper.writeValueAsString(body);
     } catch (JsonProcessingException e) {
-      log.error("Failed to write body as String. ", e);
-      throw new RequestsMappingException("Failed to write body as String. ", e);
+      log.error("Failed to write body as String due to {}", e.getMessage(), e);
+      throw new RequestsMappingException("Failed to write body as String", e);
     }
   }
 

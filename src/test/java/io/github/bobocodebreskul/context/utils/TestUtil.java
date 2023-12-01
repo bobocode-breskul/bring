@@ -104,6 +104,7 @@ public class TestUtil {
   }
 
   @RestController
+  @RequestMapping
   static class ControllerWithSeveralAnnotatedMethods {
     @Get("/testget")
     @Post("/testpost")

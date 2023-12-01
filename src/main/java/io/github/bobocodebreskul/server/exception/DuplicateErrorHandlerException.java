@@ -7,6 +7,10 @@ package io.github.bobocodebreskul.server.exception;
  */
 public class DuplicateErrorHandlerException extends RuntimeException {
 
+  public DuplicateErrorHandlerException(Throwable cause) {
+    super(cause);
+  }
+
   public DuplicateErrorHandlerException(String message) {
     super(message);
   }

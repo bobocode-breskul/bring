@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.catchException;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.TestComponentAnnotation;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.none.NoneCandidate1;
 import io.github.bobocodebreskul.context.scan.utils.scantestsclasses.annotations.parent.ParentCandidate;
+import io.github.bobocodebreskul.server.annotations.Get;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

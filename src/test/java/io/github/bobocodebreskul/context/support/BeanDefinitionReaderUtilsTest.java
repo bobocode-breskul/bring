@@ -3,8 +3,6 @@ package io.github.bobocodebreskul.context.support;
 import static io.github.bobocodebreskul.context.support.BeanDefinitionReaderUtils.UNCERTAIN_BEAN_NAME_EXCEPTION_MSG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 import io.github.bobocodebreskul.context.annotations.Autowired;
 import io.github.bobocodebreskul.context.annotations.BringBean;

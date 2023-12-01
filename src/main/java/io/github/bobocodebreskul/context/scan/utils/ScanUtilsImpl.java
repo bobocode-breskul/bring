@@ -1,5 +1,6 @@
 package io.github.bobocodebreskul.context.scan.utils;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.annotations.BringComponentScan;
 import io.github.bobocodebreskul.context.exception.BringComponentScanNotFoundException;
 import io.github.bobocodebreskul.context.support.ReflectionUtils;
@@ -10,13 +11,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
+import org.slf4j.Logger;
 
-@Slf4j
 public class ScanUtilsImpl implements ScanUtils {
 
+  private final static Logger log = LoggerFactory.getLogger(ScanUtilsImpl.class);
   @Override
   public Set<Class<?>> searchAllClasses(String packagePathPrefix) {
     log.trace("Search all classes for {} package", packagePathPrefix);

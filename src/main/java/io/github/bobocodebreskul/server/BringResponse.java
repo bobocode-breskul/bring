@@ -2,12 +2,14 @@ package io.github.bobocodebreskul.server;
 
 import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
+import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Represents an HTTP response entity. Gives access to response headers, cookies, body and status.
@@ -23,11 +25,12 @@ import lombok.extern.slf4j.Slf4j;
  *       .body("RESULT DATA");
  *   }
  * </pre>
+ *
  * @param <T> body type
  */
-@Slf4j
 public class BringResponse<T> {
 
+  private final static Logger log = LoggerFactory.getLogger(BringContainer.class);
   static final String COOKIE = "Cookie";
   static final String HEADER_NAME_SHOULD_NOT_BE_NULL = "Header name should not be null.";
   static final String HEADER_VALUE_SHOULD_NOT_BE_NULL = "Header value should not be null.";
@@ -49,7 +52,8 @@ public class BringResponse<T> {
     this(null, new HashMap<>(), status);
   }
 
-  public BringResponse(@Nullable T body, @Nullable Map<String, String> headers, ResponseStatus status) {
+  public BringResponse(@Nullable T body, @Nullable Map<String, String> headers,
+      ResponseStatus status) {
     this.headers = isNull(headers) ? new HashMap<>() : headers;
     this.body = body;
     if (isNull(status)) {
@@ -61,6 +65,7 @@ public class BringResponse<T> {
 
   /**
    * Create a builder with specified status
+   *
    * @param status HTTP response status
    * @return builder instance
    */
@@ -70,6 +75,7 @@ public class BringResponse<T> {
 
   /**
    * Create a builder with the status set to {@link ResponseStatus#OK OK}.
+   *
    * @return the created builder
    */
   public static ResponseBuilder ok() {
@@ -78,9 +84,10 @@ public class BringResponse<T> {
 
   /**
    * A shortcut for creation of a {@link BringResponse} with {@link ResponseStatus#OK OK}.
+   *
    * @param body the response body.
+   * @param <T>  body class type.
    * @return the created {@link BringResponse} object.
-   * @param <T> body class type.
    */
   public static <T> BringResponse<T> ok(T body) {
     return ok().body(body);
@@ -88,7 +95,8 @@ public class BringResponse<T> {
 
   /**
    * Method adds header to {@link BringResponse}
-   * @param headerName header name
+   *
+   * @param headerName  header name
    * @param headerValue header value
    */
   public void addHeader(String headerName, String headerValue) {
@@ -107,6 +115,7 @@ public class BringResponse<T> {
 
   /**
    * Returns header value by name.
+   *
    * @param headerName header name.
    * @return header value.
    */
@@ -122,7 +131,17 @@ public class BringResponse<T> {
   }
 
   /**
+   * Returns all headers.
+   *
+   * @return Map of header and value.
+   */
+  public Map<String, String> getAllHeaders() {
+    return new HashMap<>(this.headers);
+  }
+
+  /**
    * Removes header from {@link BringResponse}
+   *
    * @param headerName header name.
    */
   public void removeHeader(String headerName) {
@@ -144,7 +163,8 @@ public class BringResponse<T> {
 
   /**
    * Method for adding cookies to {@link BringResponse}
-   * @param cookieName cookie name.
+   *
+   * @param cookieName  cookie name.
    * @param cookieValue cookie value.
    */
   public void addCookie(String cookieName, String cookieValue) {
@@ -166,6 +186,7 @@ public class BringResponse<T> {
 
   /**
    * Returns cookie value from {@link BringResponse}.
+   *
    * @param cookieName cookie name.
    * @return cookie value.
    */
@@ -182,6 +203,7 @@ public class BringResponse<T> {
 
   /**
    * Removes cookie from {@link BringResponse} by name.
+   *
    * @param cookieName removed cookie name.
    */
   public void removeCookie(String cookieName) {

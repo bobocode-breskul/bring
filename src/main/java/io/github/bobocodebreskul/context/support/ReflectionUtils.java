@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.support;
 
 import static java.util.function.Predicate.not;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.annotations.BringComponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -18,15 +19,15 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Utility methods that are useful for reflective access.
  */
-@Slf4j
 @UtilityClass
 public class ReflectionUtils {
 
+  private final static Logger log = LoggerFactory.getLogger(ReflectionUtils.class);
   final static String CLASS_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Class [%s] ";
   final static String METHOD_ANNOTATION_VALUE_ERROR_MSG_PREFIX = "Exception during [%s] annotation [%s] field value extracting. Method [%s] ";
 

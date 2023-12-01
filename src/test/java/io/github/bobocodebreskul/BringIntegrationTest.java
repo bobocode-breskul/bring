@@ -282,6 +282,26 @@ public class BringIntegrationTest {
   }
 
   @Test
+  @DisplayName("Test application start with controller get method throws PropertyNotFoundException and with configured exception handler with 1 argument PropertyNotFoundException ex should return correct body and status")
+  void given_RanApplication_when_ControllerGetMethodThrowsPropertyNotFoundException_then_returnBodyWithStatus502ForGetMethodAndCorrectBody()
+      throws IOException, InterruptedException {
+    String url = "http://localhost:8080/error/property";
+    HttpRequest request = HttpRequest.newBuilder()
+        .GET()
+        .uri(URI.create(url))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(502);
+    assertThat(response.body()).contains("Hello from BringResponse");
+    assertThat(response.headers().map()).isNotEmpty().containsKey("TestHeader");
+    assertThat(response.headers().map().get("TestHeader"))
+        .hasSize(1)
+        .contains("TestValue");
+  }
+
+  @Test
   @DisplayName("When endpoint with request parameter of type String then it is processed and returned")
   void given_EndpointWithStringRequestParameter_When_GetEndpoint_Then_ReturnParameterValue()
       throws IOException, InterruptedException {

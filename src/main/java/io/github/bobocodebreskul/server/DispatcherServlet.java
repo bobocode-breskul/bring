@@ -2,8 +2,11 @@ package io.github.bobocodebreskul.server;
 
 import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
 
+import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
+
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
 import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
@@ -27,7 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 
 /**
@@ -37,10 +39,8 @@ import org.apache.commons.lang3.ClassUtils;
  * corresponding methods in the controllers provided by the {@link BringContainer}. It uses
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
-//TODO: add tests
-@Slf4j
 public class DispatcherServlet extends HttpServlet {
-
+  private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
   private final static List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),
       RequestMethod.HEAD.name(),
@@ -163,6 +163,9 @@ public class DispatcherServlet extends HttpServlet {
           .toArray();
 
       Object result = method.invoke(controllerMethod.controller(), args);
+      if (result instanceof BringResponse<?>) {
+
+      }
       try (PrintWriter writer = resp.getWriter()) {
         if (!method.getReturnType().equals(Void.class)) {
           writer.println(mapper.writeValueAsString(result));
@@ -171,6 +174,7 @@ public class DispatcherServlet extends HttpServlet {
         writer.flush();
       }
     } catch (Exception ex) {
+      log.error("Failed to process request due to error: [{}]", ex.getMessage(), ex);
       if (ex instanceof InvocationTargetException) {
         handleError(req, resp, ((InvocationTargetException) ex).getTargetException());
       } else {
@@ -233,17 +237,32 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
-  //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
-    String outputResult = mapper.writeValueAsString(result);
+    BringResponse bringResponse = toBringResponse(result);
+
+    String outputResult = mapper.writeValueAsString(bringResponse.getBody());
+    int statusCode = bringResponse.getStatus().getStatusCode();
+    Map<String, String> allHeaders = bringResponse.getAllHeaders();
 
     try (PrintWriter writer = resp.getWriter()) {
-      resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      resp.setStatus(statusCode);
+
+      for (Map.Entry<String, String> entry : allHeaders.entrySet()) {
+        resp.addHeader(entry.getKey(), entry.getValue());
+      }
 
       if (Objects.nonNull(result)) {
         writer.println(outputResult);
         writer.flush();
       }
+    }
+  }
+
+  private static BringResponse toBringResponse(Object result) {
+    if (result instanceof BringResponse response) {
+      return response;
+    } else {
+      return new BringResponse<>(result, null, INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -339,7 +358,7 @@ public class DispatcherServlet extends HttpServlet {
 
     } catch (DatabindException e) {
       log.error(
-          "Cannot map body to object due too incorrect data inside expected json but was %n".formatted(
+          "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(
               body), e);
       throw new WebMethodParameterException(
           "Cannot map body to object due too incorrect data inside expected json but was %n%s".formatted(

@@ -1,12 +1,13 @@
 package io.github.bobocodebreskul.server;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.registry.BringContainer;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * Initializes the web container by registering a super servlet.
@@ -15,13 +16,13 @@ import lombok.extern.slf4j.Slf4j;
  * registers a super servlet named "dispatcherServlet" and maps it to "/*" in the servlet context.
  * <p>
  * The initialization process involves collecting paths and controllers from a
- * {@link BringContainer} using {@link WebPathScanner}, collecting error handlers
- * from {@link BringContainer} using {@link WebErrorHandlerControllerScanner}
- * and creating an instance of {@link DispatcherServlet} to handle incoming requests.
+ * {@link BringContainer} using {@link WebPathScanner}, collecting error handlers from
+ * {@link BringContainer} using {@link WebErrorHandlerControllerScanner} and creating an instance of
+ * {@link DispatcherServlet} to handle incoming requests.
  */
-@Slf4j
 public class WebContainerInitializer implements ServletContainerInitializer {
 
+  private final static Logger log = LoggerFactory.getLogger(WebContainerInitializer.class);
   private final WebErrorHandlerControllerScanner webErrorHandlerControllerScanner;
   private final WebPathScanner webPathScanner;
 
@@ -29,8 +30,9 @@ public class WebContainerInitializer implements ServletContainerInitializer {
    * Constructs a new instance of {@code WebContainerInitializer} with the specified
    * webPathScanner.
    *
-   * @param webErrorHandlerControllerScanner The webErrorHandlerControllerScanner is used for retrieving error handlers
-   * @param webPathScanner The webPathScanner is used for retrieving paths.
+   * @param webErrorHandlerControllerScanner The webErrorHandlerControllerScanner is used for
+   *                                         retrieving error handlers
+   * @param webPathScanner                   The webPathScanner is used for retrieving paths.
    */
   public WebContainerInitializer(WebErrorHandlerControllerScanner webErrorHandlerControllerScanner,
       WebPathScanner webPathScanner) {

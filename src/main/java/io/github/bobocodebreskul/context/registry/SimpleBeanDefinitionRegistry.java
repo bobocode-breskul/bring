@@ -2,6 +2,7 @@ package io.github.bobocodebreskul.context.registry;
 
 import static java.util.Objects.isNull;
 
+import io.github.bobocodebreskul.config.LoggerFactory;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.exception.AliasDuplicateException;
 import io.github.bobocodebreskul.context.exception.BeanDefinitionDuplicateException;
@@ -13,11 +14,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
-@Slf4j
 public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
+  private final static Logger log = LoggerFactory.getLogger(SimpleBeanDefinitionRegistry.class);
   private final Map<String, String> aliasMap = new ConcurrentHashMap<>();
   private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
@@ -168,7 +169,8 @@ public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
     }
     log.trace("Checking if a BeanDefinition exists for '{}'", beanName);
     boolean containsDefinition = beanDefinitionMap.containsKey(beanName);
-    log.debug("BeanDefinition for '{}' {} present in the registry.", beanName, containsDefinition ? "is" : "is not");
+    log.debug("BeanDefinition for '{}' {} present in the registry.", beanName,
+        containsDefinition ? "is" : "is not");
     return beanDefinitionMap.containsKey(beanName);
   }
 

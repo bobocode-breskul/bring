@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.context.scan;
 
 import io.github.bobocodebreskul.context.annotations.BringComponent;
-import io.github.bobocodebreskul.context.registry.AnnotatedBeanDefinitionReader;
+import io.github.bobocodebreskul.context.registry.BeanDefinitionReader;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtils;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -16,13 +16,14 @@ import java.util.stream.Collectors;
  * @author Vitalii Katkov
  * @author Oleksandr Karpachov
  */
+// TODO logs
 public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotatedBeanScanner {
 
   private final ScanUtils scanUtils;
-  private final AnnotatedBeanDefinitionReader beanDefinitionReader;
+  private final BeanDefinitionReader beanDefinitionReader;
 
   public RecursiveClassPathAnnotatedBeanScanner(ScanUtils scanUtils,
-      AnnotatedBeanDefinitionReader beanDefinitionReader) {
+      BeanDefinitionReader beanDefinitionReader) {
     this.scanUtils = scanUtils;
     this.beanDefinitionReader = beanDefinitionReader;
   }
@@ -37,8 +38,8 @@ public class RecursiveClassPathAnnotatedBeanScanner implements ClassPathAnnotate
       processedScanPackages.add(scanPackage);
 
       Set<Class<?>> foundClasses = scanSingle(scanPackage).stream()
-        .filter(clazz -> !clazz.isAnnotation())
-        .collect(Collectors.toSet());
+          .filter(clazz -> !clazz.isAnnotation())
+          .collect(Collectors.toSet());
 
       foundClasses.forEach(beanDefinitionReader::registerBean);
       // TODO: implement package scan found on discovered configurations

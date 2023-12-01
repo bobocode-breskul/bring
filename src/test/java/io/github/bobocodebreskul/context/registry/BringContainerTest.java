@@ -136,6 +136,7 @@ class BringContainerTest {
     beanDefinition4.setName(TEST_BEAN_NAME_4);
     beanDefinition4.setInitConstructor(BeanClass4.class.getDeclaredConstructors()[0]);
 
+
     given(beanDefinitionRegistry.getBeanDefinition(inputBeanName)).willReturn(beanDefinition3);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_2)).willReturn(beanDefinition2);
     given(beanDefinitionRegistry.getBeanDefinition(TEST_BEAN_NAME_1)).willReturn(beanDefinition1);
@@ -146,6 +147,7 @@ class BringContainerTest {
     // when
     Object actualBean = objectFactory.getBean(inputBeanName);
     // then
+    assertThat(beanDefinition1.toString()).isNotEqualTo(beanDefinition2.toString());
     BeanClass3 expectedBean = new BeanClass3(new BeanClass2(new BeanClass1(), new BeanClass4()), new BeanClass1());
     assertThat(actualBean).isInstanceOf(BeanClass3.class);
     assertThat(actualBean)

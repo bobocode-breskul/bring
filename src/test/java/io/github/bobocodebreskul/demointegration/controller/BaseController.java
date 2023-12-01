@@ -1,6 +1,8 @@
 package io.github.bobocodebreskul.demointegration.controller;
 
+import io.github.bobocodebreskul.context.annotations.Qualifier;
 import io.github.bobocodebreskul.server.BringRequest;
+import io.github.bobocodebreskul.server.BringResponse;
 import io.github.bobocodebreskul.server.annotations.Delete;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.Head;
@@ -10,9 +12,14 @@ import io.github.bobocodebreskul.server.annotations.RequestBody;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RestController;
 
-@RestController
+@RestController("yourController")
 @RequestMapping("/url")
 public class BaseController {
+
+  private final String configBean;
+  public BaseController(@Qualifier("configBean") String configBean) {
+    this.configBean = configBean;
+  }
 
   @Get
   public String doGet() {
@@ -63,5 +70,15 @@ public class BaseController {
   public String doPostWithBringRequest(BringRequest<RequestDto> request) {
     RequestDto body = request.getBody();
     return body.getString() + body.getInteger();
+  }
+
+  @Get("/getConfigBean")
+  public String doGetConfigBean() {
+    return configBean;
+  }
+
+  @Get("/getBringResponse")
+  public BringResponse<String> doGetBringResponse() {
+    return BringResponse.ok(configBean);
   }
 }

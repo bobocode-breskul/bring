@@ -157,4 +157,11 @@ public class BringContainer implements ObjectFactory {
   public List<Object> getAllBeans() {
     return storageByName.values().stream().toList();
   }
+
+  @Override
+  public <T> T getBean(Class<T> clazz) {
+    BeanDefinition beanDefinitionByType = dependencyUtils.getDependencyForType(clazz, definitionRegistry);
+    Object bean = getBean(beanDefinitionByType.getName());
+    return clazz.cast(bean);
+  }
 }

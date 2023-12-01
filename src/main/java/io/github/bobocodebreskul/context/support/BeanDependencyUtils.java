@@ -69,7 +69,7 @@ public class BeanDependencyUtils {
             dependency, dependency.type(), beanDefinition.getBeanClass()));
   }
 
-  private BeanDefinition getDependencyForType(Class<?> type, BeanDefinitionRegistry registry) {
+  public BeanDefinition getDependencyForType(Class<?> type, BeanDefinitionRegistry registry) {
     List<BeanDefinition> beanDefinitionByType = registry.getBeanDefinitionByType(type);
 
     if (beanDefinitionByType.isEmpty()) {

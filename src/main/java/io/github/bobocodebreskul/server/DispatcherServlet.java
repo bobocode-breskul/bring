@@ -1,16 +1,13 @@
 package io.github.bobocodebreskul.server;
 
-import static java.util.Objects.isNull;
-
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.bobocodebreskul.context.exception.DispatcherServletException;
+import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
+import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
+import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
-import io.github.bobocodebreskul.context.exception.DispatcherServletException;
-import io.github.bobocodebreskul.context.exception.MethodInvocationException;
-import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
-import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
-import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -120,8 +117,8 @@ public class DispatcherServlet extends HttpServlet {
 
   protected void handleError(HttpServletRequest req, HttpServletResponse resp, Throwable ex) {
     try {
-      ControllerMethod controllerMethod = exceptionToErrorHandlerControllerMethod.get(
-          ex.getClass());
+      ControllerMethod controllerMethod =
+          exceptionToErrorHandlerControllerMethod.get(ex.getClass());
       if (controllerMethod == null) {
         processResponse(resp, ex);
       } else {
@@ -230,6 +227,7 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
+  //TODO: add HTTP status handling when BringResponse will be implemented
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
     String outputResult = mapper.writeValueAsString(result);
 

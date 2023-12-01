@@ -14,6 +14,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestMapping {
 
+  /**
+   * Represents path.
+   *
+   * @return the path to our resource
+   */
   String value() default "";
 
   RequestMethod[] method() default {};

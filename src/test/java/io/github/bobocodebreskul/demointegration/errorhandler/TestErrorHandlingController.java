@@ -1,7 +1,7 @@
 package io.github.bobocodebreskul.demointegration.errorhandler;
 
-import io.github.bobocodebreskul.context.exception.AmbiguousHttpAnnotationException;
-import io.github.bobocodebreskul.context.exception.DuplicatePathException;
+import io.github.bobocodebreskul.server.exception.AmbiguousHttpAnnotationException;
+import io.github.bobocodebreskul.server.exception.DuplicatePathException;
 import io.github.bobocodebreskul.context.exception.PropertyNotFoundException;
 import io.github.bobocodebreskul.server.BringResponse;
 import io.github.bobocodebreskul.server.annotations.ErrorHandlerController;

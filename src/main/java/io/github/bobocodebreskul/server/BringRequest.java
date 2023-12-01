@@ -17,15 +17,16 @@ import lombok.extern.slf4j.Slf4j;
  *     String body = request.getBody();
  *   }
  * </pre>
- * @see BringHttpEntity
+ *
  * @param <T> body type
+ * @see BringHttpEntity
  */
 @Slf4j
-public class BringRequest<T> extends BringHttpEntity<T>{
+public class BringRequest<T> extends BringHttpEntity<T> {
 
   private final RequestMethod requestMethod;
   private final URI url;
-  
+
   public BringRequest(RequestMethod requestMethod, URI url) {
     this(requestMethod, url, null);
   }
@@ -37,8 +38,9 @@ public class BringRequest<T> extends BringHttpEntity<T>{
   }
 
   /**
-   * Create and return {@link BringRequest} builder for specified HTTP {@link RequestMethod}
-   * and URL
+   * Create and return {@link BringRequest} builder for specified HTTP {@link RequestMethod} and
+   * URL
+   *
    * @return builder instance
    */
   public static Builder method(RequestMethod method, URI url) {
@@ -47,6 +49,7 @@ public class BringRequest<T> extends BringHttpEntity<T>{
 
   /**
    * Get request HTTP method
+   *
    * @return request HTTP method as {@link RequestMethod} enum value
    */
   public RequestMethod getRequestMethod() {
@@ -56,6 +59,7 @@ public class BringRequest<T> extends BringHttpEntity<T>{
 
   /**
    * Get request target URL
+   *
    * @return request URL as {@link URI} object
    */
   public URI getUrl() {
@@ -92,8 +96,8 @@ public class BringRequest<T> extends BringHttpEntity<T>{
      * Set HTTP entity body to builder and compose {@link BringRequest} object.
      *
      * @param body parameterized body
+     * @param <T>  body type
      * @return {@code BringRequest} object instance
-     * @param <T> body type
      */
     public <T> BringRequest<T> body(T body) {
       return create(body);

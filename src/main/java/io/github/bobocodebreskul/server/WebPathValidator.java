@@ -1,10 +1,17 @@
 package io.github.bobocodebreskul.server;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.context.exception.WebPathValidationException;
+import io.github.bobocodebreskul.server.exception.WebPathValidationException;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 
+/**
+ * Utility class providing methods for validating web paths used in request mappings. This class
+ * checks various conditions such as starting with '/', not ending with '/', containing no
+ * whitespaces, no asterisks, and not having more than one '/' sequentially.
+ *
+ * @see WebPathValidationException
+ */
 public class WebPathValidator {
 
   private final static Logger log = LoggerFactory.getLogger(WebPathValidator.class);

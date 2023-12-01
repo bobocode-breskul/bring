@@ -10,8 +10,8 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 /**
- * Extension of {@link BringHttpEntity} that adds HTTP response status.
- * Could be used as return value in {@code @RestController} methods.
+ * Extension of {@link BringHttpEntity} that adds HTTP response status. Could be used as return
+ * value in {@code @RestController} methods.
  * <p>Example:</p>
  * <pre class="code">
  *   &#64;Get("/request")
@@ -41,7 +41,8 @@ public class BringResponse<T> extends BringHttpEntity<T> {
     this(null, new HashMap<>(), status);
   }
 
-  public BringResponse(@Nullable T body, @Nullable Map<String, String> headers, ResponseStatus status) {
+  public BringResponse(@Nullable T body, @Nullable Map<String, String> headers,
+      ResponseStatus status) {
     super(headers, body);
     if (isNull(status)) {
       log.error("HttpStatus must not be null");
@@ -127,8 +128,8 @@ public class BringResponse<T> extends BringHttpEntity<T> {
      * Set HTTP entity body to builder and compose {@link BringResponse} object.
      *
      * @param body parameterized body
+     * @param <T>  body type
      * @return {@code BringResponse} object instance
-     * @param <T> body type
      */
     public <T> BringResponse<T> body(T body) {
       return new BringResponse<>(body, headers, responseStatus);

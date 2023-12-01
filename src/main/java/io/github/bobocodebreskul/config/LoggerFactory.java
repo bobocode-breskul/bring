@@ -4,6 +4,9 @@ import ch.qos.logback.classic.Level;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
+/**
+ * Used for creating Logger instances in each class
+ */
 public class LoggerFactory {
 
   public static final String PROPERTY_NAME = "logging";
@@ -17,8 +20,10 @@ public class LoggerFactory {
    * @return logger
    */
   public static Logger getLogger(Class<?> clazz) {
-    Level level = Level.valueOf(PropertiesConfiguration.getPropertyOrDefault(PROPERTY_NAME, "INFO"));
-    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(clazz);
+    Level level = Level.valueOf(
+        PropertiesConfiguration.getPropertyOrDefault(PROPERTY_NAME, "INFO"));
+    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(
+        clazz);
     logger.setLevel(level);
     return logger;
   }

@@ -1,7 +1,6 @@
 package io.github.bobocodebreskul.context.registry;
 
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.config.PropertiesConfiguration;
 import io.github.bobocodebreskul.context.config.AnnotatedGenericBeanDefinition;
 import io.github.bobocodebreskul.context.config.BeanDefinition;
 import io.github.bobocodebreskul.context.config.ConfigurationBeanDefinition;
@@ -21,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 
 /**
- * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all found
- * and registered beans.
+ * Implementation of the {@link ObjectFactory} as Bring beans container. Creates and holds all
+ * founded and registered beans.
  *
  * @author Ruslan Hladchenko
  * @author Roman Pryshchepa
@@ -45,7 +44,7 @@ public class BringContainer implements ObjectFactory {
 
   /**
    * Collect all bean definitions by specified scan packages and build container to create and hold
-   * all found beans.
+   * all founded beans.
    *
    * @param configClass configuration class annotated @BringComponentScan with information where to
    *                    search beans
@@ -59,10 +58,12 @@ public class BringContainer implements ObjectFactory {
     //prepare base context classes
     BeanDependencyUtils beanDependencyUtils = new BeanDependencyUtils();
     BeanDefinitionRegistry definitionRegistry = new SimpleBeanDefinitionRegistry();
-    BeanDefinitionValidator beanDefinitionValidator = new BeanDefinitionValidator(definitionRegistry, beanDependencyUtils);
+    BeanDefinitionValidator beanDefinitionValidator = new BeanDefinitionValidator(
+        definitionRegistry, beanDependencyUtils);
     ScanUtilsImpl scanUtils = new ScanUtilsImpl();
     BeanDefinitionReader beanDefinitionReader = new BeanDefinitionReader(definitionRegistry);
-    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(scanUtils, beanDefinitionReader);
+    RecursiveClassPathAnnotatedBeanScanner scanner = new RecursiveClassPathAnnotatedBeanScanner(
+        scanUtils, beanDefinitionReader);
     BringContainer container = new BringContainer(definitionRegistry, beanDependencyUtils);
 
     //run initial scan for all project
@@ -74,7 +75,8 @@ public class BringContainer implements ObjectFactory {
 
     TomcatServer.run(container);
     log.info("BringContainer initialized successfully.");
-    log.debug("All created beans:%n%s".formatted(container.storageByName.keySet().stream().reduce("", (s1,s2) -> s1 + System.lineSeparator() + s2)));
+    log.debug("All created beans:%n%s".formatted(container.storageByName.keySet().stream()
+        .reduce("", (s1, s2) -> s1 + System.lineSeparator() + s2)));
     return container;
   }
 
@@ -86,7 +88,8 @@ public class BringContainer implements ObjectFactory {
 
     BeanDefinition beanDefinition = definitionRegistry.getBeanDefinition(name);
     if (beanDefinition == null) {
-      String errorMessage = "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(name);
+      String errorMessage = "BeanDefinition for bean with name %s is not found! Check configuration and register this bean".formatted(
+          name);
       log.error(errorMessage);
       throw new NoSuchBeanDefinitionException(errorMessage);
     }
@@ -97,7 +100,8 @@ public class BringContainer implements ObjectFactory {
     if (beanDefinition instanceof ConfigurationBeanDefinition) {
       return getBeanByMethod(name, (ConfigurationBeanDefinition) beanDefinition);
     }
-    String errorMessage = "Cannot create bean with name %s, not supported BeanDefinition class: %s".formatted(name, beanDefinition.getClass());
+    String errorMessage = "Cannot create bean with name %s, not supported BeanDefinition class: %s".formatted(
+        name, beanDefinition.getClass());
     log.error(errorMessage);
     throw new InstanceCreationException(errorMessage);
   }
@@ -117,7 +121,8 @@ public class BringContainer implements ObjectFactory {
       return newInstance;
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
              IllegalArgumentException e) {
-      String errorMessage = "Could not create an instance of \"%s\" class, please check constructors and their parameters.".formatted(name);
+      String errorMessage = "Could not create an instance of \"%s\" class, please check constructors and their parameters.".formatted(
+          name);
       log.error(errorMessage, e);
       throw new InstanceCreationException(errorMessage, e);
     }
@@ -135,7 +140,8 @@ public class BringContainer implements ObjectFactory {
       storageByName.put(beanDefinition.getName(), newInstance);
       return newInstance;
     } catch (IllegalAccessException | InvocationTargetException e) {
-      String errorMessage = "Could not create an instance of \"%s\" class, please check method from configuration class and their parameters ".formatted(name);
+      String errorMessage = "Could not create an instance of \"%s\" class, please check method from configuration class and their parameters ".formatted(
+          name);
       log.error(errorMessage, e);
       throw new InstanceCreationException(errorMessage, e);
     }

@@ -1,7 +1,6 @@
 package io.github.bobocodebreskul.server;
 
 import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
-
 import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestMethod;
 import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestParameterType;
@@ -9,14 +8,13 @@ import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.v
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bobocodebreskul.config.LoggerFactory;
-import io.github.bobocodebreskul.context.exception.DispatcherServletException;
 import io.github.bobocodebreskul.context.exception.ResourceNotFoundException;
-import io.github.bobocodebreskul.context.exception.WebMethodParameterException;
 import io.github.bobocodebreskul.context.registry.BringContainer;
-import io.github.bobocodebreskul.server.annotations.Get;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
+import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RequestParam;
-import io.github.bobocodebreskul.server.enums.RequestMethod;
+import io.github.bobocodebreskul.server.exception.DispatcherServletException;
+import io.github.bobocodebreskul.server.exception.WebMethodParameterException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,12 +27,10 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 
 /**
@@ -42,7 +38,7 @@ import org.slf4j.Logger;
  * <p>
  * This servlet is responsible for handling HTTP GET requests and dispatching them to the
  * corresponding methods in the controllers provided by the {@link BringContainer}. It uses
- * annotations like {@link Get} to identify the methods that should handle GET requests.
+ * annotations like {@link RequestMapping} to identify the methods and its path.
  */
 public class DispatcherServlet extends HttpServlet {
 
@@ -100,7 +96,7 @@ public class DispatcherServlet extends HttpServlet {
     return getMethodInvokeResult(method, controller, req, ex);
   }
 
-  private static BringResponse toBringResponse(Object result) {
+  private static BringResponse<Object> toBringResponse(Object result) {
     if (result instanceof BringResponse response) {
       return response;
     } else {
@@ -266,7 +262,7 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
-    BringResponse bringResponse = toBringResponse(result);
+    BringResponse<Object> bringResponse = toBringResponse(result);
 
     String outputResult = mapper.writeValueAsString(bringResponse.getBody());
     int statusCode = bringResponse.getStatus().getStatusCode();
@@ -330,7 +326,8 @@ public class DispatcherServlet extends HttpServlet {
           "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
               parameter.getType()), e);
       throw new WebMethodParameterException(
-          "Error processing '%s' method parameter with type '%s', due to %s".formatted(parameter.getName(),
+          "Error processing '%s' method parameter with type '%s', due to %s".formatted(
+              parameter.getName(),
               parameter.getType(), e.getMessage()), e);
     }
   }

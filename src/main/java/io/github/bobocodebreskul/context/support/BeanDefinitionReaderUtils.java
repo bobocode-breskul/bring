@@ -31,9 +31,7 @@ import org.slf4j.Logger;
 public class BeanDefinitionReaderUtils {
 
   private final static Logger log = LoggerFactory.getLogger(BeanDefinitionReaderUtils.class);
-
-  // todo: tip for the end-user to fix smth like: use @Autowired or create default constructor
-  static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found.";
+  static final String NO_DEFAULT_CONSTRUCTOR_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No default constructor found. Add it or define with @Autowire";
   static final String MULTIPLE_AUTOWIRED_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s': Invalid autowire-marked constructor: %s. Found constructor with Autowired annotation already: %s";
   static final String CLASS_WITHOUT_CONSTRUCTORS_MESSAGE = "Error creating bean with name '%s'. Failed to instantiate [%s]: No constructors found, target type is one of the list: [interface; a primitive type; an array class; void]";
   static final String UNCERTAIN_BEAN_NAME_EXCEPTION_MSG = "For bean %s was found several different names definitions: [%s]. Please choose one.";
@@ -157,7 +155,6 @@ public class BeanDefinitionReaderUtils {
         NO_DEFAULT_CONSTRUCTOR_MESSAGE.formatted(beanName, beanClass.getName()));
   }
 
-  // TODO: possible move to separate general validation class
   private static void validateBeanClassNonNull(Class<?> beanClass) {
     Objects.requireNonNull(beanClass, () -> {
       log.error("Failed to generate bean name for nullable bean class");

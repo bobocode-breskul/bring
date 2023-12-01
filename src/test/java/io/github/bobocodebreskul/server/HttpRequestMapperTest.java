@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bobocodebreskul.context.exception.RequestsMappingException;
+import io.github.bobocodebreskul.server.exception.RequestsMappingException;
 import io.github.bobocodebreskul.server.enums.RequestMethod;
 import io.github.bobocodebreskul.server.enums.ResponseStatus;
 import jakarta.servlet.ServletOutputStream;

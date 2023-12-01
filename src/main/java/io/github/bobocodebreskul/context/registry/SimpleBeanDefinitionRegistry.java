@@ -16,6 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 
+
+/**
+ * Interface that extends {@link BeanDefinitionRegistry} and implement methods for managing bean
+ * definitions in a registry. A bean definition represents the configuration metadata that defines
+ * how to create a specific bean.
+ */
 public class SimpleBeanDefinitionRegistry implements BeanDefinitionRegistry {
 
   private final static Logger log = LoggerFactory.getLogger(SimpleBeanDefinitionRegistry.class);

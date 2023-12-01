@@ -1,5 +1,17 @@
 package io.github.bobocodebreskul.server.enums;
 
+/**
+ * Enumeration of HTTP response status codes.
+ *
+ * <p>The enum includes standard HTTP status codes grouped by their respective classes:
+ * <ul>
+ *   <li>1xx Informational</li>
+ *   <li>2xx Success</li>
+ *   <li>3xx Redirection</li>
+ *   <li>4xx Client Error</li>
+ *   <li>5xx Server Error</li>
+ * </ul>
+ */
 public enum ResponseStatus {
 
   // --- 1xx Informational ---

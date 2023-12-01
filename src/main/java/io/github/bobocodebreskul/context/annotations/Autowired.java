@@ -9,10 +9,9 @@ import java.lang.annotation.Target;
  * Annotation used in a custom Inversion of Control (IoC) container and Dependency Injection (DI)
  * framework to indicate that a dependency should be automatically injected at runtime.
  *
- * <p>{@code @Autowired} can be applied to constructors, fields, or methods within a class,
- * enabling
- * the IoC container to automatically resolve and inject the required dependencies during the
- * initialization of the annotated component.
+ * <p>{@code @Autowired} can be applied to constructors within a class, enabling the IoC container
+ * to automatically resolve and inject the required dependencies during the initialization of the
+ * annotated component.
  *
  * <p>This annotation is a key element in achieving loose coupling and promoting
  * the principles of dependency injection, allowing components to be more modular, maintainable, and
@@ -25,9 +24,9 @@ import java.lang.annotation.Target;
  *   public class MyComponent {
  *
  *       @Autowired
- *       private MyDependency dependency;
- *
- *       // Constructor, methods, or additional fields can also be annotated.
+ *       MyComponent(BeanClass beanToInject) {
+ *          //your logic
+ *       };
  *   }
  * }
  * </pre>
@@ -35,7 +34,7 @@ import java.lang.annotation.Target;
  * @see BringComponent
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD})
+@Target(value = {ElementType.CONSTRUCTOR})
 public @interface Autowired {
 
 }

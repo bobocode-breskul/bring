@@ -10,6 +10,7 @@ import io.github.bobocodebreskul.context.exception.NoSuchBeanDefinitionException
 import io.github.bobocodebreskul.context.scan.RecursiveClassPathAnnotatedBeanScanner;
 import io.github.bobocodebreskul.context.scan.utils.ScanUtilsImpl;
 import io.github.bobocodebreskul.context.support.BeanDependencyUtils;
+import io.github.bobocodebreskul.server.Banner;
 import io.github.bobocodebreskul.server.TomcatServer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -51,6 +52,8 @@ public class BringContainer implements ObjectFactory {
    * @return created beans container
    */
   public static BringContainer run(Class<?> configClass) {
+    Banner.printBanner();
+
     log.info("Initializing BringContainer...");
 
     //prepare base context classes

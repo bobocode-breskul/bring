@@ -1,10 +1,10 @@
 package io.github.bobocodebreskul.config;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.bobocodebreskul.context.exception.InvalidPropertyValueException;
-import io.github.bobocodebreskul.context.exception.LoadingPropertiesFailedException;
 import io.github.bobocodebreskul.context.exception.PropertyNotFoundException;
 import java.lang.reflect.Field;
 import java.util.Properties;
@@ -137,17 +137,15 @@ class PropertiesConfigurationTest {
   }
 
   @Order(10)
-  @DisplayName("Throw a LoadingPropertiesFailedException when try to load from non existing file.")
+  @DisplayName("Do nothing when loadProperties from non existing file.")
   @Test
-  void given_PropertiesConfiguration_when_loadPropertiesFromNonExistingPropertyFile_thenThrowLoadingPropertiesFailedException() {
+  void given_PropertiesConfiguration_when_loadPropertiesFromNonExistingPropertyFile_thenDoNothing() {
 
     // given
     String newConfigFile = "test.properties";
 
     // when
-    assertThatThrownBy(() -> PropertiesConfiguration.loadProperties(newConfigFile))
-        .isInstanceOf(LoadingPropertiesFailedException.class)
-        .hasMessage("Loading properties from %s file failed.".formatted(newConfigFile));
+    assertDoesNotThrow(() -> PropertiesConfiguration.loadProperties(newConfigFile));
   }
 
   @Order(11)

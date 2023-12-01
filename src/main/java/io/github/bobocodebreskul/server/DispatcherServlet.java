@@ -3,6 +3,8 @@ package io.github.bobocodebreskul.server;
 import static io.github.bobocodebreskul.context.support.ReflectionUtils.castValue;
 
 import static io.github.bobocodebreskul.server.enums.ResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestMethod;
+import static io.github.bobocodebreskul.server.utils.DispatcherValidationUtils.validateRequestParameterType;
 
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,11 +47,6 @@ import org.slf4j.Logger;
 public class DispatcherServlet extends HttpServlet {
 
   private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-  private static final List<String> METHODS_WITHOUT_BODY = List.of(
-      RequestMethod.GET.name(),
-      RequestMethod.HEAD.name(),
-      RequestMethod.DELETE.name()
-  );
   private final HttpRequestMapper httpRequestMapper;
   private final Map<Class<?>, ControllerMethod> exceptionToErrorHandlerControllerMethod;
   private final Map<String, Map<String, ControllerMethod>> pathToControllerMethod;
@@ -350,14 +347,6 @@ public class DispatcherServlet extends HttpServlet {
     return BringRequest.class.isAssignableFrom(parameter.getType());
   }
 
-  private void validateRequestMethod(HttpServletRequest req) {
-    if (METHODS_WITHOUT_BODY.contains(req.getMethod())) {
-      log.error("{} request not allowed for @RequestBody parameter.", req.getMethod());
-      throw new WebMethodParameterException(
-          "%s http method not support request body".formatted(req.getMethod()));
-    }
-  }
-
   private BringRequest<?> composeBringRequest(Parameter parameter, HttpServletRequest req) {
     Type parameterType = parameter.getParameterizedType();
     // Check if it's a parameterized type
@@ -435,13 +424,5 @@ public class DispatcherServlet extends HttpServlet {
         });
   }
 
-  private void validateRequestParameterType(Class<?> type) {
-    if (!ClassUtils.isPrimitiveOrWrapper(type) && !String.class.isAssignableFrom(type)) {
-      log.error("Request not allowed with request parameter of type [{}]", type);
-      throw new WebMethodParameterException(
-          "Error reading request parameter of type [%s]. String and primitive/wrappers allowed only"
-              .formatted(type));
-    }
-  }
 
 }

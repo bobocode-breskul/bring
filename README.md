@@ -1,19 +1,90 @@
 # Bring ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+
+## What is Bring?
 Bring is a custom web framework that combines HTTP request handling with a Dependency Injection container.
+It uses IoC (Inversion of Control) container, which ....
 
-## Installation
+## Table of Contents
 
-Add Maven dependency to your project:
+- [Introduction](#introduction)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Introduction
+
+Bring Framework is designed to simplify the development of web applications in Java. It follows the Model-View-Controller (MVC) architecture and integrates with the Inversion of Control (IoC) container for dependency injection.
+
+## Features
+
+- **Feature One:** .....
+- **Feature Two:** ......
+- **Feature Three:** .....
+- **Feature four:** .....
+
+## Getting Started
+
+Follow these steps to integrate Bring into your project:
+
+1. Add the following Maven dependency:
 
 ```xml
 <dependency>
   <groupId>io.github.bobocode-breskul</groupId>
   <artifactId>bring</artifactId>
-  <version>1.3</version>
+  <version>1.0</version> //TODO What the final version will be
 </dependency>
 ```
 
-## Getting Started
+2. Configure your application context..
+
+```java
+import io.github.bobocodebreskul.context.annotations.BringConfiguration;
+
+@BringConfiguration
+public class Config {
+  // Controller code here...
+}
+```
+
+## Configuration
+
+To customize the behavior of the Spring Web Framework, you can configure various properties in your application...
+
+## Usage
+
+### Example 1: Creating a Simple Controller
+
+```java
+@Annotation
+@RequestMapping("/api")
+public class MyController {
+  // Controller code here...
+}
+```
+### Example 2: ...
+```java
+
+```
+### Example 3: ...
+```java
+
+```
+
+## Contributing
+We welcome contributions! 
+If you'd like to contribute to Bring, please contact with the team Breskul!
+
+
+## License
+This project is licensed under the [MIT License](https://opensource.org/license/mit/).
+
+
+
+## Quick Start
 The reference [documentation](https://github.com/bobocode-breskul/bring/wiki) includes detailed installation instructions as well as a comprehensive getting started guide.
 
 Here is a quick teaser of a complete Bring application in Java:

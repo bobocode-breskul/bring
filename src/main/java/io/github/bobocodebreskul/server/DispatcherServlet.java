@@ -36,6 +36,7 @@ import org.slf4j.Logger;
  * annotations like {@link Get} to identify the methods that should handle GET requests.
  */
 public class DispatcherServlet extends HttpServlet {
+
   private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
   private final static List<String> METHODS_WITHOUT_BODY = List.of(
       RequestMethod.GET.name(),
@@ -58,6 +59,55 @@ public class DispatcherServlet extends HttpServlet {
       Map<String, Map<String, ControllerMethod>> pathToControllerMethod) {
     this.exceptionToErrorHandlerControllerMethod = exceptionToErrorHandlerControllerMethod;
     this.pathToControllerMethod = pathToControllerMethod;
+  }
+
+  private static ControllerMethod getControllerMethod(HttpServletRequest req,
+      Map<String, ControllerMethod> controllerMethodMap, String pathInfo) {
+    ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
+
+    if (controllerMethod == null) {
+      log.warn("No controller method found for path: {} and HTTP method: {}",
+          pathInfo,
+          req.getMethod());
+      throw new ResourceNotFoundException("Page not found!");
+    }
+    return controllerMethod;
+  }
+
+  private static Method getMethod(ControllerMethod controllerMethod) {
+    Method method = controllerMethod.method();
+
+    if (method == null) {
+      log.warn("No method found for controller method: {}", controllerMethod);
+      throw new ResourceNotFoundException("Page not found!");
+    }
+    return method;
+  }
+
+  private static Object doMethodInvoke(Method method, Object controller, HttpServletRequest req,
+      Throwable ex)
+      throws IllegalAccessException, InvocationTargetException {
+    if (method.getParameterCount() == 1) {
+      return method.invoke(controller, ex);
+    }
+    return getMethodInvokeResult(method, controller, req, ex);
+  }
+
+  private static BringResponse toBringResponse(Object result) {
+    if (result instanceof BringResponse response) {
+      return response;
+    } else {
+      return new BringResponse<>(result, null, INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private static Object getMethodInvokeResult(Method method, Object controller,
+      HttpServletRequest req, Throwable ex)
+      throws IllegalAccessException, InvocationTargetException {
+    if (Throwable.class.isAssignableFrom(method.getParameterTypes()[0])) {
+      return method.invoke(controller, ex, req);
+    }
+    return method.invoke(controller, req, ex);
   }
 
   /**
@@ -145,7 +195,7 @@ public class DispatcherServlet extends HttpServlet {
         return;
       }
 
-      String pathInfo = req.getPathInfo().toLowerCase();
+      String pathInfo = verifyPath(req.getPathInfo().toLowerCase());
 
       // Log debug-level information for request processing details
       log.debug("Processing request for path: {}", pathInfo);
@@ -189,29 +239,6 @@ public class DispatcherServlet extends HttpServlet {
     return controllerMethodMap;
   }
 
-  private static ControllerMethod getControllerMethod(HttpServletRequest req,
-      Map<String, ControllerMethod> controllerMethodMap, String pathInfo) {
-    ControllerMethod controllerMethod = controllerMethodMap.get(req.getMethod());
-
-    if (controllerMethod == null) {
-      log.warn("No controller method found for path: {} and HTTP method: {}",
-          pathInfo,
-          req.getMethod());
-      throw new ResourceNotFoundException("Page not found!");
-    }
-    return controllerMethod;
-  }
-
-  private static Method getMethod(ControllerMethod controllerMethod) {
-    Method method = controllerMethod.method();
-
-    if (method == null) {
-      log.warn("No method found for controller method: {}", controllerMethod);
-      throw new ResourceNotFoundException("Page not found!");
-    }
-    return method;
-  }
-
   private void processResponse(HttpServletResponse resp, Throwable ex) throws IOException {
     try (PrintWriter writer = resp.getWriter()) {
       if (ex instanceof ResourceNotFoundException) {
@@ -222,15 +249,6 @@ public class DispatcherServlet extends HttpServlet {
       writer.println(mapper.writeValueAsString(ex.getMessage()));
       writer.flush();
     }
-  }
-
-  private static Object doMethodInvoke(Method method, Object controller, HttpServletRequest req,
-      Throwable ex)
-      throws IllegalAccessException, InvocationTargetException {
-    if (method.getParameterCount() == 1) {
-      return method.invoke(controller, ex);
-    }
-    return getMethodInvokeResult(method, controller, req, ex);
   }
 
   private void processResponse(HttpServletResponse resp, Object result) throws IOException {
@@ -252,23 +270,6 @@ public class DispatcherServlet extends HttpServlet {
         writer.flush();
       }
     }
-  }
-
-  private static BringResponse toBringResponse(Object result) {
-    if (result instanceof BringResponse response) {
-      return response;
-    } else {
-      return new BringResponse<>(result, null, INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  private static Object getMethodInvokeResult(Method method, Object controller,
-      HttpServletRequest req, Throwable ex)
-      throws IllegalAccessException, InvocationTargetException {
-    if (Throwable.class.isAssignableFrom(method.getParameterTypes()[0])) {
-      return method.invoke(controller, ex, req);
-    }
-    return method.invoke(controller, req, ex);
   }
 
   /**
@@ -358,5 +359,12 @@ public class DispatcherServlet extends HttpServlet {
       log.error("Error reading request body from request", e);
       throw new WebMethodParameterException("Error reading request body from request", e);
     }
+  }
+
+  private String verifyPath(String path) {
+    while (!path.equals("/") && path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
+    return path;
   }
 }

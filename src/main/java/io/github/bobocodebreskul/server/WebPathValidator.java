@@ -9,6 +9,7 @@ public class WebPathValidator {
 
   private final static Logger log = LoggerFactory.getLogger(WebPathValidator.class);
   static final String PATH_SHOULD_START_WITH_SLASH = "Path '%s' validation failed. Path should start with /.";
+  static final String PATH_SHOULD_NOT_ENDS_WITH_SLASH = "Path '%s' validation failed. Path should not end with /.";
   static final String PATH_SHOULD_NOT_CONTAIN_WHITESPACES = "Path '%s' validation failed. Path should not contain whitespaces.";
   static final String PATH_SHOULD_NOT_CONTAIN_ASTERISKS = "Path '%s' validation failed. Path should not contain *.";
   static final String PATH_SHOULD_NOT_CONTAIN_MORE_THAN_ONE_SLASH_SEQUENTIALLY = "Path '%s' validation failed. Path should not contain more than one '/' sequentially.";
@@ -28,6 +29,11 @@ public class WebPathValidator {
     if (!path.startsWith("/")) {
       log.error(PATH_SHOULD_START_WITH_SLASH.formatted(path));
       throw new WebPathValidationException(PATH_SHOULD_START_WITH_SLASH.formatted(path));
+    }
+
+    if (path.endsWith("/")) {
+      log.error(PATH_SHOULD_NOT_ENDS_WITH_SLASH.formatted(path));
+      throw new WebPathValidationException(PATH_SHOULD_NOT_ENDS_WITH_SLASH.formatted(path));
     }
 
     if (WHITESPACE_SEARCH_PATTERN.matcher(path).find()) {

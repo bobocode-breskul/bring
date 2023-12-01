@@ -72,14 +72,15 @@ public class WebPathScanner {
     for (Object controllerBean : getControllerBeans()) {
       var controllerClass = controllerBean.getClass();
       String prefixPath = getPrefixPath(controllerClass);
+      validatePath(prefixPath);
       log.info("Processing controller class: [{}]", controllerClass.getSimpleName());
       for (Method method : controllerClass.getMethods()) {
         Annotation httpMethodAnnotation = getHttpAnnotation(method);
 
         if (method.isAnnotationPresent(RequestMapping.class)) {
           RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+          validatePath(requestMapping.value());
           String path = prefixPath.concat(requestMapping.value()).toLowerCase();
-          validatePath(path);
           String httpMethodName = getHttpMethodName(requestMapping);
           addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
           log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",
@@ -88,9 +89,9 @@ public class WebPathScanner {
           log.debug("Skip scanning method, because method [{}] of class [{}]  has no http mapping",
               method.getName(), controllerBean.getClass().getName());
         } else {
-          String path = prefixPath.concat(
-              invokeAnnotationMethod(httpMethodAnnotation, "value").toString()).toLowerCase();
-          validatePath(path);
+          String httpMethodAnnotationValue = invokeAnnotationMethod(httpMethodAnnotation, "value").toString();
+          validatePath(httpMethodAnnotationValue);
+          String path = prefixPath.concat(httpMethodAnnotationValue).toLowerCase();
           String httpMethodName = getHttpMethodName(httpMethodAnnotation);
           addPath(pathMap, path, httpMethodName, new ControllerMethod(controllerBean, method));
           log.debug("Added path: [{}] for HTTP method: [{}] for controller method: [{}]",

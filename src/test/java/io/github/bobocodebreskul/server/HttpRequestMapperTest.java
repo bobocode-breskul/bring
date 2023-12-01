@@ -62,10 +62,10 @@ class HttpRequestMapperTest {
     ServletOutputStream outputStream = Mockito.mock(ServletOutputStream.class);
     given(mockedHttpServletResponse.getOutputStream()).willReturn(outputStream);
 
-    requestMapper.writeBringResponseIntoHttpServletResponse(bringResponse,
-        mockedHttpServletResponse);
+    requestMapper.writeBringResponseIntoHttpServletResponse(mockedHttpServletResponse,
+        bringResponse);
 
-    verify(mockedHttpServletResponse, times(1)).setHeader("HeaderKey", "HeaderValue");
+    verify(mockedHttpServletResponse, times(1)).setHeader("HeaderKey".toLowerCase(), "HeaderValue");
     verify(mockedHttpServletResponse, times(1)).getOutputStream();
     verify(outputStream, times(1)).print(any());
     verify(mockedHttpServletResponse, times(1)).setStatus(400);
@@ -81,8 +81,8 @@ class HttpRequestMapperTest {
     ServletOutputStream outputStream = Mockito.mock(ServletOutputStream.class);
     given(mockedHttpServletResponse.getOutputStream()).willReturn(outputStream);
 
-    requestMapper.writeBringResponseIntoHttpServletResponse(bringResponse,
-        mockedHttpServletResponse);
+    requestMapper.writeBringResponseIntoHttpServletResponse(mockedHttpServletResponse,
+        bringResponse);
 
     verify(mockedHttpServletResponse, times(1)).getOutputStream();
     verify(outputStream, times(1)).write(any());
@@ -106,8 +106,8 @@ class HttpRequestMapperTest {
 
     //when
     Exception actualException = catchException(
-        () -> requestMapper.writeBringResponseIntoHttpServletResponse(bringResponse,
-            mockedHttpServletResponse));
+        () -> requestMapper.writeBringResponseIntoHttpServletResponse(mockedHttpServletResponse,
+            bringResponse));
 
     //verify
     assertThat(actualException)
@@ -125,8 +125,8 @@ class HttpRequestMapperTest {
         });
 
     Exception actualException = catchException(
-        () -> requestMapper.writeBringResponseIntoHttpServletResponse(new BringResponse("500"),
-            mockedHttpServletResponse));
+        () -> requestMapper.writeBringResponseIntoHttpServletResponse(mockedHttpServletResponse,
+            new BringResponse("500")));
 
     assertThat(actualException)
         .isInstanceOf(RequestsMappingException.class)
@@ -144,11 +144,13 @@ class HttpRequestMapperTest {
     String method = "POST";
     String headerName1 = "headername1";
     String headerName2 = "headername2";
+    String headerContentType = "Content-Type";
     String headerValue1 = "headerValue1";
     String headerValue2 = "headerValue2";
+    String headerValueContentType = "text/plain";
     String stringUrl = "100.90.90.99";
     var expectedURI = URI.create(stringUrl);
-    var headerNames = Collections.enumeration(List.of(headerName1, headerName2));
+    var headerNames = Collections.enumeration(List.of(headerName1, headerName2, headerContentType));
 
     //given
     given(mockedHttpServletRequest.getMethod()).willReturn(method);
@@ -156,6 +158,7 @@ class HttpRequestMapperTest {
     given(mockedHttpServletRequest.getHeaderNames()).willReturn(headerNames);
     given(mockedHttpServletRequest.getHeader(headerName1)).willReturn(headerValue1);
     given(mockedHttpServletRequest.getHeader(headerName2)).willReturn(headerValue2);
+    given(mockedHttpServletRequest.getHeader(headerContentType)).willReturn(headerValueContentType);
     given(mockedHttpServletRequest.getInputStream()).willReturn(mockedServletInputStream);
     given(mockedMapper.readValue(anyString(), any(Class.class))).willReturn(body);
 
@@ -169,6 +172,7 @@ class HttpRequestMapperTest {
     assertThat(actual.getHeadersNames()).containsExactlyInAnyOrder(headerName1, headerName2);
     assertThat(actual.getHeader(headerName1)).isEqualTo(headerValue1);
     assertThat(actual.getHeader(headerName2)).isEqualTo(headerValue2);
+    assertThat(actual.getHeader(headerContentType)).isEqualTo(headerValueContentType);
     assertThat(actual.getBody()).isEqualTo(body);
   }
 
@@ -181,8 +185,8 @@ class HttpRequestMapperTest {
     BringResponse<String> bringResponse =
         new BringResponse<>(null, headers, ResponseStatus.BAD_REQUEST);
 
-    requestMapper.writeBringResponseIntoHttpServletResponse(bringResponse,
-        mockedHttpServletResponse);
+    requestMapper.writeBringResponseIntoHttpServletResponse(mockedHttpServletResponse,
+        bringResponse);
 
     verify(mockedHttpServletResponse, times(1)).setHeader("headerkey", "HeaderValue");
     verify(mockedHttpServletResponse, times(1)).setStatus(400);
@@ -201,10 +205,11 @@ class HttpRequestMapperTest {
     given(mockedHttpServletRequest.getMethod()).willReturn("GET");
     given(mockedHttpServletRequest.getRequestURI()).willReturn("/test");
 
-    var headerNames = Collections.enumeration(List.of("headerName"));
+    var headerNames = Collections.enumeration(List.of("headerName", "Content-Type"));
 
     given(mockedHttpServletRequest.getHeaderNames()).willReturn(headerNames);
     given(mockedHttpServletRequest.getHeader("headerName")).willReturn("headerValue");
+    given(mockedHttpServletRequest.getHeader("Content-Type")).willReturn("text/plain");
     given(mockedHttpServletRequest.getInputStream()).willReturn(mockedServletInputStream);
 
     Exception actualException = catchException(

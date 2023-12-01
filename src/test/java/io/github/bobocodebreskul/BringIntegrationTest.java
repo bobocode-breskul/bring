@@ -288,6 +288,7 @@ public class BringIntegrationTest {
     HttpRequest request = HttpRequest.newBuilder()
         .POST(BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
         .uri(URI.create(url))
+        .header("Content-Type", "text/plain")
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

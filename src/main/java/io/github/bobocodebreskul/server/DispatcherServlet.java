@@ -323,8 +323,8 @@ public class DispatcherServlet extends HttpServlet {
           "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
               parameter.getType()), e);
       throw new WebMethodParameterException(
-          "Error processing '%s' method parameter with type '%s'.".formatted(parameter.getName(),
-              parameter.getType()), e);
+          "Error processing '%s' method parameter with type '%s', due to %s".formatted(parameter.getName(),
+              parameter.getType(), e.getMessage()), e);
     }
   }
 

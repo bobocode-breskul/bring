@@ -139,8 +139,7 @@ public class HttpRequestMapper {
         return body;
       }
       throw new BodyReadException(("Unsupported body type, incoming 'content-type'='%s'. Supported "
-          + "body types are ['%s', '%s']").formatted(contentType, CONTENT_TYPE_TEXT_HTML,
-          CONTENT_TYPE_APPLICATION_JSON));
+          + "body types are %s").formatted(contentType, ALLOWED_INPUT_CONTENT_TYPES));
     } catch (IOException e) {
       log.error("Failed to map HttpServletRequest body into object.", e);
       throw new RequestsMappingException("Failed to map HttpServletRequest body into object.", e);

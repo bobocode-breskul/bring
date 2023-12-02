@@ -13,7 +13,7 @@ import io.github.bobocodebreskul.context.registry.BringContainer;
 import io.github.bobocodebreskul.server.annotations.RequestBody;
 import io.github.bobocodebreskul.server.annotations.RequestMapping;
 import io.github.bobocodebreskul.server.annotations.RequestParam;
-import io.github.bobocodebreskul.server.exception.DispatcherServletException;
+import io.github.bobocodebreskul.server.exception.DuplicateErrorHandlerException;
 import io.github.bobocodebreskul.server.exception.WebMethodParameterException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -187,7 +187,7 @@ public class DispatcherServlet extends HttpServlet {
       processRequest(req, resp, false);
     } catch (IOException | InvocationTargetException | IllegalAccessException e) {
       log.error("Error happened during processing handling exception: {}", ex.getMessage(), ex);
-      handleError(req, resp, new DispatcherServletException(ex));
+      handleError(req, resp, new DuplicateErrorHandlerException(ex));
     }
   }
 

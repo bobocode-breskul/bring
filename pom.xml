@@ -89,6 +89,9 @@
     <jakarta.version>6.0.0</jakarta.version>
     <jackson.version>2.16.0</jackson.version>
     <maven.compiler.version>3.11.0</maven.compiler.version>
+    <sonar.projectKey>bobocode-breskul_bring</sonar.projectKey>
+    <sonar.organization>bobocode-breskul</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
 
   <dependencies>
@@ -278,6 +281,11 @@
             <version>${junit.version}</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.10.0.2594</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

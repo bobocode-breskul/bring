@@ -96,7 +96,7 @@ Follow these steps to integrate Bring Framework into your project:
 <dependency>
   <groupId>io.github.bobocode-breskul</groupId>
   <artifactId>bring</artifactId>
-  <version>2.0</version>
+  <version>2.1</version>
 </dependency>
 ```
 Find the simple CRUD example of a Bring application [here](https://github.com/bobocode-breskul/bring-crud-example).

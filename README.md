@@ -2,6 +2,7 @@
 
 
 # Bring Framework ![Bobocode Breskul Team](https://img.shields.io/badge/Bobocode%20Breskul%20Team-8A2BE2) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.bobocode-breskul/bring) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bobocode-breskul_bring&metric=coverage)](https://sonarcloud.io/summary/new_code?id=bobocode-breskul_bring) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=bobocode-breskul_bring&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=bobocode-breskul_bring) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=bobocode-breskul_bring&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=bobocode-breskul_bring)
 
 ## What is Bring Framework?
 Bring Framework is a custom lightweight and flexible web framework for building Java-based web applications that combines HTTP request handling with a Dependency Injection container.

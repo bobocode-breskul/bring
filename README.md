@@ -40,7 +40,7 @@ for details
 - **Bean declaration**:
     - Declare beans in two ways:
         - By annotation
-        - By java configuration (partially, singletone only)
+        - By Java configuration (partially, singleton only)
 
 - **Bean Dependencies Processing**:
     - Inject dependencies by type, supporting:

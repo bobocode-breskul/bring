@@ -453,7 +453,7 @@ Also you can add your own properties and use them using `PropertiesConfiguration
 
 ## Contributing
 We welcome contributions!
-If you'd like to contribute to Bring, please contact with the team Breskul.
+If you'd like to contribute to Bring, please contact with the team Breskul!
 
 
 ## License

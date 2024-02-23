@@ -18,6 +18,9 @@ public class Banner {
                                          \\______/\s
         """;
 
+  /**
+   * Prints a banner to the console if the banner configuration is enabled.
+   */
   public static void printBanner() {
     boolean isEnabled = Boolean.parseBoolean(PropertiesConfiguration
         .getPropertyOrDefault("banner", Boolean.TRUE.toString()));

@@ -32,15 +32,33 @@ public class BringResponse<T> extends BringHttpEntity<T> {
 
   private ResponseStatus status;
 
+  /**
+   * Constructor for the BringResponse class.
+   *
+   * @param body the response body.
+   */
   public BringResponse(T body) {
     super(body);
     this.status = ResponseStatus.OK;
   }
 
+  /**
+   * Constructor for the BringResponse class.
+   *
+   * @param status the response status.
+   */
   public BringResponse(ResponseStatus status) {
     this(null, new HashMap<>(), status);
   }
 
+  /**
+   * Constructor for the BringResponse class.
+   *
+   * @param body    the response body (nullable).
+   * @param headers the headers of the response (nullable).
+   * @param status  the response status.
+   * @throws IllegalArgumentException if the status is null.
+   */
   public BringResponse(@Nullable T body, @Nullable Map<String, String> headers,
       ResponseStatus status) {
     super(headers, body);
